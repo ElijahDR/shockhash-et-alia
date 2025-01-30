@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/elijah/Desktop/diss/code/recsplit/main'
+relocations:     []
+...
