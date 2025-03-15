@@ -1,4 +1,5 @@
 #include "common/murmurhash.h"
+#include <bit>
 
 uint32_t ROL32(uint32_t k, uint32_t n)
 {
@@ -51,7 +52,7 @@ uint32_t murmur_hash(uint32_t seed, std::string key)
         uint32_t chunk = 0;
         std::memcpy(&chunk, buffer + (key.length() - leftover), leftover);
 
-        if (!endian::native == endian::little)
+        if (!(std::endian::native == std::endian::little))
         {
             chunk = __builtin_bswap32(chunk);
         }

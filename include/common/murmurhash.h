@@ -1,5 +1,5 @@
-#ifndef GOLOMB_RICE_H
-#define GOLOMB_RICE_H
+#ifndef MURMURHASH_H
+#define MURMURHASH_H
 
 #include <cstdint>
 #include <string>
