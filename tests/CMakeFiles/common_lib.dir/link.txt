@@ -1,0 +1,2 @@
+/Library/Developer/CommandLineTools/usr/bin/ar qc libcommon_lib.a CMakeFiles/common_lib.dir/__/src/common/elias_fano.cpp.o CMakeFiles/common_lib.dir/__/src/common/golomb_rice.cpp.o
+/Library/Developer/CommandLineTools/usr/bin/ranlib libcommon_lib.a

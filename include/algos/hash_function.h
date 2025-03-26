@@ -1,0 +1,17 @@
+#ifndef HASHFUNCTION_H
+#define HASHFUNCTION_H
+
+#include <string>
+#include <vector>
+
+class HashFunction {
+public:
+    virtual ~HashFunction() = default;
+    virtual void build(const std::vector<std::string> &keys) = 0;
+    virtual uint32_t hash(const std::string &key) = 0;
+
+    virtual std::string name() = 0;
+};
+
+
+#endif

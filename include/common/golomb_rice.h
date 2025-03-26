@@ -3,8 +3,7 @@
 
 #include <vector>
 
-struct GolombEncodedData
-{
+struct GolombEncodedData {
     std::vector<bool> fixed;
     std::vector<bool> unary;
 };
@@ -14,7 +13,5 @@ uint32_t golomb_rice_decode(GolombEncodedData data, uint32_t r);
 uint32_t compute_golomb_rice_parameter(float p);
 uint32_t compute_grp_bijection(uint32_t m);
 uint32_t compute_grp_buckets(std::vector<uint32_t> sizes);
-
-std::vector<std::vector<uint32_t>> generate_all_grp();
 
 #endif

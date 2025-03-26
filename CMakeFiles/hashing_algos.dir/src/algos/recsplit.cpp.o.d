@@ -392,8 +392,6 @@ CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk/usr/include/wctype.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk/usr/include/_wctype.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk/usr/include/_types/_wctrans_t.h \
-  /Users/elijah/Desktop/diss/include/common/murmurhash.h \
-  /Users/elijah/Desktop/diss/include/common/utils.h \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/iostream \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/ios \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/__locale \
@@ -450,14 +448,19 @@ CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk/usr/include/sys/_types/_fsfilcnt_t.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk/usr/include/_types/_nl_item.h \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/__bsd_locale_defaults.h \
+  /Users/elijah/Desktop/diss/include/algos/hash_function.h \
+  /Users/elijah/Desktop/diss/include/common/murmurhash.h \
+  /Users/elijah/Desktop/diss/include/common/utils.h \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/cmath \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/math.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk/usr/include/math.h \
-  /Users/elijah/Desktop/diss/include/common/golomb_rice.h \
-  /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/set \
+  /Users/elijah/Desktop/diss/include/algos/sichash.h \
+  /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/map \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/__functional/is_transparent.h \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/__node_handle \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/optional \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/__tree \
+  /Users/elijah/Desktop/diss/include/common/golomb_rice.h \
+  /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/set \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/random \
   /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1/numeric

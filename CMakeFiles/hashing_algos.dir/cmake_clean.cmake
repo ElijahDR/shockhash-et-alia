@@ -1,6 +1,10 @@
 file(REMOVE_RECURSE
   "CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o"
   "CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o.d"
+  "CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o"
+  "CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o.d"
+  "CMakeFiles/hashing_algos.dir/src/common/elias_fano.cpp.o"
+  "CMakeFiles/hashing_algos.dir/src/common/elias_fano.cpp.o.d"
   "CMakeFiles/hashing_algos.dir/src/common/golomb_rice.cpp.o"
   "CMakeFiles/hashing_algos.dir/src/common/golomb_rice.cpp.o.d"
   "CMakeFiles/hashing_algos.dir/src/common/murmurhash.cpp.o"

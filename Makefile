@@ -65,6 +65,16 @@ CMAKE_BINARY_DIR = /Users/elijah/Desktop/diss
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running tests..."
+	/opt/homebrew/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+.PHONY : test/fast
+
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running CMake cache editor..."
@@ -129,6 +139,84 @@ hashing_algos/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/build
 .PHONY : hashing_algos/fast
 
+#=============================================================================
+# Target rules for targets named common_lib
+
+# Build rule for target.
+common_lib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 common_lib
+.PHONY : common_lib
+
+# fast build rule for target.
+common_lib/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/build
+.PHONY : common_lib/fast
+
+#=============================================================================
+# Target rules for targets named test_elias_fano
+
+# Build rule for target.
+test_elias_fano: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_elias_fano
+.PHONY : test_elias_fano
+
+# fast build rule for target.
+test_elias_fano/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_elias_fano.dir/build.make tests/CMakeFiles/test_elias_fano.dir/build
+.PHONY : test_elias_fano/fast
+
+#=============================================================================
+# Target rules for targets named run_test_elias_fano
+
+# Build rule for target.
+run_test_elias_fano: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_test_elias_fano
+.PHONY : run_test_elias_fano
+
+# fast build rule for target.
+run_test_elias_fano/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_test_elias_fano.dir/build.make tests/CMakeFiles/run_test_elias_fano.dir/build
+.PHONY : run_test_elias_fano/fast
+
+#=============================================================================
+# Target rules for targets named test_golomb_rice
+
+# Build rule for target.
+test_golomb_rice: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_golomb_rice
+.PHONY : test_golomb_rice
+
+# fast build rule for target.
+test_golomb_rice/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_golomb_rice.dir/build.make tests/CMakeFiles/test_golomb_rice.dir/build
+.PHONY : test_golomb_rice/fast
+
+#=============================================================================
+# Target rules for targets named run_golomb_rice
+
+# Build rule for target.
+run_golomb_rice: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_golomb_rice
+.PHONY : run_golomb_rice
+
+# fast build rule for target.
+run_golomb_rice/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_golomb_rice.dir/build.make tests/CMakeFiles/run_golomb_rice.dir/build
+.PHONY : run_golomb_rice/fast
+
+#=============================================================================
+# Target rules for targets named run_all_tests
+
+# Build rule for target.
+run_all_tests: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_all_tests
+.PHONY : run_all_tests
+
+# fast build rule for target.
+run_all_tests/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_all_tests.dir/build.make tests/CMakeFiles/run_all_tests.dir/build
+.PHONY : run_all_tests/fast
+
 src/algos/recsplit.o: src/algos/recsplit.cpp.o
 .PHONY : src/algos/recsplit.o
 
@@ -152,6 +240,54 @@ src/algos/recsplit.s: src/algos/recsplit.cpp.s
 src/algos/recsplit.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.s
 .PHONY : src/algos/recsplit.cpp.s
+
+src/algos/sichash.o: src/algos/sichash.cpp.o
+.PHONY : src/algos/sichash.o
+
+# target to build an object file
+src/algos/sichash.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o
+.PHONY : src/algos/sichash.cpp.o
+
+src/algos/sichash.i: src/algos/sichash.cpp.i
+.PHONY : src/algos/sichash.i
+
+# target to preprocess a source file
+src/algos/sichash.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.i
+.PHONY : src/algos/sichash.cpp.i
+
+src/algos/sichash.s: src/algos/sichash.cpp.s
+.PHONY : src/algos/sichash.s
+
+# target to generate assembly for a file
+src/algos/sichash.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.s
+.PHONY : src/algos/sichash.cpp.s
+
+src/common/elias_fano.o: src/common/elias_fano.cpp.o
+.PHONY : src/common/elias_fano.o
+
+# target to build an object file
+src/common/elias_fano.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/common/elias_fano.cpp.o
+.PHONY : src/common/elias_fano.cpp.o
+
+src/common/elias_fano.i: src/common/elias_fano.cpp.i
+.PHONY : src/common/elias_fano.i
+
+# target to preprocess a source file
+src/common/elias_fano.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/common/elias_fano.cpp.i
+.PHONY : src/common/elias_fano.cpp.i
+
+src/common/elias_fano.s: src/common/elias_fano.cpp.s
+.PHONY : src/common/elias_fano.s
+
+# target to generate assembly for a file
+src/common/elias_fano.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/common/elias_fano.cpp.s
+.PHONY : src/common/elias_fano.cpp.s
 
 src/common/golomb_rice.o: src/common/golomb_rice.cpp.o
 .PHONY : src/common/golomb_rice.o
@@ -257,10 +393,23 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... test"
+	@echo "... run_all_tests"
+	@echo "... run_golomb_rice"
+	@echo "... run_test_elias_fano"
+	@echo "... common_lib"
 	@echo "... hashing_algos"
+	@echo "... test_elias_fano"
+	@echo "... test_golomb_rice"
 	@echo "... src/algos/recsplit.o"
 	@echo "... src/algos/recsplit.i"
 	@echo "... src/algos/recsplit.s"
+	@echo "... src/algos/sichash.o"
+	@echo "... src/algos/sichash.i"
+	@echo "... src/algos/sichash.s"
+	@echo "... src/common/elias_fano.o"
+	@echo "... src/common/elias_fano.i"
+	@echo "... src/common/elias_fano.s"
 	@echo "... src/common/golomb_rice.o"
 	@echo "... src/common/golomb_rice.i"
 	@echo "... src/common/golomb_rice.s"

@@ -1,14 +1,14 @@
+#include <vector>
+#include <gtest/gtest.h>
 #include "common/golomb_rice.h"
-#include <iostream>
 
-bool test_golomb_rice()
+struct GolombTestData
 {
-    struct GolombTestData
-    {
-        uint32_t value;
-        uint32_t r;
-    };
+    uint32_t value;
+    uint32_t r;
+};
 
+TEST(GolombRiceTest, Encoding) {
     std::vector<GolombTestData> test_cases = {
         {0, 1},
         {1, 1},
@@ -52,13 +52,12 @@ bool test_golomb_rice()
         uint32_t value = test_case.value;
         uint32_t test_value = golomb_rice_decode(golomb_rice_encode(value, test_case.r), test_case.r);
 
-        if (value != test_value)
-        {
-            std::cerr << "Test failed for value = " << value << ", r parameter = " << (int)test_case.r
-                      << ". Decoded value = " << test_value << std::endl;
-            exit(1);
-        }
+        EXPECT_EQ(value, test_value);
     }
+}
 
-    return true;
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

@@ -1,0 +1,53 @@
+Start testing: Mar 26 12:54 GMT
+----------------------------------------------------------
+1/2 Testing: TestEliasFano
+1/2 Test: TestEliasFano
+Command: "/Users/elijah/Desktop/diss/tests/test_elias_fano"
+Directory: /Users/elijah/Desktop/diss/tests
+"TestEliasFano" start time: Mar 26 12:54 GMT
+Output:
+----------------------------------------------------------
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from EliasFanoTest
+[ RUN      ] EliasFanoTest.Encoding
+[       OK ] EliasFanoTest.Encoding (0 ms)
+[----------] 1 test from EliasFanoTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.17 sec
+----------------------------------------------------------
+Test Passed.
+"TestEliasFano" end time: Mar 26 12:54 GMT
+"TestEliasFano" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/2 Testing: TestGolombRice
+2/2 Test: TestGolombRice
+Command: "/Users/elijah/Desktop/diss/tests/test_golomb_rice"
+Directory: /Users/elijah/Desktop/diss/tests
+"TestGolombRice" start time: Mar 26 12:54 GMT
+Output:
+----------------------------------------------------------
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from GolombRiceTest
+[ RUN      ] GolombRiceTest.Encoding
+[       OK ] GolombRiceTest.Encoding (0 ms)
+[----------] 1 test from GolombRiceTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.14 sec
+----------------------------------------------------------
+Test Passed.
+"TestGolombRice" end time: Mar 26 12:54 GMT
+"TestGolombRice" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Mar 26 12:54 GMT

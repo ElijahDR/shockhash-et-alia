@@ -1,18 +1,16 @@
 #ifndef ELIAS_FANO_H
 #define ELIAS_FANO_H
 
-#include <vector>
+#include "common/utils.h"
 
-struct GolombEncodedData
-{
-    std::vector<bool> fixed;
-    std::vector<bool> unary;
+struct EliasFanoEncodedData {
+    std::vector<bool> upper;
+    std::vector<bool> lower;
+    uint32_t m;
 };
 
-GolombEncodedData golomb_rice_encode(uint32_t value, uint32_t r);
-uint32_t golomb_rice_decode(GolombEncodedData data, uint32_t r);
-uint32_t compute_golomb_rice_parameter(float p);
-uint32_t compute_grp_bijection(uint32_t m);
-uint32_t compute_grp_buckets(std::vector<uint32_t> sizes);
+// https://www.antoniomallia.it/sorted-integers-compression-with-elias-fano-encoding.html
+EliasFanoEncodedData elias_fano_encode(std::vector<uint32_t> data);
+std::vector<uint32_t> elias_fano_decode(EliasFanoEncodedData &data, uint32_t n);
 
 #endif

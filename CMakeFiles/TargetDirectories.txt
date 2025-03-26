@@ -1,3 +1,13 @@
 /Users/elijah/Desktop/diss/CMakeFiles/hashing_algos.dir
+/Users/elijah/Desktop/diss/CMakeFiles/test.dir
 /Users/elijah/Desktop/diss/CMakeFiles/edit_cache.dir
 /Users/elijah/Desktop/diss/CMakeFiles/rebuild_cache.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/common_lib.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/test_elias_fano.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/run_test_elias_fano.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/test_golomb_rice.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/run_golomb_rice.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/run_all_tests.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/test.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/edit_cache.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/rebuild_cache.dir
