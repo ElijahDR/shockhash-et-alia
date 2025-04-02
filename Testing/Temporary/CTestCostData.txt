@@ -1,3 +1,8 @@
-TestEliasFano 2 0.0864975
-TestGolombRice 1 0.140367
+TestEliasFano 8 0
+TestGolombRice 8 0.00069249
+TestBROADWORD 13 0.00042075
+TestELIAS_FANO 14 0.000368134
+TestGOLOMB_RICE 14 0.000353777
+TestBroadword 7 0.00073253
 ---
+TestEliasFano

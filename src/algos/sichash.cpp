@@ -46,7 +46,7 @@ uint32_t SicHash::hash(const std::string &key) {
     // int hash_index = hash_index_map_raw_[key];
     DEBUG_LOG("Hash Index for key " << key << ": " << hash_index);
     int table_size = bucket_sizes_[bucket] / alpha_;
-    int hash_table_index = murmur32(key, bucket_seed + hash_index) % table_size;
+    int hash_table_index = murmur32(key, (bucket_seed * 8) + hash_index) % table_size;
     DEBUG_LOG("Hash Table Index for key " << key << ": " << hash_table_index);
     DEBUG_LOG("Overall Hash for key" << key << ": " << global_index + hash_table_index);
 
@@ -122,7 +122,7 @@ void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
             //     std::cout << "Inserted " << i << " elements" << std::endl;
             // }
             DEBUG_LOG("Seed: " << seed << " index: " << i);
-            insert = insert_into_hash_table(bucket[i], seed, table);
+            insert = insert_into_hash_table(bucket[i], seed * 8, table);
             DEBUG_LOG("Current Hash Table: " << table);
             DEBUG_LOG("Current Rattle Counters: " << rattle_counters_);
             if (!insert) break;

@@ -2,6 +2,7 @@
 #include "algos/sichash.h"
 #include "common/utils.h"
 #include "common/murmurhash.h"
+#include "common/broadword.h"
 #include <iostream>
 #include <vector>
 #include <set>
@@ -68,7 +69,7 @@ bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_fun
     }
 }
 
-void run_recsplit_random_keys(int n=1000, uint32_t bucket_size=100, uint32_t leaf_size=8) {
+void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
     std::vector<std::string> keys = generate_random_keys(n);
 
     RecSplit recsplit(bucket_size, leaf_size);
@@ -149,10 +150,21 @@ int main()
 
     // run_sichash_test_basic();
     // run_sichash_random_strings(1000000);
-    run_recsplit_random_keys();
-    run_sichash_random_keys();
+    // run_recsplit_random_keys();
+    // run_sichash_random_keys();
     // run_sichash_build();
     // run_mumur_64();
+
+    std::vector<uint64_t> data = {0x0F0F0F0F0F0F0F0F, 0xF0F0F0F0F0F0F0F0};
+    std::cout << data << std::endl;
+    std::vector<uint64_t> counts;
+    generate_rank_counts(data, counts);
+    size_t p = 5;
+    uint64_t result = rank9(data, counts, p);
+    std::cout << "Result of Rank 9: " << result << std::endl;
+    p = 3;
+    result = rank9(data, counts, p);
+    std::cout << "Result of Rank 9: " << result << std::endl;
 
     return 0;
 }

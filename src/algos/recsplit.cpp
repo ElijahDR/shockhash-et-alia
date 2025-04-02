@@ -73,7 +73,6 @@ void RecSplit::space() {
     std::cout << "====> Total Splitting Tree: " << special_string(std::to_string(total_splitting_tree_bits), ConsoleColour::Bold) << " bits" << std::endl;
 
     
-
     std::cout << "*************************** Bucket Data ****************************" << std::endl;
 }
 
@@ -92,6 +91,7 @@ uint32_t RecSplit::hash(const std::string &key) {
 
         ones_count++;
     }
+
     size_t fixed_pointer = bucket_fixed_prefixes_[bucket];
     size_t size = bucket_sizes_[bucket];
     DEBUG_LOG("Bucket Index: " << bucket);
@@ -407,8 +407,8 @@ std::vector<std::vector<SubtreeData>> generate_all_grp() {
                 };
             }
 
-            std::cout << "Bucket Size: " << bucket_size << " Leaf Size: " << leaf_index << std::endl;
-            std::cout << grp_table[bucket_size][leaf_index] << std::endl;
+            // std::cout << "Bucket Size: " << bucket_size << " Leaf Size: " << leaf_index << std::endl;
+            // std::cout << grp_table[bucket_size][leaf_index] << std::endl;
         }
     }
 

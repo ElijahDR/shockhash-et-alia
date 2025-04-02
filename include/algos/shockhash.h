@@ -19,8 +19,6 @@ public:
     std::string name() override { return "ShockHash"; };
 
 private:
-
-
     std::vector<std::string> keys_;
 };
 

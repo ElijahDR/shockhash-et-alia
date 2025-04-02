@@ -78,5 +78,7 @@ set(CMAKE_DEPEND_INFO_FILES
   "tests/CMakeFiles/run_test_elias_fano.dir/DependInfo.cmake"
   "tests/CMakeFiles/test_golomb_rice.dir/DependInfo.cmake"
   "tests/CMakeFiles/run_golomb_rice.dir/DependInfo.cmake"
+  "tests/CMakeFiles/test_broadword.dir/DependInfo.cmake"
+  "tests/CMakeFiles/run_broadword.dir/DependInfo.cmake"
   "tests/CMakeFiles/run_all_tests.dir/DependInfo.cmake"
   )

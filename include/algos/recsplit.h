@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "common/utils.h"
 #include "algos/hash_function.h"
 
 struct EncodedSplittingTree { 
@@ -24,6 +25,34 @@ struct SubtreeData {
     uint16_t fixed_code_length;
     uint16_t unary_code_length;
 };
+
+// Struct printings
+inline std::ostream& operator<<(std::ostream& os, const SubtreeData& data) {
+    os << "GolombRiceData {\n"
+       << "  parameter: " << static_cast<int>(data.parameter) << "\n"
+       << "  nodes: " << data.nodes << "\n"
+       << "  fixed_code_length: " << data.fixed_code_length << "\n"
+       << "  unary_code_legnth: " << data.unary_code_length << "\n"
+       << "}";
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const FanoutData &data) {
+    os << "FanoutData {\n"
+       << "  size: " << data.size << "\n"
+       << "  fanout: " << data.fanout << "\n"
+       << " part_sizes: " << data.part_sizes << "\n"
+       << "}";
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const EncodedSplittingTree &data) {
+    os << "EncodedSplittingTree {\n"
+       << "  Fixed: " << data.fixed << "\n"
+       << "  Unary: " << data.unary << "\n";
+    os << "}";
+    return os;
+}
 
 
 class RecSplit : public HashFunction {

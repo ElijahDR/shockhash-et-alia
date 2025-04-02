@@ -4,7 +4,6 @@
 #include <iostream>
 #include <cmath>
 #include <string>
-#include "algos/recsplit.h"
 #include "algos/sichash.h"
 
 #ifdef DEBUG
@@ -82,6 +81,8 @@ inline std::string special_string(const std::string &msg, ConsoleColour colour) 
     return "\033[" + std::to_string((int)colour) + "m" + msg + "\033[0m";
 }
 
+
+
 // Vector printing
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::vector<T> &data) {
@@ -102,33 +103,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::map<K, V> &data) {
     return os;
 }
 
-// Struct printings
-inline std::ostream& operator<<(std::ostream& os, const SubtreeData& data) {
-    os << "GolombRiceData {\n"
-       << "  parameter: " << static_cast<int>(data.parameter) << "\n"
-       << "  nodes: " << data.nodes << "\n"
-       << "  fixed_code_length: " << data.fixed_code_length << "\n"
-       << "  unary_code_legnth: " << data.unary_code_length << "\n"
-       << "}";
-    return os;
-}
 
-inline std::ostream& operator<<(std::ostream& os, const FanoutData &data) {
-    os << "FanoutData {\n"
-       << "  size: " << data.size << "\n"
-       << "  fanout: " << data.fanout << "\n"
-       << " part_sizes: " << data.part_sizes << "\n"
-       << "}";
-    return os;
-}
-
-inline std::ostream& operator<<(std::ostream& os, const EncodedSplittingTree &data) {
-    os << "EncodedSplittingTree {\n"
-       << "  Fixed: " << data.fixed << "\n"
-       << "  Unary: " << data.unary << "\n";
-    os << "}";
-    return os;
-}
 
 template <typename T>
 void append_vector_to_vector(std::vector<T> &parent, const std::vector<T> &child) {

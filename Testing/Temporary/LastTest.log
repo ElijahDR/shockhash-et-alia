@@ -1,35 +1,44 @@
-Start testing: Mar 26 12:54 GMT
+Start testing: Mar 27 13:46 GMT
 ----------------------------------------------------------
-1/2 Testing: TestEliasFano
-1/2 Test: TestEliasFano
+1/3 Testing: TestEliasFano
+1/3 Test: TestEliasFano
 Command: "/Users/elijah/Desktop/diss/tests/test_elias_fano"
 Directory: /Users/elijah/Desktop/diss/tests
-"TestEliasFano" start time: Mar 26 12:54 GMT
+"TestEliasFano" start time: Mar 27 13:46 GMT
 Output:
 ----------------------------------------------------------
 [==========] Running 1 test from 1 test suite.
 [----------] Global test environment set-up.
 [----------] 1 test from EliasFanoTest
 [ RUN      ] EliasFanoTest.Encoding
-[       OK ] EliasFanoTest.Encoding (0 ms)
+/Users/elijah/Desktop/diss/tests/common/elias_fano.test.cpp:10: Failure
+Expected equality of these values:
+  0
+  1
+
+[  FAILED  ] EliasFanoTest.Encoding (0 ms)
 [----------] 1 test from EliasFanoTest (0 ms total)
 
 [----------] Global test environment tear-down
 [==========] 1 test from 1 test suite ran. (0 ms total)
-[  PASSED  ] 1 test.
+[  PASSED  ] 0 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] EliasFanoTest.Encoding
+
+ 1 FAILED TEST
 <end of output>
-Test time =   0.17 sec
+Test time =   0.01 sec
 ----------------------------------------------------------
-Test Passed.
-"TestEliasFano" end time: Mar 26 12:54 GMT
+Test Failed.
+"TestEliasFano" end time: Mar 27 13:46 GMT
 "TestEliasFano" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-2/2 Testing: TestGolombRice
-2/2 Test: TestGolombRice
+2/3 Testing: TestGolombRice
+2/3 Test: TestGolombRice
 Command: "/Users/elijah/Desktop/diss/tests/test_golomb_rice"
 Directory: /Users/elijah/Desktop/diss/tests
-"TestGolombRice" start time: Mar 26 12:54 GMT
+"TestGolombRice" start time: Mar 27 13:46 GMT
 Output:
 ----------------------------------------------------------
 [==========] Running 1 test from 1 test suite.
@@ -43,11 +52,29 @@ Output:
 [==========] 1 test from 1 test suite ran. (0 ms total)
 [  PASSED  ] 1 test.
 <end of output>
-Test time =   0.14 sec
+Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"TestGolombRice" end time: Mar 26 12:54 GMT
+"TestGolombRice" end time: Mar 27 13:46 GMT
 "TestGolombRice" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Mar 26 12:54 GMT
+3/3 Testing: TestBroadword
+3/3 Test: TestBroadword
+Command: "/Users/elijah/Desktop/diss/tests/test_broadword"
+Directory: /Users/elijah/Desktop/diss/tests
+"TestBroadword" start time: Mar 27 13:46 GMT
+Output:
+----------------------------------------------------------
+[==========] Running 0 tests from 0 test suites.
+[==========] 0 tests from 0 test suites ran. (0 ms total)
+[  PASSED  ] 0 tests.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"TestBroadword" end time: Mar 27 13:46 GMT
+"TestBroadword" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Mar 27 13:46 GMT

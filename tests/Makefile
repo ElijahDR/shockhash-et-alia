@@ -197,6 +197,34 @@ run_golomb_rice/fast:
 .PHONY : run_golomb_rice/fast
 
 # Convenience name for target.
+tests/CMakeFiles/test_broadword.dir/rule:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_broadword.dir/rule
+.PHONY : tests/CMakeFiles/test_broadword.dir/rule
+
+# Convenience name for target.
+test_broadword: tests/CMakeFiles/test_broadword.dir/rule
+.PHONY : test_broadword
+
+# fast build rule for target.
+test_broadword/fast:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_broadword.dir/build.make tests/CMakeFiles/test_broadword.dir/build
+.PHONY : test_broadword/fast
+
+# Convenience name for target.
+tests/CMakeFiles/run_broadword.dir/rule:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/run_broadword.dir/rule
+.PHONY : tests/CMakeFiles/run_broadword.dir/rule
+
+# Convenience name for target.
+run_broadword: tests/CMakeFiles/run_broadword.dir/rule
+.PHONY : run_broadword
+
+# fast build rule for target.
+run_broadword/fast:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_broadword.dir/build.make tests/CMakeFiles/run_broadword.dir/build
+.PHONY : run_broadword/fast
+
+# Convenience name for target.
 tests/CMakeFiles/run_all_tests.dir/rule:
 	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/run_all_tests.dir/rule
 .PHONY : tests/CMakeFiles/run_all_tests.dir/rule
@@ -209,6 +237,30 @@ run_all_tests: tests/CMakeFiles/run_all_tests.dir/rule
 run_all_tests/fast:
 	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_all_tests.dir/build.make tests/CMakeFiles/run_all_tests.dir/build
 .PHONY : run_all_tests/fast
+
+__/src/common/broadword.o: __/src/common/broadword.cpp.o
+.PHONY : __/src/common/broadword.o
+
+# target to build an object file
+__/src/common/broadword.cpp.o:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/broadword.cpp.o
+.PHONY : __/src/common/broadword.cpp.o
+
+__/src/common/broadword.i: __/src/common/broadword.cpp.i
+.PHONY : __/src/common/broadword.i
+
+# target to preprocess a source file
+__/src/common/broadword.cpp.i:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/broadword.cpp.i
+.PHONY : __/src/common/broadword.cpp.i
+
+__/src/common/broadword.s: __/src/common/broadword.cpp.s
+.PHONY : __/src/common/broadword.s
+
+# target to generate assembly for a file
+__/src/common/broadword.cpp.s:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/broadword.cpp.s
+.PHONY : __/src/common/broadword.cpp.s
 
 __/src/common/elias_fano.o: __/src/common/elias_fano.cpp.o
 .PHONY : __/src/common/elias_fano.o
@@ -257,6 +309,30 @@ __/src/common/golomb_rice.s: __/src/common/golomb_rice.cpp.s
 __/src/common/golomb_rice.cpp.s:
 	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/golomb_rice.cpp.s
 .PHONY : __/src/common/golomb_rice.cpp.s
+
+common/broadword.test.o: common/broadword.test.cpp.o
+.PHONY : common/broadword.test.o
+
+# target to build an object file
+common/broadword.test.cpp.o:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_broadword.dir/build.make tests/CMakeFiles/test_broadword.dir/common/broadword.test.cpp.o
+.PHONY : common/broadword.test.cpp.o
+
+common/broadword.test.i: common/broadword.test.cpp.i
+.PHONY : common/broadword.test.i
+
+# target to preprocess a source file
+common/broadword.test.cpp.i:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_broadword.dir/build.make tests/CMakeFiles/test_broadword.dir/common/broadword.test.cpp.i
+.PHONY : common/broadword.test.cpp.i
+
+common/broadword.test.s: common/broadword.test.cpp.s
+.PHONY : common/broadword.test.s
+
+# target to generate assembly for a file
+common/broadword.test.cpp.s:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_broadword.dir/build.make tests/CMakeFiles/test_broadword.dir/common/broadword.test.cpp.s
+.PHONY : common/broadword.test.cpp.s
 
 common/elias_fano.test.o: common/elias_fano.test.cpp.o
 .PHONY : common/elias_fano.test.o
@@ -316,17 +392,25 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... test"
 	@echo "... run_all_tests"
+	@echo "... run_broadword"
 	@echo "... run_golomb_rice"
 	@echo "... run_test_elias_fano"
 	@echo "... common_lib"
+	@echo "... test_broadword"
 	@echo "... test_elias_fano"
 	@echo "... test_golomb_rice"
+	@echo "... __/src/common/broadword.o"
+	@echo "... __/src/common/broadword.i"
+	@echo "... __/src/common/broadword.s"
 	@echo "... __/src/common/elias_fano.o"
 	@echo "... __/src/common/elias_fano.i"
 	@echo "... __/src/common/elias_fano.s"
 	@echo "... __/src/common/golomb_rice.o"
 	@echo "... __/src/common/golomb_rice.i"
 	@echo "... __/src/common/golomb_rice.s"
+	@echo "... common/broadword.test.o"
+	@echo "... common/broadword.test.i"
+	@echo "... common/broadword.test.s"
 	@echo "... common/elias_fano.test.o"
 	@echo "... common/elias_fano.test.i"
 	@echo "... common/elias_fano.test.s"

@@ -487,7 +487,6 @@ tests/CMakeFiles/test_elias_fano.dir/common/elias_fano.test.cpp.o: tests/common/
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stdint.h \
   include/algos/hash_function.h \
-  include/algos/recsplit.h \
   include/algos/sichash.h \
   include/common/elias_fano.h \
   include/common/utils.h \
@@ -545,8 +544,6 @@ tests/CMakeFiles/test_elias_fano.dir/common/elias_fano.test.cpp.o: tests/common/
 include/common/utils.h:
 
 include/algos/sichash.h:
-
-include/algos/recsplit.h:
 
 include/algos/hash_function.h:
 

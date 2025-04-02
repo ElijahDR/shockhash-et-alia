@@ -205,6 +205,32 @@ run_golomb_rice/fast:
 .PHONY : run_golomb_rice/fast
 
 #=============================================================================
+# Target rules for targets named test_broadword
+
+# Build rule for target.
+test_broadword: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_broadword
+.PHONY : test_broadword
+
+# fast build rule for target.
+test_broadword/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_broadword.dir/build.make tests/CMakeFiles/test_broadword.dir/build
+.PHONY : test_broadword/fast
+
+#=============================================================================
+# Target rules for targets named run_broadword
+
+# Build rule for target.
+run_broadword: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_broadword
+.PHONY : run_broadword
+
+# fast build rule for target.
+run_broadword/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_broadword.dir/build.make tests/CMakeFiles/run_broadword.dir/build
+.PHONY : run_broadword/fast
+
+#=============================================================================
 # Target rules for targets named run_all_tests
 
 # Build rule for target.
@@ -264,6 +290,30 @@ src/algos/sichash.s: src/algos/sichash.cpp.s
 src/algos/sichash.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.s
 .PHONY : src/algos/sichash.cpp.s
+
+src/common/broadword.o: src/common/broadword.cpp.o
+.PHONY : src/common/broadword.o
+
+# target to build an object file
+src/common/broadword.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/common/broadword.cpp.o
+.PHONY : src/common/broadword.cpp.o
+
+src/common/broadword.i: src/common/broadword.cpp.i
+.PHONY : src/common/broadword.i
+
+# target to preprocess a source file
+src/common/broadword.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/common/broadword.cpp.i
+.PHONY : src/common/broadword.cpp.i
+
+src/common/broadword.s: src/common/broadword.cpp.s
+.PHONY : src/common/broadword.s
+
+# target to generate assembly for a file
+src/common/broadword.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/common/broadword.cpp.s
+.PHONY : src/common/broadword.cpp.s
 
 src/common/elias_fano.o: src/common/elias_fano.cpp.o
 .PHONY : src/common/elias_fano.o
@@ -395,10 +445,12 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... test"
 	@echo "... run_all_tests"
+	@echo "... run_broadword"
 	@echo "... run_golomb_rice"
 	@echo "... run_test_elias_fano"
 	@echo "... common_lib"
 	@echo "... hashing_algos"
+	@echo "... test_broadword"
 	@echo "... test_elias_fano"
 	@echo "... test_golomb_rice"
 	@echo "... src/algos/recsplit.o"
@@ -407,6 +459,9 @@ help:
 	@echo "... src/algos/sichash.o"
 	@echo "... src/algos/sichash.i"
 	@echo "... src/algos/sichash.s"
+	@echo "... src/common/broadword.o"
+	@echo "... src/common/broadword.i"
+	@echo "... src/common/broadword.s"
 	@echo "... src/common/elias_fano.o"
 	@echo "... src/common/elias_fano.i"
 	@echo "... src/common/elias_fano.s"

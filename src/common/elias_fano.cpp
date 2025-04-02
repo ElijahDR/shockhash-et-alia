@@ -39,7 +39,6 @@ std::vector<uint32_t> elias_fano_decode(EliasFanoEncodedData &data, uint32_t n) 
             uint32_t lower = 0;
             for (int j = 0; j < l; j++) {
                 lower |= data.lower[count * l + j];
-                lower << 1;
             }
             data_decoded.push_back((upper << l) | lower);
             count += 1;
