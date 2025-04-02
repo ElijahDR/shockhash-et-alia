@@ -101,15 +101,26 @@
 
 TEST(SimpleSelectTest, AllSetBitSearch) {
     std::vector<uint64_t> data = {0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF};
-    SimpleSelect simple(data, 64, 4);
+    SimpleSelect simple;
+    simple.build(data, 64, 4);
 
     uint64_t result = simple.select(3);
     EXPECT_EQ(result, 2);
 }
 
+TEST(SimpleSelectTest, AllSetZero) {
+    std::vector<uint64_t> data = {0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF};
+    SimpleSelect simple;
+    simple.build(data, 64, 4);
+
+    uint64_t result = simple.select(0);
+    EXPECT_EQ(result, 0);
+}
+
 TEST(SimpleSelectTest, AllSetSecondarySearch) {
     std::vector<uint64_t> data = {0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF};
-    SimpleSelect simple(data, 64, 4);
+    SimpleSelect simple;
+    simple.build(data, 64, 4);
 
     uint64_t result = simple.select(13);
     EXPECT_EQ(result, 12);
@@ -117,7 +128,8 @@ TEST(SimpleSelectTest, AllSetSecondarySearch) {
 
 TEST(SimpleSelectTest, AllSetPrimarySearch) {
     std::vector<uint64_t> data = {0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF};
-    SimpleSelect simple(data, 64, 4);
+    SimpleSelect simple;
+    simple.build(data, 64, 4);
 
     uint64_t result = simple.select(65);
     EXPECT_EQ(result, 64);
@@ -125,7 +137,8 @@ TEST(SimpleSelectTest, AllSetPrimarySearch) {
 
 TEST(SimpleSelectTest, AllSetPrimarySearchSecondary) {
     std::vector<uint64_t> data = {0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF};
-    SimpleSelect simple(data, 64, 4);
+    SimpleSelect simple;
+    simple.build(data, 64, 4);
 
     uint64_t result = simple.select(111);
     EXPECT_EQ(result, 110);
@@ -133,21 +146,24 @@ TEST(SimpleSelectTest, AllSetPrimarySearchSecondary) {
 
 TEST(SimpleSelectTest, AlternatingBitsBitSearch) {
     std::vector<uint64_t> data = {0x0F0F0F0F0F0F0F0F, 0x0F0F0F0F0F0F0F0F};
-    SimpleSelect simple(data, 32, 2);
+    SimpleSelect simple;
+    simple.build(data, 64, 4);
     uint64_t result = simple.select(1);
     EXPECT_EQ(result, 0);
 }
 
 TEST(SimpleSelectTest, AlternatingBitsSecondarySearch) {
     std::vector<uint64_t> data = {0x0F0F0F0F0F0F0F0F, 0x0F0F0F0F0F0F0F0F};
-    SimpleSelect simple(data, 64, 4);
+    SimpleSelect simple;
+    simple.build(data, 64, 4);
     uint64_t result = simple.select(1);
     EXPECT_EQ(result, 0);
 }
 
 TEST(SimpleSelectTest, AlternatingBits) {
     std::vector<uint64_t> data = {0x0F0F0F0F0F0F0F0F, 0x0F0F0F0F0F0F0F0F};
-    SimpleSelect simple(data, 64, 4);
+    SimpleSelect simple;
+    simple.build(data, 64, 4);
     uint64_t result = simple.select(3);
     EXPECT_EQ(result, 2);
     result = simple.select(5);

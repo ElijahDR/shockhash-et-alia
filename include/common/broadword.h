@@ -9,8 +9,10 @@ const uint64_t L8 = 0x0101010101010101;
 // https://vigna.di.unimi.it/ftp/papers/Broadword.pdf
 class SimpleSelect {
 public:
-    SimpleSelect(std::vector<uint64_t> &data, uint64_t L, uint64_t M);
-    SimpleSelect(std::vector<bool> &data, uint64_t L, uint64_t M);
+    SimpleSelect();
+
+    void build(std::vector<uint64_t> &data, uint64_t L, uint64_t M);
+    void build(std::vector<bool> &data, uint64_t L, uint64_t M);
 
     uint64_t select(uint64_t r);
 
@@ -25,6 +27,7 @@ private:
     
     uint64_t L_;
     uint64_t M_;
+    uint64_t LM_ratio_;
     uint64_t L_spacing_;
     uint64_t M_spacing_;
 };

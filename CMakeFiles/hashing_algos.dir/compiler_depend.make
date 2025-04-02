@@ -463,6 +463,7 @@ CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o: src/algos/recsplit.cpp \
   include/algos/hash_function.h \
   include/algos/recsplit.h \
   include/algos/sichash.h \
+  include/common/broadword.h \
   include/common/golomb_rice.h \
   include/common/murmurhash.h \
   include/common/utils.h
@@ -3722,8 +3723,6 @@ src/common/utils.cpp:
 
 src/common/elias_fano.cpp:
 
-include/common/broadword.h:
-
 src/common/broadword.cpp:
 
 src/algos/sichash.cpp:
@@ -3733,6 +3732,8 @@ include/common/utils.h:
 include/common/murmurhash.h:
 
 include/common/golomb_rice.h:
+
+include/common/broadword.h:
 
 include/algos/sichash.h:
 

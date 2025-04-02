@@ -3,7 +3,11 @@
 #include <iostream>
 #include <bit>
 
-SimpleSelect::SimpleSelect(std::vector<uint64_t> &data, uint64_t L, uint64_t M) {
+SimpleSelect::SimpleSelect() {
+    return;
+}
+
+void SimpleSelect::build(std::vector<uint64_t> &data, uint64_t L, uint64_t M) {
     L_ = L;
     M_ = M;
     data_ = data;
@@ -11,23 +15,31 @@ SimpleSelect::SimpleSelect(std::vector<uint64_t> &data, uint64_t L, uint64_t M) 
     DEBUG_LOG("Inventories Built");
 }
 
-SimpleSelect::SimpleSelect(std::vector<bool> &data, uint64_t L, uint64_t M) {
+void SimpleSelect::build(std::vector<bool> &data, uint64_t L, uint64_t M) {
     L_ = L;
     M_ = M;
 
+    DEBUG_LOG("Bool Data: " << data);
+    DEBUG_LOG("Data Size: " << data.size());
     uint64_t n_words = std::ceil((double)data.size() / 64);
-    std::vector<uint64_t> data_(n_words, 0);
+    DEBUG_LOG("N Words: " << n_words);
+    // std::vector<uint64_t> data_(n_words, 0);
     for (int w = 0; w < n_words; w++) {
         uint64_t word = 0;
         for (int i = 0; i < 64; i++) {
+            DEBUG_LOG("Word: " << (std::bitset<64>)word);
             uint64_t index = (64 * w) + i;
+            DEBUG_LOG("Index: " << index);
             if (index > data.size()) {
                 break;
             }
-
-            word &= (data[index] << i);
+            
+            uint64_t mask = (uint64_t)data[index] << i;
+            DEBUG_LOG("Mask: " << (std::bitset<64>)mask);
+            // DEBUG_LOG("Word and Mask: " << (word | mask));
+            word |= mask;
         }
-        data_[w] = word;
+        data_.push_back(word);
     }
 
     build_inventories();
@@ -49,6 +61,7 @@ void SimpleSelect::build_inventories() {
 
     L_spacing_ = std::ceil((L_ * set_bits) / total_bits);
     M_spacing_ = std::ceil((M_ * set_bits) / total_bits);
+    LM_ratio_ = L_spacing_ / M_spacing_;
     DEBUG_LOG("L Spacing: " << L_spacing_);
     DEBUG_LOG("M Spacing: " << M_spacing_);
 
@@ -79,19 +92,30 @@ void SimpleSelect::build_inventories() {
 }
 
 uint64_t SimpleSelect::select(uint64_t r) {
+    DEBUG_LOG("Selecting rank: " << r);
+    for (auto w : data_) {
+        DEBUG_LOG("Word: " << (std::bitset<64>)w);
+    }
+    if (r == 0) { 
+        return 0;
+    }
     uint64_t primary_index = std::floor((float)r / L_spacing_);
     uint64_t previous_primary_index = primary_index;
     DEBUG_LOG("Primary Index: " << primary_index);
     uint64_t current_rank = primary_inventory[primary_index];
+    int gap = 1;
     DEBUG_LOG("Current Rank: " << current_rank);
-    while (current_rank <= r) {
+    while (current_rank < r) {
         primary_index++;
         current_rank = primary_inventory[primary_index];
-        if (primary_inventory[primary_index] != primary_inventory[primary_index-1]) {
-            previous_primary_index = primary_index == 0 ? 0 : primary_index-1;
+        if (primary_inventory[primary_index-1] != primary_inventory[primary_index-2]) {
+            gap = 1;
+        } else {
+            gap++;
         }
+        DEBUG_LOG("Gap: " << gap);
     }
-    primary_index = previous_primary_index;
+    primary_index = primary_index < gap ? 0 : primary_index - gap;
     current_rank = primary_inventory[primary_index];
     DEBUG_LOG("Primary Index: " << primary_index);
     DEBUG_LOG("Current Rank: " << current_rank);
@@ -101,14 +125,14 @@ uint64_t SimpleSelect::select(uint64_t r) {
     if (rank_left == 0) {
         return (primary_index * L_spacing_);
     }
-    uint64_t secondary_index = 16 * primary_index;
+    uint64_t secondary_index = LM_ratio_ * primary_index;
     uint64_t previous_secondary_index = secondary_index;
     DEBUG_LOG("Secondary Index: " << secondary_index);
     uint64_t secondary_rank = secondary_inventory[secondary_index];
     DEBUG_LOG("Secondary Rank: " << secondary_rank);
-    int gap = 1;
-
-    while (secondary_rank < rank_left && secondary_index < 16 * (primary_index+1)) {
+    
+    gap = 1;
+    while (secondary_rank < rank_left && secondary_index < LM_ratio_ * (primary_index+1)) {
         secondary_index++;
         DEBUG_LOG("Secondary Index: " << secondary_index);
         secondary_rank = secondary_inventory[secondary_index];
@@ -127,7 +151,7 @@ uint64_t SimpleSelect::select(uint64_t r) {
 
     rank_left -= secondary_rank;
 
-    uint64_t current_global_index = (primary_index * L_spacing_) + (secondary_index - 16 * primary_index) * M_spacing_;
+    uint64_t current_global_index = (primary_index * L_spacing_) + (secondary_index - LM_ratio_ * primary_index) * M_spacing_;
     uint64_t bit_index = bit_search(current_global_index, rank_left);
 
     return bit_index;
@@ -146,7 +170,7 @@ uint64_t SimpleSelect::bit_search(uint64_t curr_pos, uint64_t r) {
 
     uint64_t word = (data_[word_index] & ~(((uint64_t)1)));
     DEBUG_LOG("Masked Word: " << (std::bitset<64>)word);
-    word = (word & ~(((uint64_t)1 << (bit_index+1)) - 1));
+    word = (word & (uint64_t)~(((uint128_t)1 << (bit_index+1)) - 1));
     DEBUG_LOG("Masked Word: " << (std::bitset<64>)word);
 
     while (r > 0) {
@@ -188,16 +212,16 @@ inline uint64_t popcount(uint64_t x) {
 }
 
 void generate_rank_counts(std::vector<uint64_t> &data, std::vector<uint64_t> &counts) {
-    std::cout << data << std::endl;
+    // std::cout << data << std::endl;
     size_t basic_blocks = std::ceil((float)data.size() / 8);
-    std::cout << data.size() << std::endl;
+    // std::cout << data.size() << std::endl;
     uint64_t current_rank = 0;
 
     for (int i = 0; i < basic_blocks; i++) {
         // First Level Count
         counts.push_back(current_rank);
         std::bitset<9> current_rank_bin(current_rank);
-        std::cout << "First Count: " << current_rank_bin << std::endl;
+        // std::cout << "First Count: " << current_rank_bin << std::endl;
 
         uint64_t second_count = 0;
         // Second Level Count
@@ -206,10 +230,10 @@ void generate_rank_counts(std::vector<uint64_t> &data, std::vector<uint64_t> &co
             size_t data_index = (8 * i) + k - 1;
             total_count += data_index > data.size() ? 0 : popcount(data[data_index]);
             std::bitset<9> total_count_bin(total_count);
-            std::cout << "Total Count: " << total_count_bin << std::endl;
+            // std::cout << "Total Count: " << total_count_bin << std::endl;
             second_count |= total_count << (9 * (k - 1));
             std::bitset<64> second_count_bin(second_count);
-            std::cout << "Second Count: " << second_count_bin << std::endl;
+            // std::cout << "Second Count: " << second_count_bin << std::endl;
         }
         counts.push_back(second_count);
         current_rank += total_count;
@@ -230,7 +254,7 @@ uint64_t rank9(std::vector<uint64_t> &data, std::vector<uint64_t> &counts, size_
     size_t t = (s_i) - 1;
 
     size_t count_index = std::floor((float)w / 8);
-    std::cout << "Counts: " << counts << std::endl;
+    // std::cout << "Counts: " << counts << std::endl;
     uint64_t first_count = counts[count_index];
     uint64_t second_count = counts[count_index+1];
 

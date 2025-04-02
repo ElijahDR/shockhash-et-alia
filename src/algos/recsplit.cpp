@@ -7,7 +7,7 @@
 #include <iostream>
 #include <random>
 
-const uint32_t BUCKET_SEED = 5;
+const uint32_t BUCKET_SEED = 12;
 
 
 RecSplit::RecSplit(uint32_t bucket_size, uint32_t leaf_size)
@@ -43,6 +43,9 @@ void RecSplit::build(const std::vector<std::string> &keys) {
     total_bits += bucket_unary_prefixes_.size() * 32;
     total_bits += bucket_fixed_prefixes_.size() * 32;
 
+    splitting_tree_select_.unary.build(splitting_tree_.unary, 128, 8);
+    splitting_tree_select_.fixed = splitting_tree_.fixed;
+
     total_bits += bucket_sizes_.size() * 32;
 
     float bits_per_key = (float)total_bits / keys_.size();
@@ -76,13 +79,23 @@ void RecSplit::space() {
     std::cout << "*************************** Bucket Data ****************************" << std::endl;
 }
 
+uint64_t RecSplit::space_bits() {
+    uint64_t total_bits = splitting_tree_.fixed.size() + splitting_tree_.unary.size();
+    total_bits += bucket_node_prefixes_.size() * 32;
+    total_bits += bucket_unary_prefixes_.size() * 32;
+    total_bits += bucket_fixed_prefixes_.size() * 32;
+    total_bits += bucket_sizes_.size() * 32;
+
+    return total_bits;
+}
+
 uint32_t RecSplit::hash(const std::string &key) {
     DEBUG_LOG(splitting_tree_);
     DEBUG_LOG("Finding Hash for Key: " << key);
     uint32_t bucket = assign_bucket(key, buckets_.size());
     size_t node_count = bucket_node_prefixes_[bucket];
-    size_t unary_pointer = 0;
     size_t ones_count = 0;
+    size_t unary_pointer = 0;
     while (ones_count < bucket_unary_prefixes_[bucket]) {
         while (splitting_tree_.unary[unary_pointer] != 1) {
             unary_pointer++;
@@ -91,6 +104,13 @@ uint32_t RecSplit::hash(const std::string &key) {
 
         ones_count++;
     }
+    ones_count = bucket_unary_prefixes_[bucket];
+    size_t unary_pointer_select = splitting_tree_select_.unary.select(bucket_unary_prefixes_[bucket]);
+    if (bucket_unary_prefixes_[bucket] > 0) {
+        unary_pointer_select++;
+    }
+    DEBUG_LOG("Unary Pointer: " << unary_pointer);
+    DEBUG_LOG("Unary Pointer Select: " << unary_pointer_select);
 
     size_t fixed_pointer = bucket_fixed_prefixes_[bucket];
     size_t size = bucket_sizes_[bucket];
@@ -105,13 +125,21 @@ uint32_t RecSplit::hash(const std::string &key) {
         DEBUG_LOG("Fixed Pointer Before: " << fixed_pointer);
         DEBUG_LOG("Unary Pointer Before: " << unary_pointer);
         std::vector<bool> fixed, unary;
+        std::vector<bool> unary_select;
         while (splitting_tree_.unary[unary_pointer] != 1) {
             unary.push_back(splitting_tree_.unary[unary_pointer]);
             unary_pointer++;
         }
-        unary_pointer++;
+        unary_pointer++;        
+        while (splitting_tree_.unary[unary_pointer_select] != 1) {
+            unary_select.push_back(splitting_tree_.unary[unary_pointer_select]);
+            unary_pointer_select++;
+        }
+        unary_pointer_select++;
+
 
         unary.push_back(1);
+        unary_select.push_back(1);
 
         for (size_t i = 0; i < subtree_data.parameter; i++) {
             fixed.push_back(splitting_tree_.fixed[fixed_pointer]); 
@@ -122,7 +150,7 @@ uint32_t RecSplit::hash(const std::string &key) {
         DEBUG_LOG("Fixed Data Extracted: " << fixed);
         DEBUG_LOG("Unary Data Extracted: " << unary);
 
-        uint32_t seed = golomb_rice_decode(GolombEncodedData{fixed, unary}, subtree_data.parameter);
+        uint32_t seed = golomb_rice_decode(GolombEncodedData{fixed, unary_select}, subtree_data.parameter);
         DEBUG_LOG("Split Seed: " << seed);
 
         FanoutData fanout_data = calculate_fanout(size, leaf_size_);
@@ -139,29 +167,43 @@ uint32_t RecSplit::hash(const std::string &key) {
             node_count += subtree_data_skip.nodes;
         }
 
-        size_t ones_count = 0;
-        while (ones_count < nodes_to_skip) {
+        size_t curr_ones_counts = 0;
+        while (curr_ones_counts < nodes_to_skip) {
             while (splitting_tree_.unary[unary_pointer] != 1) {
                 unary_pointer++;
             }
             unary_pointer++;
-            ones_count++;
+            curr_ones_counts++;
         }
+        DEBUG_LOG("Ones Counts: " << ones_count);
+        DEBUG_LOG("Nodes to Skip: " << nodes_to_skip);
+        ones_count += nodes_to_skip + 1;
+        unary_pointer_select = splitting_tree_select_.unary.select(ones_count) + 1;
+
+        if (unary_pointer_select != unary_pointer) {
+            print_colour("Error??", ConsoleColour::Red);
+        }
+        DEBUG_LOG("Unary Pointer: " << unary_pointer);
+        DEBUG_LOG("Unary Pointer Select: " << unary_pointer_select);
+
         DEBUG_LOG("Node Count: " << node_count);
 
         size = fanout_data.part_sizes[split_index];
     }
 
+    if (unary_pointer_select != unary_pointer) {
+        print_colour("Error??", ConsoleColour::Red);
+    }
     SubtreeData subtree_data = grp_table_[size][leaf_size_-2];
     DEBUG_LOG("Subtree Data at Bijection: " << subtree_data);
     std::vector<bool> fixed, unary;
     DEBUG_LOG("Fixed Pointer Before: " << fixed_pointer);
     DEBUG_LOG("Unary Pointer Before: " << unary_pointer);
-    while (splitting_tree_.unary[unary_pointer] != 1) {
-        unary.push_back(splitting_tree_.unary[unary_pointer]);
-        unary_pointer++;
+    while (splitting_tree_.unary[unary_pointer_select] != 1) {
+        unary.push_back(splitting_tree_.unary[unary_pointer_select]);
+        unary_pointer_select++;
     }
-    unary_pointer++;
+    unary_pointer_select++;
     unary.push_back(1);
 
     for (size_t i = 0; i < subtree_data.parameter; i++) {

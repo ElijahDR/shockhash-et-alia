@@ -4,10 +4,12 @@
 #include "common/murmurhash.h"
 #include "common/broadword.h"
 #include <iostream>
+#include <unordered_map>
 #include <vector>
 #include <set>
 #include <fstream>
 #include <random>
+#include <chrono>
 
 const std::vector<std::string> test_keys = {"Hello", "World", "RecSplit", "Nelson", "Horatio",
     "Napoleon", "Alexander", "Victory", "Great", "Nile",
@@ -43,18 +45,50 @@ std::vector<std::string> generate_random_keys(int n) {
     return std::vector<std::string>(unique_keys.begin(), unique_keys.end());
 }
 
+std::vector<std::string> read_file(std::string file_name) {
+    std::ifstream inputFile(file_name);
+    std::vector<std::string> words;
+    std::string line;
+
+    while (getline(inputFile, line))
+    {
+        words.push_back(line);
+    }
+
+    inputFile.close();
+    return words;
+}
+
+void test_recsplit_file(std::string file_name) {
+    std::vector<std::string> words = read_file(file_name);
+    RecSplit recsplit(1000, 8);
+    recsplit.build(words);
+
+    std::cout << (double)recsplit.space_bits() / words.size() << " bits per key" << std::endl;
+}
+
 bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_function) {
+    auto start_time = std::chrono::steady_clock::now();
     hash_function.build(keys);
+    auto end_time = std::chrono::steady_clock::now();
+    auto duration = end_time - start_time;
+    auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    std::cout << "Build took: " << build_duration.count() << " ms" << std::endl;
     std::set<uint32_t> hashes;
     int collisions = 0;
+    start_time = std::chrono::steady_clock::now();
     for (auto key : keys) {
         uint32_t hash = hash_function.hash(key);
-        if (hashes.contains(hash)) {
-            print_colour(key + " collided with another", ConsoleColour::Red);
-            collisions++;
-        }
-        hashes.insert(hash);
+        // if (hashes.contains(hash)) {
+        //     print_colour(key + " collided with another", ConsoleColour::Red);
+        //     collisions++;
+        // }
+        // hashes.insert(hash);
     }
+    end_time = std::chrono::steady_clock::now();
+    duration = end_time - start_time;
+    auto hashing_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    std::cout << "Hashing took: " << hashing_duration.count() << " ms" << std::endl;
 
     if (collisions == 0) {
         if (*hashes.rbegin() == keys.size()) {
@@ -72,6 +106,7 @@ bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_fun
 void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
     std::vector<std::string> keys = generate_random_keys(n);
 
+    auto start_time = std::chrono::steady_clock::now();
     RecSplit recsplit(bucket_size, leaf_size);
     test_perfect_hashing(keys, recsplit);
     recsplit.space();
@@ -110,6 +145,10 @@ void run_mumur_64() {
     }
 }
 
+void time_recsplit() {
+    run_recsplit_random_keys(100000, 1000, 8);
+}
+
 // void run_sichash_random_strings(int n=10000) {
 //     SicHash sichash(std::min(5000, n / 5), 0.3, 0.3, 0.9, 42);
 
@@ -126,6 +165,7 @@ void run_mumur_64() {
 
 int main()
 {
+    test_recsplit_file("data/shakespeare.txt");
     // std::vector<std::string> test_keys = {"Hello",  "RecSplit", "Nelson", "Horatio", "Elijah", "World"};
 
     // RecSplit recsplit(4, 2);
@@ -150,21 +190,21 @@ int main()
 
     // run_sichash_test_basic();
     // run_sichash_random_strings(1000000);
-    // run_recsplit_random_keys();
+    // run_recsplit_random_keys(100000, 1000);
     // run_sichash_random_keys();
     // run_sichash_build();
     // run_mumur_64();
 
-    std::vector<uint64_t> data = {0x0F0F0F0F0F0F0F0F, 0xF0F0F0F0F0F0F0F0};
-    std::cout << data << std::endl;
-    std::vector<uint64_t> counts;
-    generate_rank_counts(data, counts);
-    size_t p = 5;
-    uint64_t result = rank9(data, counts, p);
-    std::cout << "Result of Rank 9: " << result << std::endl;
-    p = 3;
-    result = rank9(data, counts, p);
-    std::cout << "Result of Rank 9: " << result << std::endl;
+    // std::vector<uint64_t> data = {0x0F0F0F0F0F0F0F0F, 0xF0F0F0F0F0F0F0F0};
+    // std::cout << data << std::endl;
+    // std::vector<uint64_t> counts;
+    // generate_rank_counts(data, counts);
+    // size_t p = 5;
+    // uint64_t result = rank9(data, counts, p);
+    // std::cout << "Result of Rank 9: " << result << std::endl;
+    // p = 3;
+    // result = rank9(data, counts, p);
+    // std::cout << "Result of Rank 9: " << result << std::endl;
 
     return 0;
 }

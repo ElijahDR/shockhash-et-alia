@@ -6,11 +6,17 @@
 #include <string>
 #include <iostream>
 #include "common/utils.h"
+#include "common/broadword.h"
 #include "algos/hash_function.h"
 
 struct EncodedSplittingTree { 
     std::vector<bool> fixed;
     std::vector<bool> unary;
+};
+
+struct EncodedSplittingTreeSelect { 
+    std::vector<bool> fixed;
+    SimpleSelect unary;
 };
 
 struct FanoutData {
@@ -32,7 +38,7 @@ inline std::ostream& operator<<(std::ostream& os, const SubtreeData& data) {
        << "  parameter: " << static_cast<int>(data.parameter) << "\n"
        << "  nodes: " << data.nodes << "\n"
        << "  fixed_code_length: " << data.fixed_code_length << "\n"
-       << "  unary_code_legnth: " << data.unary_code_length << "\n"
+       << "  unary_code_length: " << data.unary_code_length << "\n"
        << "}";
     return os;
 }
@@ -67,6 +73,8 @@ public:
 
     void space();
 
+    uint64_t space_bits();
+
 private:
 
     void split(const std::vector<std::string> &keys);
@@ -87,6 +95,7 @@ private:
 
     EncodedSplittingTree splitting_tree_;
     std::vector<uint32_t> splitting_tree_raw_;
+    EncodedSplittingTreeSelect splitting_tree_select_;
 
     std::vector<std::string> keys_;
 
