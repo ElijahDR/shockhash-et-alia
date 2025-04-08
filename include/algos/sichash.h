@@ -7,6 +7,7 @@
 #include <map>
 #include <iostream>
 #include "algos/hash_function.h"
+#include "common/ribbon.h"
 
 
 class SicHash : public HashFunction {
@@ -38,6 +39,10 @@ private:
     std::vector<std::vector<bool>> hash_indexes_;
     std::map<std::string, std::vector<bool>> hash_index_map_;
     std::map<std::string, uint32_t> hash_index_map_raw_;
+
+    BasicRibbon single_ribbon;
+    BasicRibbon double_ribbon;
+    BasicRibbon triple_ribbon;
 
     uint32_t bucket_seed_;
     uint32_t bucket_size_;

@@ -9,6 +9,8 @@
 /Users/elijah/Desktop/diss/tests/CMakeFiles/run_golomb_rice.dir
 /Users/elijah/Desktop/diss/tests/CMakeFiles/test_broadword.dir
 /Users/elijah/Desktop/diss/tests/CMakeFiles/run_broadword.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/test_ribbon.dir
+/Users/elijah/Desktop/diss/tests/CMakeFiles/run_ribbon.dir
 /Users/elijah/Desktop/diss/tests/CMakeFiles/run_all_tests.dir
 /Users/elijah/Desktop/diss/tests/CMakeFiles/test.dir
 /Users/elijah/Desktop/diss/tests/CMakeFiles/edit_cache.dir

@@ -225,6 +225,34 @@ run_broadword/fast:
 .PHONY : run_broadword/fast
 
 # Convenience name for target.
+tests/CMakeFiles/test_ribbon.dir/rule:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_ribbon.dir/rule
+.PHONY : tests/CMakeFiles/test_ribbon.dir/rule
+
+# Convenience name for target.
+test_ribbon: tests/CMakeFiles/test_ribbon.dir/rule
+.PHONY : test_ribbon
+
+# fast build rule for target.
+test_ribbon/fast:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_ribbon.dir/build.make tests/CMakeFiles/test_ribbon.dir/build
+.PHONY : test_ribbon/fast
+
+# Convenience name for target.
+tests/CMakeFiles/run_ribbon.dir/rule:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/run_ribbon.dir/rule
+.PHONY : tests/CMakeFiles/run_ribbon.dir/rule
+
+# Convenience name for target.
+run_ribbon: tests/CMakeFiles/run_ribbon.dir/rule
+.PHONY : run_ribbon
+
+# fast build rule for target.
+run_ribbon/fast:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_ribbon.dir/build.make tests/CMakeFiles/run_ribbon.dir/build
+.PHONY : run_ribbon/fast
+
+# Convenience name for target.
 tests/CMakeFiles/run_all_tests.dir/rule:
 	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/run_all_tests.dir/rule
 .PHONY : tests/CMakeFiles/run_all_tests.dir/rule
@@ -310,6 +338,78 @@ __/src/common/golomb_rice.cpp.s:
 	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/golomb_rice.cpp.s
 .PHONY : __/src/common/golomb_rice.cpp.s
 
+__/src/common/murmurhash.o: __/src/common/murmurhash.cpp.o
+.PHONY : __/src/common/murmurhash.o
+
+# target to build an object file
+__/src/common/murmurhash.cpp.o:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.o
+.PHONY : __/src/common/murmurhash.cpp.o
+
+__/src/common/murmurhash.i: __/src/common/murmurhash.cpp.i
+.PHONY : __/src/common/murmurhash.i
+
+# target to preprocess a source file
+__/src/common/murmurhash.cpp.i:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.i
+.PHONY : __/src/common/murmurhash.cpp.i
+
+__/src/common/murmurhash.s: __/src/common/murmurhash.cpp.s
+.PHONY : __/src/common/murmurhash.s
+
+# target to generate assembly for a file
+__/src/common/murmurhash.cpp.s:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.s
+.PHONY : __/src/common/murmurhash.cpp.s
+
+__/src/common/ribbon.o: __/src/common/ribbon.cpp.o
+.PHONY : __/src/common/ribbon.o
+
+# target to build an object file
+__/src/common/ribbon.cpp.o:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/ribbon.cpp.o
+.PHONY : __/src/common/ribbon.cpp.o
+
+__/src/common/ribbon.i: __/src/common/ribbon.cpp.i
+.PHONY : __/src/common/ribbon.i
+
+# target to preprocess a source file
+__/src/common/ribbon.cpp.i:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/ribbon.cpp.i
+.PHONY : __/src/common/ribbon.cpp.i
+
+__/src/common/ribbon.s: __/src/common/ribbon.cpp.s
+.PHONY : __/src/common/ribbon.s
+
+# target to generate assembly for a file
+__/src/common/ribbon.cpp.s:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/ribbon.cpp.s
+.PHONY : __/src/common/ribbon.cpp.s
+
+__/src/common/utils.o: __/src/common/utils.cpp.o
+.PHONY : __/src/common/utils.o
+
+# target to build an object file
+__/src/common/utils.cpp.o:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o
+.PHONY : __/src/common/utils.cpp.o
+
+__/src/common/utils.i: __/src/common/utils.cpp.i
+.PHONY : __/src/common/utils.i
+
+# target to preprocess a source file
+__/src/common/utils.cpp.i:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.i
+.PHONY : __/src/common/utils.cpp.i
+
+__/src/common/utils.s: __/src/common/utils.cpp.s
+.PHONY : __/src/common/utils.s
+
+# target to generate assembly for a file
+__/src/common/utils.cpp.s:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.s
+.PHONY : __/src/common/utils.cpp.s
+
 common/broadword.test.o: common/broadword.test.cpp.o
 .PHONY : common/broadword.test.o
 
@@ -382,6 +482,30 @@ common/golomb_rice.test.cpp.s:
 	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_golomb_rice.dir/build.make tests/CMakeFiles/test_golomb_rice.dir/common/golomb_rice.test.cpp.s
 .PHONY : common/golomb_rice.test.cpp.s
 
+common/ribbon.test.o: common/ribbon.test.cpp.o
+.PHONY : common/ribbon.test.o
+
+# target to build an object file
+common/ribbon.test.cpp.o:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_ribbon.dir/build.make tests/CMakeFiles/test_ribbon.dir/common/ribbon.test.cpp.o
+.PHONY : common/ribbon.test.cpp.o
+
+common/ribbon.test.i: common/ribbon.test.cpp.i
+.PHONY : common/ribbon.test.i
+
+# target to preprocess a source file
+common/ribbon.test.cpp.i:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_ribbon.dir/build.make tests/CMakeFiles/test_ribbon.dir/common/ribbon.test.cpp.i
+.PHONY : common/ribbon.test.cpp.i
+
+common/ribbon.test.s: common/ribbon.test.cpp.s
+.PHONY : common/ribbon.test.s
+
+# target to generate assembly for a file
+common/ribbon.test.cpp.s:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_ribbon.dir/build.make tests/CMakeFiles/test_ribbon.dir/common/ribbon.test.cpp.s
+.PHONY : common/ribbon.test.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -394,11 +518,13 @@ help:
 	@echo "... run_all_tests"
 	@echo "... run_broadword"
 	@echo "... run_golomb_rice"
+	@echo "... run_ribbon"
 	@echo "... run_test_elias_fano"
 	@echo "... common_lib"
 	@echo "... test_broadword"
 	@echo "... test_elias_fano"
 	@echo "... test_golomb_rice"
+	@echo "... test_ribbon"
 	@echo "... __/src/common/broadword.o"
 	@echo "... __/src/common/broadword.i"
 	@echo "... __/src/common/broadword.s"
@@ -408,6 +534,15 @@ help:
 	@echo "... __/src/common/golomb_rice.o"
 	@echo "... __/src/common/golomb_rice.i"
 	@echo "... __/src/common/golomb_rice.s"
+	@echo "... __/src/common/murmurhash.o"
+	@echo "... __/src/common/murmurhash.i"
+	@echo "... __/src/common/murmurhash.s"
+	@echo "... __/src/common/ribbon.o"
+	@echo "... __/src/common/ribbon.i"
+	@echo "... __/src/common/ribbon.s"
+	@echo "... __/src/common/utils.o"
+	@echo "... __/src/common/utils.i"
+	@echo "... __/src/common/utils.s"
 	@echo "... common/broadword.test.o"
 	@echo "... common/broadword.test.i"
 	@echo "... common/broadword.test.s"
@@ -417,6 +552,9 @@ help:
 	@echo "... common/golomb_rice.test.o"
 	@echo "... common/golomb_rice.test.i"
 	@echo "... common/golomb_rice.test.s"
+	@echo "... common/ribbon.test.o"
+	@echo "... common/ribbon.test.i"
+	@echo "... common/ribbon.test.s"
 .PHONY : help
 
 

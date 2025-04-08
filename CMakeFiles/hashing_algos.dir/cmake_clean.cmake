@@ -11,6 +11,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/hashing_algos.dir/src/common/golomb_rice.cpp.o.d"
   "CMakeFiles/hashing_algos.dir/src/common/murmurhash.cpp.o"
   "CMakeFiles/hashing_algos.dir/src/common/murmurhash.cpp.o.d"
+  "CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o"
+  "CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o.d"
   "CMakeFiles/hashing_algos.dir/src/common/utils.cpp.o"
   "CMakeFiles/hashing_algos.dir/src/common/utils.cpp.o.d"
   "CMakeFiles/hashing_algos.dir/src/main.cpp.o"

@@ -21,6 +21,7 @@ set(SOURCES
     src/common/golomb_rice.cpp
     src/common/elias_fano.cpp
     src/common/broadword.cpp
+    src/common/ribbon.cpp
     src/algos/recsplit.cpp
     src/algos/sichash.cpp
 )

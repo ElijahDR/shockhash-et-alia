@@ -81,6 +81,8 @@
     "variant": "cpp",
     "__memory": "cpp",
     "map": "cpp",
-    "span": "cpp"
+    "span": "cpp",
+    "list": "cpp",
+    "unordered_set": "cpp"
   }
 }

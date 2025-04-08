@@ -12,8 +12,13 @@
 #define DEBUG_LOG(x)
 #endif
 
+const std::string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
 int highest_bit(int x);
 int log2_approx(int x);
+
+std::string generate_random_string(int length);
+std::vector<std::string> generate_random_keys(int n);
 
 const double PI = 3.14159265358979323846;
 const double GOLDEN_RATIO = (std::sqrt(5.0) + 1.0) / 2.0;

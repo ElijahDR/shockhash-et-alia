@@ -3,6 +3,7 @@
 #include "common/utils.h"
 #include "common/murmurhash.h"
 #include "common/broadword.h"
+#include "common/ribbon.h"
 #include <iostream>
 #include <unordered_map>
 #include <vector>
@@ -14,36 +15,7 @@
 const std::vector<std::string> test_keys = {"Hello", "World", "RecSplit", "Nelson", "Horatio",
     "Napoleon", "Alexander", "Victory", "Great", "Nile",
     "Vincent", "Dock", "Longbow", "Whistle", "Thyme"};
-const std::string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-std::string generate_random_string(int length) {
-    std::string result;
-    result.reserve(length);
-
-    // static std::mt19937 generator(std::time(nullptr));
-    static std::mt19937 generator(1);
-    std::uniform_int_distribution<int> distribution(0, charset.size() - 1);
-
-    for (int i = 0; i < length; ++i) {
-        result += charset[distribution(generator)];
-    }
-
-    return result;
-}
-
-std::vector<std::string> generate_random_keys(int n) {
-    std::set<std::string> unique_keys;
-    // const int length = std::ceil(std::log(n) / std::log(charset.size()));
-    const int length = 10;
-    std::cout << "Generating " << n << " keys with length " << length << std::endl;
-    while (unique_keys.size() < n) {
-        std::string key = generate_random_string(length);
-        unique_keys.insert(key);
-    }
-    std::cout << "Generation complete!" << std::endl;
-
-    return std::vector<std::string>(unique_keys.begin(), unique_keys.end());
-}
 
 std::vector<std::string> read_file(std::string file_name) {
     std::ifstream inputFile(file_name);
@@ -65,6 +37,8 @@ void test_recsplit_file(std::string file_name) {
     recsplit.build(words);
 
     std::cout << (double)recsplit.space_bits() / words.size() << " bits per key" << std::endl;
+
+    
 }
 
 bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_function) {
@@ -149,6 +123,25 @@ void time_recsplit() {
     run_recsplit_random_keys(100000, 1000, 8);
 }
 
+void run_ribbon() {
+    std::vector<std::string> keys = generate_random_keys(10000);
+    std::vector<uint8_t> values(keys.size());
+    for (int i = 0; i < keys.size(); i++) {
+        values[i] = murmur32(keys[i], 0) % 4;
+    }
+
+    BasicRibbon basic_ribbon(keys.size(), 64, 2, 0.25);
+    basic_ribbon.build(keys, values);
+
+    for (int i = 0; i < keys.size(); i++) {
+        uint8_t query_val = basic_ribbon.query(keys[i]);
+        DEBUG_LOG("Query Value: " << std::bitset<8>(query_val) << " original value: " << std::bitset<8>(values[i]));
+        if (query_val != values[i]) {
+            DEBUG_LOG("########## NOT WORKING #############");
+        }
+    }
+}
+
 // void run_sichash_random_strings(int n=10000) {
 //     SicHash sichash(std::min(5000, n / 5), 0.3, 0.3, 0.9, 42);
 
@@ -165,7 +158,8 @@ void time_recsplit() {
 
 int main()
 {
-    test_recsplit_file("data/shakespeare.txt");
+    // test_recsplit_file("data/shakespeare.txt");
+    run_ribbon();
     // std::vector<std::string> test_keys = {"Hello",  "RecSplit", "Nelson", "Horatio", "Elijah", "World"};
 
     // RecSplit recsplit(4, 2);

@@ -231,6 +231,32 @@ run_broadword/fast:
 .PHONY : run_broadword/fast
 
 #=============================================================================
+# Target rules for targets named test_ribbon
+
+# Build rule for target.
+test_ribbon: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_ribbon
+.PHONY : test_ribbon
+
+# fast build rule for target.
+test_ribbon/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_ribbon.dir/build.make tests/CMakeFiles/test_ribbon.dir/build
+.PHONY : test_ribbon/fast
+
+#=============================================================================
+# Target rules for targets named run_ribbon
+
+# Build rule for target.
+run_ribbon: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_ribbon
+.PHONY : run_ribbon
+
+# fast build rule for target.
+run_ribbon/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_ribbon.dir/build.make tests/CMakeFiles/run_ribbon.dir/build
+.PHONY : run_ribbon/fast
+
+#=============================================================================
 # Target rules for targets named run_all_tests
 
 # Build rule for target.
@@ -387,6 +413,30 @@ src/common/murmurhash.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/common/murmurhash.cpp.s
 .PHONY : src/common/murmurhash.cpp.s
 
+src/common/ribbon.o: src/common/ribbon.cpp.o
+.PHONY : src/common/ribbon.o
+
+# target to build an object file
+src/common/ribbon.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o
+.PHONY : src/common/ribbon.cpp.o
+
+src/common/ribbon.i: src/common/ribbon.cpp.i
+.PHONY : src/common/ribbon.i
+
+# target to preprocess a source file
+src/common/ribbon.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.i
+.PHONY : src/common/ribbon.cpp.i
+
+src/common/ribbon.s: src/common/ribbon.cpp.s
+.PHONY : src/common/ribbon.s
+
+# target to generate assembly for a file
+src/common/ribbon.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.s
+.PHONY : src/common/ribbon.cpp.s
+
 src/common/utils.o: src/common/utils.cpp.o
 .PHONY : src/common/utils.o
 
@@ -447,12 +497,14 @@ help:
 	@echo "... run_all_tests"
 	@echo "... run_broadword"
 	@echo "... run_golomb_rice"
+	@echo "... run_ribbon"
 	@echo "... run_test_elias_fano"
 	@echo "... common_lib"
 	@echo "... hashing_algos"
 	@echo "... test_broadword"
 	@echo "... test_elias_fano"
 	@echo "... test_golomb_rice"
+	@echo "... test_ribbon"
 	@echo "... src/algos/recsplit.o"
 	@echo "... src/algos/recsplit.i"
 	@echo "... src/algos/recsplit.s"
@@ -471,6 +523,9 @@ help:
 	@echo "... src/common/murmurhash.o"
 	@echo "... src/common/murmurhash.i"
 	@echo "... src/common/murmurhash.s"
+	@echo "... src/common/ribbon.o"
+	@echo "... src/common/ribbon.i"
+	@echo "... src/common/ribbon.s"
 	@echo "... src/common/utils.o"
 	@echo "... src/common/utils.i"
 	@echo "... src/common/utils.s"

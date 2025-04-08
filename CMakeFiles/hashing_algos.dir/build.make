@@ -156,10 +156,24 @@ CMakeFiles/hashing_algos.dir/src/common/broadword.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/hashing_algos.dir/src/common/broadword.cpp.s"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/elijah/Desktop/diss/src/common/broadword.cpp -o CMakeFiles/hashing_algos.dir/src/common/broadword.cpp.s
 
+CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o: CMakeFiles/hashing_algos.dir/flags.make
+CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o: src/common/ribbon.cpp
+CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o: CMakeFiles/hashing_algos.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o -MF CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o.d -o CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o -c /Users/elijah/Desktop/diss/src/common/ribbon.cpp
+
+CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/elijah/Desktop/diss/src/common/ribbon.cpp > CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.i
+
+CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/elijah/Desktop/diss/src/common/ribbon.cpp -o CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.s
+
 CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o: CMakeFiles/hashing_algos.dir/flags.make
 CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o: src/algos/recsplit.cpp
 CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o: CMakeFiles/hashing_algos.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o -MF CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o.d -o CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o -c /Users/elijah/Desktop/diss/src/algos/recsplit.cpp
 
 CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.i: cmake_force
@@ -173,7 +187,7 @@ CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.s: cmake_force
 CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o: CMakeFiles/hashing_algos.dir/flags.make
 CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o: src/algos/sichash.cpp
 CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o: CMakeFiles/hashing_algos.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o -MF CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o.d -o CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o -c /Users/elijah/Desktop/diss/src/algos/sichash.cpp
 
 CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.i: cmake_force
@@ -192,6 +206,7 @@ hashing_algos_OBJECTS = \
 "CMakeFiles/hashing_algos.dir/src/common/golomb_rice.cpp.o" \
 "CMakeFiles/hashing_algos.dir/src/common/elias_fano.cpp.o" \
 "CMakeFiles/hashing_algos.dir/src/common/broadword.cpp.o" \
+"CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o" \
 "CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o" \
 "CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o"
 
@@ -204,11 +219,12 @@ bin/hashing_algos: CMakeFiles/hashing_algos.dir/src/common/utils.cpp.o
 bin/hashing_algos: CMakeFiles/hashing_algos.dir/src/common/golomb_rice.cpp.o
 bin/hashing_algos: CMakeFiles/hashing_algos.dir/src/common/elias_fano.cpp.o
 bin/hashing_algos: CMakeFiles/hashing_algos.dir/src/common/broadword.cpp.o
+bin/hashing_algos: CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o
 bin/hashing_algos: CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o
 bin/hashing_algos: CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o
 bin/hashing_algos: CMakeFiles/hashing_algos.dir/build.make
 bin/hashing_algos: CMakeFiles/hashing_algos.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable bin/hashing_algos"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable bin/hashing_algos"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/hashing_algos.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
