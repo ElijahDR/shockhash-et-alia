@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <bitset>
+#include <cstdint>
 
 class BasicRibbon {
 public:
