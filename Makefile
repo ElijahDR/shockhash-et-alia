@@ -65,16 +65,6 @@ CMAKE_BINARY_DIR = /Users/elijah/Desktop/diss
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target test
-test:
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running tests..."
-	/opt/homebrew/bin/ctest --force-new-ctest-process $(ARGS)
-.PHONY : test
-
-# Special rule for the target test
-test/fast: test
-.PHONY : test/fast
-
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running CMake cache editor..."
@@ -138,136 +128,6 @@ hashing_algos: cmake_check_build_system
 hashing_algos/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/hashing_algos.dir/build.make CMakeFiles/hashing_algos.dir/build
 .PHONY : hashing_algos/fast
-
-#=============================================================================
-# Target rules for targets named common_lib
-
-# Build rule for target.
-common_lib: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 common_lib
-.PHONY : common_lib
-
-# fast build rule for target.
-common_lib/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/build
-.PHONY : common_lib/fast
-
-#=============================================================================
-# Target rules for targets named test_elias_fano
-
-# Build rule for target.
-test_elias_fano: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_elias_fano
-.PHONY : test_elias_fano
-
-# fast build rule for target.
-test_elias_fano/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_elias_fano.dir/build.make tests/CMakeFiles/test_elias_fano.dir/build
-.PHONY : test_elias_fano/fast
-
-#=============================================================================
-# Target rules for targets named run_test_elias_fano
-
-# Build rule for target.
-run_test_elias_fano: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_test_elias_fano
-.PHONY : run_test_elias_fano
-
-# fast build rule for target.
-run_test_elias_fano/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_test_elias_fano.dir/build.make tests/CMakeFiles/run_test_elias_fano.dir/build
-.PHONY : run_test_elias_fano/fast
-
-#=============================================================================
-# Target rules for targets named test_golomb_rice
-
-# Build rule for target.
-test_golomb_rice: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_golomb_rice
-.PHONY : test_golomb_rice
-
-# fast build rule for target.
-test_golomb_rice/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_golomb_rice.dir/build.make tests/CMakeFiles/test_golomb_rice.dir/build
-.PHONY : test_golomb_rice/fast
-
-#=============================================================================
-# Target rules for targets named run_golomb_rice
-
-# Build rule for target.
-run_golomb_rice: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_golomb_rice
-.PHONY : run_golomb_rice
-
-# fast build rule for target.
-run_golomb_rice/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_golomb_rice.dir/build.make tests/CMakeFiles/run_golomb_rice.dir/build
-.PHONY : run_golomb_rice/fast
-
-#=============================================================================
-# Target rules for targets named test_broadword
-
-# Build rule for target.
-test_broadword: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_broadword
-.PHONY : test_broadword
-
-# fast build rule for target.
-test_broadword/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_broadword.dir/build.make tests/CMakeFiles/test_broadword.dir/build
-.PHONY : test_broadword/fast
-
-#=============================================================================
-# Target rules for targets named run_broadword
-
-# Build rule for target.
-run_broadword: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_broadword
-.PHONY : run_broadword
-
-# fast build rule for target.
-run_broadword/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_broadword.dir/build.make tests/CMakeFiles/run_broadword.dir/build
-.PHONY : run_broadword/fast
-
-#=============================================================================
-# Target rules for targets named test_ribbon
-
-# Build rule for target.
-test_ribbon: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_ribbon
-.PHONY : test_ribbon
-
-# fast build rule for target.
-test_ribbon/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_ribbon.dir/build.make tests/CMakeFiles/test_ribbon.dir/build
-.PHONY : test_ribbon/fast
-
-#=============================================================================
-# Target rules for targets named run_ribbon
-
-# Build rule for target.
-run_ribbon: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_ribbon
-.PHONY : run_ribbon
-
-# fast build rule for target.
-run_ribbon/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_ribbon.dir/build.make tests/CMakeFiles/run_ribbon.dir/build
-.PHONY : run_ribbon/fast
-
-#=============================================================================
-# Target rules for targets named run_all_tests
-
-# Build rule for target.
-run_all_tests: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_all_tests
-.PHONY : run_all_tests
-
-# fast build rule for target.
-run_all_tests/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_all_tests.dir/build.make tests/CMakeFiles/run_all_tests.dir/build
-.PHONY : run_all_tests/fast
 
 src/algos/recsplit.o: src/algos/recsplit.cpp.o
 .PHONY : src/algos/recsplit.o
@@ -493,18 +353,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... test"
-	@echo "... run_all_tests"
-	@echo "... run_broadword"
-	@echo "... run_golomb_rice"
-	@echo "... run_ribbon"
-	@echo "... run_test_elias_fano"
-	@echo "... common_lib"
 	@echo "... hashing_algos"
-	@echo "... test_broadword"
-	@echo "... test_elias_fano"
-	@echo "... test_golomb_rice"
-	@echo "... test_ribbon"
 	@echo "... src/algos/recsplit.o"
 	@echo "... src/algos/recsplit.i"
 	@echo "... src/algos/recsplit.s"
