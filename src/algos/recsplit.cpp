@@ -9,6 +9,7 @@
 #include <random>
 
 const uint32_t BUCKET_SEED = 12;
+std::unordered_map<std::string, uint32_t> murmur_map;
 
 
 RecSplit::RecSplit(uint32_t bucket_size, uint32_t leaf_size)

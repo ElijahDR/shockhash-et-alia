@@ -114,7 +114,6 @@ private:
 };
 
 uint32_t memo_murmur32(const std::string &key, uint32_t seed);
-std::unordered_map<std::string, uint32_t> murmur_map;
 uint32_t find_bijection(const std::vector<std::string> &keys);
 FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size);
 std::vector<std::vector<SubtreeData>> generate_all_grp();
