@@ -326,7 +326,7 @@ uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &
     while (true) {
         DEBUG_LOG("Seed: " << seed);
         std::vector<uint32_t> counts(fanout_data.fanout);
-        for (auto key : keys) {
+        for (const std::string &key : keys) {
             counts[map_key_to_split(key, seed, fanout_data)] +=1;
         }
 
