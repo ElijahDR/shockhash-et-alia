@@ -96,14 +96,6 @@ uint32_t RecSplit::hash(const std::string &key) {
     size_t node_count = bucket_node_prefixes_[bucket];
     size_t ones_count = 0;
     size_t unary_pointer = 0;
-    while (ones_count < bucket_unary_prefixes_[bucket]) {
-        while (splitting_tree_.unary[unary_pointer] != 1) {
-            unary_pointer++;
-        }
-        unary_pointer++;
-
-        ones_count++;
-    }
     ones_count = bucket_unary_prefixes_[bucket];
     size_t unary_pointer_select = splitting_tree_select_.unary.select(bucket_unary_prefixes_[bucket]);
     if (bucket_unary_prefixes_[bucket] > 0) {
@@ -125,12 +117,7 @@ uint32_t RecSplit::hash(const std::string &key) {
         DEBUG_LOG("Fixed Pointer Before: " << fixed_pointer);
         DEBUG_LOG("Unary Pointer Before: " << unary_pointer);
         std::vector<bool> fixed, unary;
-        std::vector<bool> unary_select;
-        while (splitting_tree_.unary[unary_pointer] != 1) {
-            unary.push_back(splitting_tree_.unary[unary_pointer]);
-            unary_pointer++;
-        }
-        unary_pointer++;        
+        std::vector<bool> unary_select;     
         while (splitting_tree_.unary[unary_pointer_select] != 1) {
             unary_select.push_back(splitting_tree_.unary[unary_pointer_select]);
             unary_pointer_select++;
@@ -167,22 +154,11 @@ uint32_t RecSplit::hash(const std::string &key) {
             node_count += subtree_data_skip.nodes;
         }
 
-        size_t curr_ones_counts = 0;
-        while (curr_ones_counts < nodes_to_skip) {
-            while (splitting_tree_.unary[unary_pointer] != 1) {
-                unary_pointer++;
-            }
-            unary_pointer++;
-            curr_ones_counts++;
-        }
         DEBUG_LOG("Ones Counts: " << ones_count);
         DEBUG_LOG("Nodes to Skip: " << nodes_to_skip);
         ones_count += nodes_to_skip + 1;
         unary_pointer_select = splitting_tree_select_.unary.select(ones_count) + 1;
 
-        if (unary_pointer_select != unary_pointer) {
-            print_colour("Error??", ConsoleColour::Red);
-        }
         DEBUG_LOG("Unary Pointer: " << unary_pointer);
         DEBUG_LOG("Unary Pointer Select: " << unary_pointer_select);
 
