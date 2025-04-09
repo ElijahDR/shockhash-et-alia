@@ -2,6 +2,7 @@
 #define GOLOMB_RICE_H
 
 #include <vector>
+#include <cstdint>
 
 struct GolombEncodedData {
     std::vector<bool> fixed;

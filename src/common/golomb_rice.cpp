@@ -2,7 +2,6 @@
 #include "common/utils.h"
 #include <cmath>
 #include <iostream>
-#include <cstdint>
 
 
 // https://michaeldipperstein.github.io/rice.html
