@@ -303,16 +303,16 @@ uint32_t find_bijection(const std::vector<std::string> &keys) {
     uint32_t seed = 0;
     while (true) {
         bool bijection = true;
-        std::unordered_set<uint32_t> indexes;
-        for (std::string key : keys) {
+        std::vector<bool> used(keys.size(), 0);
+        for (const std::string &key : keys) {
             uint32_t hash = murmur32(key, seed) % keys.size();
             // DEBUG_LOG("FINDING BIJECTION -- Key: " << key << " Hash: " << hash);
-            if (indexes.contains(hash)) {
+            if (used[hash]) {
                 bijection = false;
                 // DEBUG_LOG("Bijection Failed");
                 break;
             }
-            indexes.insert(hash);
+            used[hash] = 1;
         }
         if (bijection) {
             return seed;
