@@ -20,7 +20,7 @@ uint32_t murmur32(const std::string key, const uint32_t seed) {
     uint32_t hash = seed;
 
     unsigned char buffer[key.length()];
-    wmemcpy(buffer, key.data(), key.length());
+    memcpy(buffer, key.data(), key.length());
     // cout << buffer;
     // cout << "\n";
     // cout << key.length();
@@ -31,7 +31,7 @@ uint32_t murmur32(const std::string key, const uint32_t seed) {
             break;
         }
         uint32_t chunk = 0;
-        wmemcpy(&chunk, buffer + i, 4);
+        memcpy(&chunk, buffer + i, 4);
 
         uint32_t k = chunk;
         k *= c1;
@@ -46,7 +46,7 @@ uint32_t murmur32(const std::string key, const uint32_t seed) {
     int leftover = key.length() % 4;
     if (leftover != 0) {
         uint32_t chunk = 0;
-        std::wmemcpy(&chunk, buffer + (key.length() - leftover), leftover);
+        std::memcpy(&chunk, buffer + (key.length() - leftover), leftover);
 
         // if (!(std::endian::native == std::endian::little))
         // {
@@ -93,15 +93,15 @@ uint128_t murmur128(const std::string &key, const uint32_t &seed) {
     const size_t len = key.length();
 
     unsigned char buffer[key.length()];
-    wmemcpy(buffer, key.data(), key.length());
+    memcpy(buffer, key.data(), key.length());
 
     for (int i = 0; i <= key.length() - 16; i += 16) {
         if (key.length() < 16) {
             break;
         }
         uint64_t k1 = 0, k2 = 0;
-        wmemcpy(&k1, buffer + i, 8);
-        wmemcpy(&k2, buffer + i + 8, 8);
+        memcpy(&k1, buffer + i, 8);
+        memcpy(&k2, buffer + i + 8, 8);
 
         k1 *= c1;
         k1  = std::rotl(k1,31);
@@ -125,7 +125,7 @@ uint128_t murmur128(const std::string &key, const uint32_t &seed) {
 
     int leftover = key.length() % 16;
     unsigned char tail[leftover];
-    std::wmemcpy(&tail, buffer + (len - leftover), leftover);
+    std::memcpy(&tail, buffer + (len - leftover), leftover);
 
     uint64_t k1 = 0;
     uint64_t k2 = 0;
