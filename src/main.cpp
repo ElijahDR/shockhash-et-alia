@@ -89,7 +89,7 @@ void run_recsplit_random_keys(int n=100000, uint32_t bucket_size=1000, uint32_t 
 }
 
 void run_sichash_random_keys() {
-    std::vector<std::string> keys = generate_random_keys(10000);
+    std::vector<std::string> keys = generate_random_keys(100000);
 
     SicHash sichash(1000, 0.3, 0.3, 0.99);
     test_perfect_hashing(keys, sichash);
@@ -207,7 +207,7 @@ int main()
     // run_sichash_test_basic();
     // run_sichash_random_strings(1000000);
     run_recsplit_random_keys();
-    // run_sichash_random_keys();
+    run_sichash_random_keys();
     // run_sichash_build();
     // run_mumur_64();
 
