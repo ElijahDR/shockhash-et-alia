@@ -1,0 +1,60 @@
+# Ignore build directories
+/build/
+/CMakeFiles/
+/bin/
+/lib/
+
+# Ignore generated files
+*.o
+*.a
+*.so
+*.dll
+*.exe
+*.dylib
+
+# Ignore CMake-generated files
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+
+# Ignore profiling and debugging files
+gmon.out
+*.gcno
+*.gcda
+*.pdb
+*.idb
+
+# Ignore IDE/editor-specific files
+.vscode/
+.idea/
+*.sublime-*
+*.vs/
+*.sln
+*.vcxproj
+*.user
+
+# Ignore temporary files
+*~
+.*.swp
+*.log
+*.tmp
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore dependency files (if any)
+*.d
+*.dep
+
+# Ignore Python-related files (if applicable)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore other common build artifacts
+Testing/
+CTestTestfile.cmake
