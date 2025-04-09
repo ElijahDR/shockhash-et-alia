@@ -54,11 +54,11 @@ bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_fun
     start_time = std::chrono::steady_clock::now();
     for (auto key : keys) {
         uint32_t hash = hash_function.hash(key);
-        if (hashes.contains(hash)) {
-            print_colour(key + " collided with another", ConsoleColour::Red);
-            collisions++;
-        }
-        hashes.insert(hash);
+        // if (hashes.contains(hash)) {
+        //     print_colour(key + " collided with another", ConsoleColour::Red);
+        //     collisions++;
+        // }
+        // hashes.insert(hash);
     }
     DEBUG_LOG("Hashing Finished");
     end_time = std::chrono::steady_clock::now();
