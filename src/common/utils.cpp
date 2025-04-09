@@ -1,5 +1,5 @@
 #include "common/utils.h"
-#include <set>
+#include <unordered_set>
 #include <random>
 
 int highest_bit(int x)
@@ -35,7 +35,7 @@ std::string generate_random_string(int length) {
 }
 
 std::vector<std::string> generate_random_keys(int n) {
-    std::set<std::string> unique_keys;
+    std::unordered_set<std::string> unique_keys;
     // const int length = std::ceil(std::log(n) / std::log(charset.size()));
     const int length = 10;
     std::cout << "Generating " << n << " keys with length " << length << std::endl;

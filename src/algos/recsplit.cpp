@@ -4,6 +4,7 @@
 #include "common/golomb_rice.h"
 #include <cmath>
 #include <set>
+#include <unordered_set>
 #include <iostream>
 #include <random>
 
@@ -171,7 +172,7 @@ uint32_t RecSplit::hash(const std::string &key) {
     DEBUG_LOG("Subtree Data at Bijection: " << subtree_data);
     std::vector<bool> fixed, unary;
     DEBUG_LOG("Fixed Pointer Before: " << fixed_pointer);
-    DEBUG_LOG("Unary Pointer Before: " << unary_pointer);
+    DEBUG_LOG("Unary Pointer Before: " << unary_pointer_select);
     while (splitting_tree_.unary[unary_pointer_select] != 1) {
         unary.push_back(splitting_tree_.unary[unary_pointer_select]);
         unary_pointer_select++;
@@ -185,7 +186,7 @@ uint32_t RecSplit::hash(const std::string &key) {
     }
 
     DEBUG_LOG("Fixed Pointer After: " << fixed_pointer);
-    DEBUG_LOG("Unary Pointer After: " << unary_pointer);
+    DEBUG_LOG("Unary Pointer After: " << unary_pointer_select);
     DEBUG_LOG("Fixed Data Extracted: " << fixed);
     DEBUG_LOG("Unary Data Extracted: " << unary);
     uint32_t seed = golomb_rice_decode(GolombEncodedData{fixed, unary}, subtree_data.parameter);
@@ -302,7 +303,7 @@ uint32_t find_bijection(const std::vector<std::string> &keys) {
     uint32_t seed = 0;
     while (true) {
         bool bijection = true;
-        std::set<uint32_t> indexes;
+        std::unordered_set<uint32_t> indexes;
         for (std::string key : keys) {
             uint32_t hash = murmur32(key, seed) % keys.size();
             // DEBUG_LOG("FINDING BIJECTION -- Key: " << key << " Hash: " << hash);

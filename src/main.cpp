@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 #include <set>
+#include <unordered_set>
 #include <fstream>
 #include <random>
 #include <chrono>
@@ -48,7 +49,7 @@ bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_fun
     auto duration = end_time - start_time;
     auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
     std::cout << "Build took: " << build_duration.count() << " ms" << std::endl;
-    std::set<uint32_t> hashes;
+    std::unordered_set<uint32_t> hashes;
     int collisions = 0;
     start_time = std::chrono::steady_clock::now();
     for (auto key : keys) {
@@ -67,7 +68,7 @@ bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_fun
 
     if (collisions == 0) {
         DEBUG_LOG("Here");
-        if (*hashes.rbegin() == keys.size()) {
+        if (hashes.size() == keys.size()) {
             print_colour(hash_function.name() + " succeeded minimal perfect hashing!", ConsoleColour::Green);
         } else {
             print_colour(hash_function.name() + " succeeded perfect hashing!", ConsoleColour::Green);
