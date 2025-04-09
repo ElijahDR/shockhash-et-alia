@@ -351,7 +351,7 @@ uint32_t map_key_to_split(const std::string &key, const uint32_t &seed, const Fa
         }
     }
 
-    throw "Map Key to Split function didn't work...";
+    // throw "Map Key to Split function didn't work...";
 }
 
 uint32_t assign_bucket(const std::string &key, uint32_t bucket_count) {

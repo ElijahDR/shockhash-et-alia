@@ -10,7 +10,7 @@ uint32_t ROL32(uint32_t k, uint32_t n) {
 }
 
 // https://en.wikipedia.org/wiki/MurmurHash#Algorithm
-uint32_t murmur32(const std::string key, const uint32_t seed) {
+uint32_t murmur32(const std::string &key, const uint32_t seed) {
     constexpr uint32_t c1 = 0xcc9e2d51;
     constexpr uint32_t c2 = 0x1b873593;
     constexpr int r1 = 15;
