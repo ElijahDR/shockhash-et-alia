@@ -50,6 +50,7 @@ void RecSplit::build(const std::vector<std::string> &keys) {
     total_bits += bucket_sizes_.size() * 32;
 
     float bits_per_key = (float)total_bits / keys_.size();
+    murmur_map.clear();
     // std::cout << "Total Bits: " << total_bits << std::endl;
     // std::cout << "Bits per Key: " << bits_per_key << std::endl;
 }
@@ -191,11 +192,12 @@ uint32_t RecSplit::hash(const std::string &key) {
     DEBUG_LOG("Unary Data Extracted: " << unary);
     uint32_t seed = golomb_rice_decode(GolombEncodedData{fixed, unary}, subtree_data.parameter);
     DEBUG_LOG("Bijection Seed: " << seed);
-    uint32_t bijection_hash = murmur32(key, seed) % size;
+    uint32_t bijection_hash = memo_murmur32(key, seed) % size;
     DEBUG_LOG("Bijection Hash: " << bijection_hash);
     uint32_t hash = node_count + 1 + bijection_hash;
     DEBUG_LOG(" ================ Found Hash: " << hash);
     DEBUG_LOG("Raw Splitting Tree: " << splitting_tree_raw_);
+    murmur_map.clear();
     return hash;
 }
 
@@ -224,7 +226,6 @@ void RecSplit::split(const std::vector<std::string> &keys) {
 
     std::vector<std::vector<std::string>> keys_split(fanout);
     for (std::string key : keys) {
-        uint32_t hash = murmur32(key, seed);
         keys_split[map_key_to_split(key, seed, fanout_data)].push_back(key);
     }
 
@@ -246,6 +247,17 @@ void RecSplit::append_to_splitting_tree(const uint32_t &data, const uint32_t gol
     splitting_tree_raw_.push_back(data);
     append_vector_to_vector(splitting_tree_.fixed, encoded_data.fixed);
     append_vector_to_vector(splitting_tree_.unary, encoded_data.unary);
+}
+
+uint32_t memo_murmur32(const std::string &key, uint32_t seed) {
+    auto it = murmur_map.find(key);
+    if (it != murmur_map.end()) {
+        return it->second;
+    }
+
+    uint32_t hash = murmur32(key, seed);
+    murmur_map[key] = hash;
+    return hash;
 }
 
 void RecSplit::create_buckets() {
@@ -305,7 +317,7 @@ uint32_t find_bijection(const std::vector<std::string> &keys) {
         bool bijection = true;
         std::vector<bool> used(keys.size(), 0);
         for (const std::string &key : keys) {
-            uint32_t hash = murmur32(key, seed) % keys.size();
+            uint32_t hash = memo_murmur32(key, seed) % keys.size();
             // DEBUG_LOG("FINDING BIJECTION -- Key: " << key << " Hash: " << hash);
             if (used[hash]) {
                 bijection = false;
@@ -340,7 +352,7 @@ uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &
 }
 
 uint32_t map_key_to_split(const std::string &key, const uint32_t &seed, const FanoutData &fanout_data) {
-    uint32_t hash = murmur32(key, seed);
+    uint32_t hash = memo_murmur32(key, seed);
     uint32_t index = hash % fanout_data.size;
 
     int current = 0;
@@ -355,7 +367,7 @@ uint32_t map_key_to_split(const std::string &key, const uint32_t &seed, const Fa
 }
 
 uint32_t assign_bucket(const std::string &key, uint32_t bucket_count) {
-    uint32_t hash = murmur32(key, BUCKET_SEED) >> 16;
+    uint32_t hash = memo_murmur32(key, BUCKET_SEED) >> 16;
     uint32_t bucket = floor((hash * bucket_count) >> 16);
 
     return bucket;

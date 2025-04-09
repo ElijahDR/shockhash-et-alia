@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <unordered_map>
 #include "common/utils.h"
 #include "common/broadword.h"
 #include "algos/hash_function.h"
@@ -85,6 +86,7 @@ private:
 
     void append_to_splitting_tree(const uint32_t &data, const uint32_t size);
 
+
     uint32_t bucket_size_;
     uint32_t bucket_count_;
     const uint32_t leaf_size_;
@@ -111,7 +113,8 @@ private:
     std::vector<std::vector<SubtreeData>> grp_table_;
 };
 
-uint32_t find_bijection(const std::vector<std::string> &keys);
+uint32_t memo_murmur32(const std::string &key, uint32_t seed);
+std::unordered_map<std::string, uint32_t> murmur_map;
 uint32_t find_bijection(const std::vector<std::string> &keys);
 FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size);
 std::vector<std::vector<SubtreeData>> generate_all_grp();
