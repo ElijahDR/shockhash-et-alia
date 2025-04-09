@@ -3,14 +3,14 @@
 #include <cstdint>  
 #include <cstring>
 
-uint32_t ROL32(uint32_t k, uint32_t n) {
+inline uint32_t ROL32(uint32_t k, uint32_t n) {
     uint32_t l = k << n;
     uint32_t r = k >> (32 - n);
     return l | r;
 }
 
 // https://en.wikipedia.org/wiki/MurmurHash#Algorithm
-uint32_t murmur32(const std::string &key, const uint32_t seed) {
+uint32_t murmur32(const std::string_view &key, const uint32_t seed) {
     constexpr uint32_t c1 = 0xcc9e2d51;
     constexpr uint32_t c2 = 0x1b873593;
     constexpr int r1 = 15;
@@ -19,20 +19,18 @@ uint32_t murmur32(const std::string &key, const uint32_t seed) {
     constexpr uint32_t n = 0xe6546b64;
 
     uint32_t hash = seed;
-
-    unsigned char buffer[key.length()];
-    memcpy(buffer, key.data(), key.length());
+    int length = key.length();
     // cout << buffer;
     // cout << "\n";
     // cout << key.length();
     // cout << "\n";
 
-    for (int i = 0; i <= key.length() - 4; i += 4) {
-        if (key.length() < 4) {
+    for (int i = 0; i <= length - 4; i += 4) {
+        if (length < 4) {
             break;
         }
         uint32_t chunk = 0;
-        memcpy(&chunk, buffer + i, 4);
+        memcpy(&chunk, key.data() + i, 4);
 
         uint32_t k = chunk;
         k *= c1;
@@ -44,10 +42,10 @@ uint32_t murmur32(const std::string &key, const uint32_t seed) {
         hash = (hash * m) + n;
     }
 
-    int leftover = key.length() % 4;
+    int leftover = length % 4;
     if (leftover != 0) {
         uint32_t chunk = 0;
-        std::memcpy(&chunk, buffer + (key.length() - leftover), leftover);
+        std::memcpy(&chunk, key.data() + (length - leftover), leftover);
 
         // if (!(std::endian::native == std::endian::little))
         // {
@@ -61,7 +59,7 @@ uint32_t murmur32(const std::string &key, const uint32_t seed) {
         hash ^= chunk;
     }
 
-    hash ^= key.length();
+    hash ^= length;
 
     hash ^= (hash >> 16);
     hash *= 0x85ebca6b;
