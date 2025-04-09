@@ -10,6 +10,8 @@
 
 const uint32_t BUCKET_SEED = 12;
 
+std::unordered_map<std::string, uint32_t> memo_murmur;
+
 
 RecSplit::RecSplit(uint32_t bucket_size, uint32_t leaf_size)
     : bucket_size_(bucket_size), leaf_size_(leaf_size), splitting_tree_() {
@@ -303,7 +305,7 @@ uint32_t find_bijection(const std::vector<std::string> &keys) {
     uint32_t seed = 0;
     while (true) {
         bool bijection = true;
-        std::vector<bool> used(keys.size(), 0);
+        std::bitset<30> used(0);
         for (const std::string &key : keys) {
             uint32_t hash = murmur32(key, seed) % keys.size();
             // DEBUG_LOG("FINDING BIJECTION -- Key: " << key << " Hash: " << hash);
