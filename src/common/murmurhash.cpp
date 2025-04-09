@@ -1,6 +1,7 @@
 #include "common/murmurhash.h"
 #include <bit>
 #include <cstdint>  
+#include <cstring>
 
 uint32_t ROL32(uint32_t k, uint32_t n) {
     uint32_t l = k << n;
