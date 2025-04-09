@@ -3,7 +3,7 @@
 #include <cstdint>  
 #include <cstring>
 
-uint32_t ROL32(uint32_t &k, uint32_t &n) {
+uint32_t ROL32(uint32_t k, uint32_t n) {
     uint32_t l = k << n;
     uint32_t r = k >> (32 - n);
     return l | r;
