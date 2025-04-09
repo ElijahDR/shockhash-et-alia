@@ -167,9 +167,6 @@ uint32_t RecSplit::hash(const std::string &key) {
         size = fanout_data.part_sizes[split_index];
     }
 
-    if (unary_pointer_select != unary_pointer) {
-        print_colour("Error??", ConsoleColour::Red);
-    }
     SubtreeData subtree_data = grp_table_[size][leaf_size_-2];
     DEBUG_LOG("Subtree Data at Bijection: " << subtree_data);
     std::vector<bool> fixed, unary;
