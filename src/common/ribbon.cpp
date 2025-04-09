@@ -10,6 +10,9 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
     r = value_bits;
     e = epsilon;
     m = (uint64_t)((1 + e) * n) + 1;
+    if (m < 64) {
+        m = 65;
+    }
 
     if (w != 64) {
         throw std::invalid_argument("Ribbon Width 64 currently only one supported!");
@@ -68,7 +71,7 @@ void BasicRibbon::make_compact_z() {
     }
 }
 
-uint64_t BasicRibbon::query(std::string &key) {
+uint64_t BasicRibbon::query(const std::string &key) {
     // DEBUG_LOG("Query of " << key);
     uint64_t start_pos = murmur64(key, seed_) % (m - w);
     // DEBUG_LOG("Start Pos: " << start_pos);

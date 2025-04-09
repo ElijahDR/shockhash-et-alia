@@ -466,6 +466,7 @@ CMakeFiles/hashing_algos.dir/src/algos/recsplit.cpp.o: src/algos/recsplit.cpp \
   include/common/broadword.h \
   include/common/golomb_rice.h \
   include/common/murmurhash.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o: src/algos/sichash.cpp \
@@ -931,6 +932,7 @@ CMakeFiles/hashing_algos.dir/src/algos/sichash.cpp.o: src/algos/sichash.cpp \
   include/algos/sichash.h \
   include/common/golomb_rice.h \
   include/common/murmurhash.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 CMakeFiles/hashing_algos.dir/src/common/broadword.cpp.o: src/common/broadword.cpp \
@@ -1393,6 +1395,7 @@ CMakeFiles/hashing_algos.dir/src/common/broadword.cpp.o: src/common/broadword.cp
   include/algos/hash_function.h \
   include/algos/sichash.h \
   include/common/broadword.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 CMakeFiles/hashing_algos.dir/src/common/elias_fano.cpp.o: src/common/elias_fano.cpp \
@@ -1854,6 +1857,7 @@ CMakeFiles/hashing_algos.dir/src/common/elias_fano.cpp.o: src/common/elias_fano.
   include/algos/hash_function.h \
   include/algos/sichash.h \
   include/common/elias_fano.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 CMakeFiles/hashing_algos.dir/src/common/golomb_rice.cpp.o: src/common/golomb_rice.cpp \
@@ -2315,6 +2319,7 @@ CMakeFiles/hashing_algos.dir/src/common/golomb_rice.cpp.o: src/common/golomb_ric
   include/algos/hash_function.h \
   include/algos/sichash.h \
   include/common/golomb_rice.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 CMakeFiles/hashing_algos.dir/src/common/murmurhash.cpp.o: src/common/murmurhash.cpp \
@@ -2777,6 +2782,7 @@ CMakeFiles/hashing_algos.dir/src/common/murmurhash.cpp.o: src/common/murmurhash.
   include/algos/hash_function.h \
   include/algos/sichash.h \
   include/common/murmurhash.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 CMakeFiles/hashing_algos.dir/src/common/ribbon.cpp.o: src/common/ribbon.cpp \
@@ -3702,6 +3708,7 @@ CMakeFiles/hashing_algos.dir/src/common/utils.cpp.o: src/common/utils.cpp \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stdint.h \
   include/algos/hash_function.h \
   include/algos/sichash.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 CMakeFiles/hashing_algos.dir/src/main.cpp.o: src/main.cpp \

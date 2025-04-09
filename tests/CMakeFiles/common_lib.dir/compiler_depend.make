@@ -461,6 +461,7 @@ tests/CMakeFiles/common_lib.dir/__/src/common/broadword.cpp.o: src/common/broadw
   include/algos/hash_function.h \
   include/algos/sichash.h \
   include/common/broadword.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 tests/CMakeFiles/common_lib.dir/__/src/common/elias_fano.cpp.o: src/common/elias_fano.cpp \
@@ -922,6 +923,7 @@ tests/CMakeFiles/common_lib.dir/__/src/common/elias_fano.cpp.o: src/common/elias
   include/algos/hash_function.h \
   include/algos/sichash.h \
   include/common/elias_fano.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 tests/CMakeFiles/common_lib.dir/__/src/common/golomb_rice.cpp.o: src/common/golomb_rice.cpp \
@@ -1383,6 +1385,7 @@ tests/CMakeFiles/common_lib.dir/__/src/common/golomb_rice.cpp.o: src/common/golo
   include/algos/hash_function.h \
   include/algos/sichash.h \
   include/common/golomb_rice.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 tests/CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.o: src/common/murmurhash.cpp \
@@ -1845,6 +1848,7 @@ tests/CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.o: src/common/murmu
   include/algos/hash_function.h \
   include/algos/sichash.h \
   include/common/murmurhash.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 tests/CMakeFiles/common_lib.dir/__/src/common/ribbon.cpp.o: src/common/ribbon.cpp \
@@ -2770,6 +2774,7 @@ tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o: src/common/utils.cpp 
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stdint.h \
   include/algos/hash_function.h \
   include/algos/sichash.h \
+  include/common/ribbon.h \
   include/common/utils.h
 
 

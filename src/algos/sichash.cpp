@@ -18,6 +18,8 @@ bucket_seed_(bucket_seed), class_seed_(class_seed), class_assignments_() {
 void SicHash::build(const std::vector<std::string> &keys) {
     keys_ = keys;
     hash_indexes_.resize(keys.size());
+    keys_classes_.resize(3);
+    hash_indexes_per_class_.resize(3);
 
     assign_classes();
     create_buckets();
@@ -27,6 +29,10 @@ void SicHash::build(const std::vector<std::string> &keys) {
         DEBUG_LOG("Building Bucket: " << bucket);
         build_cuckoo_hash_table(bucket);
     }
+
+    ribbons.push_back(BasicRibbon(keys_classes_[0], hash_indexes_per_class_[0], 1, 0.25));
+    ribbons.push_back(BasicRibbon(keys_classes_[1], hash_indexes_per_class_[1], 2, 0.25));
+    ribbons.push_back(BasicRibbon(keys_classes_[2], hash_indexes_per_class_[2], 3, 0.25));
 
     std::cout << "Bucket Seeds: " << bucket_seeds_ << std::endl;
 }
@@ -42,7 +48,9 @@ uint32_t SicHash::hash(const std::string &key) {
     DEBUG_LOG("Global Index for key " << key << ": " << global_index);
     uint32_t bucket_seed = bucket_seeds_[bucket];
 
-    int hash_index = bits_to_int(hash_index_map_[key]);
+    uint64_t class_for_key = key_class(key);
+    uint64_t hash_index = ribbons[class_for_key].query(key);
+    // int hash_index = bits_to_int(hash_index_map_[key]);
     // int hash_index = hash_index_map_raw_[key];
     DEBUG_LOG("Hash Index for key " << key << ": " << hash_index);
     int table_size = bucket_sizes_[bucket] / alpha_;
@@ -52,6 +60,28 @@ uint32_t SicHash::hash(const std::string &key) {
 
     return global_index + hash_table_index;
 }
+
+uint32_t SicHash::naive_hash(const std::string &key) {
+    DEBUG_LOG("===================");
+    DEBUG_LOG("Key: " << key);
+    // auto it = std::find(keys_.begin(), keys_.end(), key);
+    // DEBUG_LOG("Index: " << it - keys_.begin());
+    int bucket = assign_bucket(key);
+    DEBUG_LOG("Bucket for key " << key << ": " << bucket);
+    int global_index = bucket_prefixes_[bucket];
+    DEBUG_LOG("Global Index for key " << key << ": " << global_index);
+    uint32_t bucket_seed = bucket_seeds_[bucket];
+
+    int hash_index = bits_to_int(hash_index_map_[key]);
+    DEBUG_LOG("Hash Index for key " << key << ": " << hash_index);
+    int table_size = bucket_sizes_[bucket] / alpha_;
+    int hash_table_index = murmur32(key, (bucket_seed * 8) + hash_index) % table_size;
+    DEBUG_LOG("Hash Table Index for key " << key << ": " << hash_table_index);
+    DEBUG_LOG("Overall Hash for key" << key << ": " << global_index + hash_table_index);
+
+    return global_index + hash_table_index;
+}
+
 
 void SicHash::assign_classes() {
     // class_assignments_.resize(keys_.size() * 2);
@@ -80,6 +110,19 @@ void SicHash::assign_classes() {
 
     DEBUG_LOG("Class Counts: " << class_counts);
     // DEBUG_LOG("Class Assignments: " << class_assignments_);
+}
+
+uint64_t SicHash::key_class(const std::string &key) {
+    uint32_t hash = murmur32(key, class_seed_);
+    double class_val = (double)hash / UINT32_MAX;
+
+    if (class_val < p1_) { 
+        return 0;
+    } else if (class_val < (p1_ + p2_)) {
+        return 1;
+    } else {
+        return 2;
+    }
 }
 
 std::vector<uint32_t> SicHash::generate_hash(size_t index, uint32_t base_seed) {
@@ -136,9 +179,15 @@ void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
     }
 
     bucket_seeds_.push_back(seed);
+
     for (auto index : bucket) {
         uint32_t n_hash = extract_class_assignment(index);
         size_t hash_index = rattle_counters_[index] % n_hash;
+
+        uint64_t class_n = key_class(keys_[index]);
+        DEBUG_LOG("Class N: " << class_n);
+        keys_classes_[key_class(keys_[index])].push_back(keys_[index]);
+        hash_indexes_per_class_[key_class(keys_[index])].push_back(hash_index);
 
         hash_indexes_[index] = int_to_bits(hash_index);
 

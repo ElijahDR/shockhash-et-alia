@@ -57,14 +57,16 @@ bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_fun
         //     print_colour(key + " collided with another", ConsoleColour::Red);
         //     collisions++;
         // }
-        // hashes.insert(hash);
+        hashes.insert(hash);
     }
+    DEBUG_LOG("Hashing Finished");
     end_time = std::chrono::steady_clock::now();
     duration = end_time - start_time;
     auto hashing_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
     std::cout << "Hashing took: " << hashing_duration.count() << " ms" << std::endl;
 
     if (collisions == 0) {
+        DEBUG_LOG("Here");
         if (*hashes.rbegin() == keys.size()) {
             print_colour(hash_function.name() + " succeeded minimal perfect hashing!", ConsoleColour::Green);
         } else {
@@ -77,19 +79,18 @@ bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_fun
     }
 }
 
-void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
+void run_recsplit_random_keys(int n=10000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
     std::vector<std::string> keys = generate_random_keys(n);
 
-    auto start_time = std::chrono::steady_clock::now();
     RecSplit recsplit(bucket_size, leaf_size);
     test_perfect_hashing(keys, recsplit);
     recsplit.space();
 }
 
 void run_sichash_random_keys() {
-    std::vector<std::string> keys = generate_random_keys(100000);
+    std::vector<std::string> keys = generate_random_keys(10000);
 
-    SicHash sichash(5000, 0.3, 0.3, 0.99);
+    SicHash sichash(1000, 0.3, 0.3, 0.99);
     test_perfect_hashing(keys, sichash);
 }
 
@@ -124,22 +125,42 @@ void time_recsplit() {
 }
 
 void run_ribbon() {
-    std::vector<std::string> keys = generate_random_keys(10000);
-    std::vector<uint8_t> values(keys.size());
+    // std::vector<std::string> keys = generate_random_keys(10000);
+    // std::vector<uint8_t> values(keys.size());
+    // for (int i = 0; i < keys.size(); i++) {
+    //     values[i] = murmur32(keys[i], 0) % 4;
+    // }
+
+    // BasicRibbon basic_ribbon(keys.size(), 64, 2, 0.25);
+    // basic_ribbon.build(keys, values);
+
+    // for (int i = 0; i < keys.size(); i++) {
+    //     uint8_t query_val = basic_ribbon.query(keys[i]);
+    //     DEBUG_LOG("Query Value: " << std::bitset<8>(query_val) << " original value: " << std::bitset<8>(values[i]));
+    //     if (query_val != values[i]) {
+    //         DEBUG_LOG("########## NOT WORKING #############");
+    //     }
+    // }
+
+    std::vector<std::string> keys = generate_random_keys(100);
+    std::vector<uint64_t> values(keys.size());
     for (int i = 0; i < keys.size(); i++) {
-        values[i] = murmur32(keys[i], 0) % 4;
+        values[i] = murmur32(keys[i], 0) % 8;
     }
 
-    BasicRibbon basic_ribbon(keys.size(), 64, 2, 0.25);
-    basic_ribbon.build(keys, values);
+    BasicRibbon basic_ribbon(keys, values, 3, 0.25);
 
+    bool correct = true;
     for (int i = 0; i < keys.size(); i++) {
         uint8_t query_val = basic_ribbon.query(keys[i]);
-        DEBUG_LOG("Query Value: " << std::bitset<8>(query_val) << " original value: " << std::bitset<8>(values[i]));
+        // DEBUG_LOG("Query Value: " << std::bitset<64>(query_val) << " original value: " << std::bitset<64>(values[i]));
         if (query_val != values[i]) {
+            correct = false;
             DEBUG_LOG("########## NOT WORKING #############");
         }
     }
+
+    DEBUG_LOG("Correct: " << correct);
 }
 
 // void run_sichash_random_strings(int n=10000) {
@@ -159,7 +180,7 @@ void run_ribbon() {
 int main()
 {
     // test_recsplit_file("data/shakespeare.txt");
-    run_ribbon();
+    // run_ribbon();
     // std::vector<std::string> test_keys = {"Hello",  "RecSplit", "Nelson", "Horatio", "Elijah", "World"};
 
     // RecSplit recsplit(4, 2);
@@ -184,8 +205,8 @@ int main()
 
     // run_sichash_test_basic();
     // run_sichash_random_strings(1000000);
-    // run_recsplit_random_keys(100000, 1000);
-    // run_sichash_random_keys();
+    run_recsplit_random_keys();
+    run_sichash_random_keys();
     // run_sichash_build();
     // run_mumur_64();
 

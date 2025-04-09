@@ -17,6 +17,7 @@ public:
     void build(const std::vector<std::string> &keys) override;
 
     uint32_t hash(const std::string &key) override;
+    uint32_t naive_hash(const std::string &key);
 
     std::string name() override { return "SicHash"; };
 
@@ -28,6 +29,8 @@ private:
     uint32_t extract_class_assignment(size_t index);
     void build_cuckoo_hash_table(const std::vector<size_t> &bucket);
     bool insert_into_hash_table(size_t index, uint32_t base_seed, std::vector<int> &hash_table);
+    uint64_t key_class(const std::string &key);
+    uint64_t get_hash_index(std::string &key);
 
     std::vector<bool> class_assignments_;
     double p1_;
@@ -40,9 +43,7 @@ private:
     std::map<std::string, std::vector<bool>> hash_index_map_;
     std::map<std::string, uint32_t> hash_index_map_raw_;
 
-    BasicRibbon single_ribbon;
-    BasicRibbon double_ribbon;
-    BasicRibbon triple_ribbon;
+    std::vector<BasicRibbon> ribbons;
 
     uint32_t bucket_seed_;
     uint32_t bucket_size_;
@@ -51,6 +52,9 @@ private:
     std::vector<std::vector<size_t>> buckets_;
     std::vector<uint32_t> bucket_sizes_;
     std::vector<uint32_t> hash_table_sizes_;
+
+    std::vector<std::vector<std::string>> keys_classes_;
+    std::vector<std::vector<uint64_t>> hash_indexes_per_class_;
 
     std::vector<uint32_t> bucket_seeds_;
     std::vector<size_t> bucket_prefixes_;

@@ -59,20 +59,20 @@ void SimpleSelect::build_inventories() {
     DEBUG_LOG("Set Bits: " << set_bits);
     DEBUG_LOG("Total Bits: " << total_bits);
 
-    L_spacing_ = std::ceil((L_ * set_bits) / total_bits);
-    M_spacing_ = std::ceil((M_ * set_bits) / total_bits);
-    LM_ratio_ = L_spacing_ / M_spacing_;
+    M_spacing_ = std::ceil((M_ * set_bits) / (double)total_bits);
+    L_spacing_ = M_spacing_ * ((double)L_ / M_);
+    LM_ratio_ = std::ceil((double)L_spacing_ / M_spacing_);
     DEBUG_LOG("L Spacing: " << L_spacing_);
     DEBUG_LOG("M Spacing: " << M_spacing_);
 
     uint64_t rank = 0;
     for (int w = 0; w < data_.size(); w++) {
         uint64_t word = data_[w];
-        DEBUG_LOG("Rank: " << rank);
+        // DEBUG_LOG("Rank: " << rank);
         for (int i = 0; i < 64; i++) {
             uint64_t mask = ((uint64_t)1 << i);
-            DEBUG_LOG("Word: " << word);
-            DEBUG_LOG("Mask: " << mask);
+            // DEBUG_LOG("Word: " << word);
+            // DEBUG_LOG("Mask: " << mask);
             if (word & mask) {
                 rank++;
             }

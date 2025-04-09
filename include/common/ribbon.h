@@ -14,7 +14,7 @@ public:
 
     void build(std::vector<std::string> &keys, std::vector<std::uint8_t> values);
     // uint8_t query(std::string &key);
-    uint64_t query(std::string &key);
+    uint64_t query(const std::string &key);
     std::vector<uint64_t> Z;
     std::vector<uint64_t> compact_Z;
 private:
