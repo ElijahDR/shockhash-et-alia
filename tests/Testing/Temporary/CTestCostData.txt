@@ -1,8 +1,9 @@
 TestBROADWORD 1 0.00747417
 TestELIAS_FANO 1 0.00615687
 TestGOLOMB_RICE 1 0.00670408
-TestEliasFano 200 0.000897013
-TestGolombRice 213 0.000722492
-TestBroadword 59 0.00249689
-TestRibbon 31 0.0188572
+TestEliasFano 201 0
+TestGolombRice 221 0.000844934
+TestBroadword 67 0.00291786
+TestRibbon 39 0.0157792
 ---
+TestEliasFano
