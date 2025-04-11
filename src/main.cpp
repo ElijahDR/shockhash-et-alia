@@ -1,5 +1,6 @@
 #include "algos/recsplit.h"
 #include "algos/sichash.h"
+#include "algos/shockhash.h"
 #include "common/utils.h"
 #include "common/murmurhash.h"
 #include "common/broadword.h"
@@ -164,6 +165,18 @@ void run_ribbon() {
     DEBUG_LOG("Correct: " << correct);
 }
 
+void run_shockhash_random_keys() {
+    std::vector<std::string> keys = generate_random_keys(100);
+    ShockHash shockhash(100);
+    shockhash.build(keys);
+}
+
+void run_bipartite_shockhash_random_keys() {
+    std::vector<std::string> keys = generate_random_keys(50);
+    BipartiteShockHash bipartite_shockhash(50);
+    bipartite_shockhash.build(keys);
+}
+
 // void run_sichash_random_strings(int n=10000) {
 //     SicHash sichash(std::min(5000, n / 5), 0.3, 0.3, 0.9, 42);
 
@@ -206,8 +219,10 @@ int main()
 
     // run_sichash_test_basic();
     // run_sichash_random_strings(1000000);
-    run_recsplit_random_keys();
-    run_sichash_random_keys();
+    // run_recsplit_random_keys();
+    // run_sichash_random_keys();
+    // run_shockhash_random_keys();
+    run_bipartite_shockhash_random_keys();
     // run_sichash_build();
     // run_mumur_64();
 

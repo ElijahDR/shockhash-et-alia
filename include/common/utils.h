@@ -108,6 +108,12 @@ inline std::ostream& operator<<(std::ostream& os, const std::map<K, V> &data) {
     return os;
 }
 
+template <typename T1, typename T2>
+inline std::ostream& operator<<(std::ostream& os, const std::pair<T1, T2> &data) {
+    os << "{" << data.first << ", " << data.second << "}";
+    return os;
+}
+
 
 
 template <typename T>

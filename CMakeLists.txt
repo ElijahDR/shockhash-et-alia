@@ -24,6 +24,7 @@ set(SOURCES
     src/common/ribbon.cpp
     src/algos/recsplit.cpp
     src/algos/sichash.cpp
+    src/algos/shockhash.cpp
 )
 
 add_executable(hashing_algos ${SOURCES})
