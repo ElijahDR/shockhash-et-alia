@@ -3,6 +3,7 @@
 /CMakeFiles/
 /bin/
 /lib/
+/data/
 
 # Ignore generated files
 *.o

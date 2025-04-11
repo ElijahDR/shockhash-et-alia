@@ -14,6 +14,16 @@ else()
     message(STATUS "Debugging is disabled.")
 endif()
 
+option(DEBUG "Enable Test Compiling" ON)
+
+if(TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+    message(TESTS "Test Compilation is enabled.")
+else()
+    message(TESTS "Test Compilation is disabled.")
+endif()
+
 set(SOURCES
     src/main.cpp
     src/common/murmurhash.cpp
