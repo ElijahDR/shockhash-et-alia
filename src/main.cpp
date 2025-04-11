@@ -102,25 +102,25 @@ void run_sichash_build() {
     sichash.build(keys);
 }
 
-void run_mumur_64() {
-    std::vector<std::string> keys = generate_random_keys(100000000);
-    std::set<uint64_t> hashes;
-    int collisions = 0;
-    const uint32_t seed = 42;
-    for (auto key : keys) {
-        uint64_t hash = murmur64(key, seed);
-        if (hashes.contains(hash)) {
-            collisions++;
-        }
-        hashes.insert(hash);
-    }
+// void run_mumur_64() {
+//     std::vector<std::string> keys = generate_random_keys(100000000);
+//     std::set<uint64_t> hashes;
+//     int collisions = 0;
+//     const uint32_t seed = 42;
+//     for (auto key : keys) {
+//         uint64_t hash = murmur64(key, seed);
+//         if (hashes.contains(hash)) {
+//             collisions++;
+//         }
+//         hashes.insert(hash);
+//     }
 
-    if (collisions == 0) {
-        print_colour("Murmur3 64 succeeded hashing without collisions!", ConsoleColour::Green);
-    } else {
-        print_colour(("Murmur3 64 failed hashing with " + std::to_string(collisions) + " collisions!"), ConsoleColour::Red);
-    }
-}
+//     if (collisions == 0) {
+//         print_colour("Murmur3 64 succeeded hashing without collisions!", ConsoleColour::Green);
+//     } else {
+//         print_colour(("Murmur3 64 failed hashing with " + std::to_string(collisions) + " collisions!"), ConsoleColour::Red);
+//     }
+// }
 
 void time_recsplit() {
     run_recsplit_random_keys(100000, 1000, 8);
