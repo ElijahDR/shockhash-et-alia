@@ -207,7 +207,7 @@ int main()
     // run_sichash_test_basic();
     // run_sichash_random_strings(1000000);
     run_recsplit_random_keys();
-    run_sichash_random_keys();
+    // run_sichash_random_keys();
     // run_sichash_build();
     // run_mumur_64();
 
