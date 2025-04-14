@@ -37,6 +37,8 @@ void RecSplit::build(const std::vector<std::string> &keys) {
         split(bucket);
     }
 
+    splitting_tree_select_.unary.build(splitting_tree_.unary, 128, 8);
+    splitting_tree_select_.fixed = splitting_tree_.fixed;
 }
 
 HashFunctionSpace RecSplit::space() {
