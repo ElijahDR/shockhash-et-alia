@@ -6,6 +6,11 @@
 
 const uint64_t L8 = 0x0101010101010101;
 
+struct SimpleSelectSpace {
+    std::vector<std::pair<std::string, int>> space_usage;
+    int total_bits;
+};
+
 // https://vigna.di.unimi.it/ftp/papers/Broadword.pdf
 class SimpleSelect {
 public:
@@ -17,6 +22,8 @@ public:
     uint64_t select(uint64_t r);
 
     uint64_t bit_search(uint64_t curr_pos, uint64_t r);
+
+    SimpleSelectSpace space();
     
 private:
     void build_inventories();

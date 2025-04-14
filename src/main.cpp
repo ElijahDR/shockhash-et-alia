@@ -45,10 +45,10 @@ bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_fun
     start_time = std::chrono::steady_clock::now();
     for (auto key : keys) {
         uint32_t hash = hash_function.hash(key);
-        // if (hashes.contains(hash)) {
-        //     print_colour(key + " collided with another", ConsoleColour::Red);
-        //     collisions++;
-        // }
+        if (hashes.contains(hash)) {
+            print_colour(key + " collided with another", ConsoleColour::Red);
+            collisions++;
+        }
         hashes.insert(hash);
     }
     DEBUG_LOG("Hashing Finished");
@@ -71,7 +71,7 @@ bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_fun
     }
 }
 
-void run_recsplit_random_keys(int n=100000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
+void run_recsplit_random_keys(int n=1000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
     std::vector<std::string> keys = generate_random_keys(n);
 
     RecSplit recsplit(bucket_size, leaf_size);

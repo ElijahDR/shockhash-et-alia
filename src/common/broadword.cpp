@@ -200,6 +200,10 @@ uint64_t SimpleSelect::bit_search(uint64_t curr_pos, uint64_t r) {
     return -1;
 }
 
+SimpleSelectSpace SimpleSelect::space() {
+    
+}
+
 inline uint64_t popcount(uint64_t x) {
     #if defined(__POPCNT__) || defined(_MSC_VER)
         return __builtin_popcountll(x);

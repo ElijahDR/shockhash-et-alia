@@ -110,6 +110,9 @@ uint32_t RecSplit::hash(const std::string &key) {
     DEBUG_LOG("Decoded Bucket Node Prefixes: " << bucket_node_prefixes);
     DEBUG_LOG("Decoded Bucket Unary Prefixes: " << bucket_unary_prefixes);
     DEBUG_LOG("Decoded Bucket Fixed Prefixes: " << bucket_fixed_prefixes);
+    DEBUG_LOG("Bucket Node Prefixes: " << bucket_node_prefixes_);
+    DEBUG_LOG("Bucket Unary Prefixes: " << bucket_unary_prefixes_);
+    DEBUG_LOG("Bucket Fixed Prefixes: " << bucket_fixed_prefixes_);
 
     // Bucket finding and starting the unary pointer
     uint32_t bucket = assign_bucket(key, buckets_.size());
