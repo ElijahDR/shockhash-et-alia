@@ -42,7 +42,23 @@ void RecSplit::build(const std::vector<std::string> &keys) {
 }
 
 HashFunctionSpace RecSplit::space() {
-    return HashFunctionSpace{};
+    std::vector<std::pair<std::string, int>> space_usage;
+    int splitting_tree_overhead = (sizeof(splitting_tree_) + sizeof(splitting_tree_.fixed) + sizeof(splitting_tree_.unary)) * 8;
+    space_usage.push_back(std::make_pair("Splitting Tree Overhead", splitting_tree_overhead));
+    space_usage.push_back(std::make_pair("Splitting Tree Fixed", splitting_tree_.fixed.size()));
+    space_usage.push_back(std::make_pair("Splitting Tree Unary", splitting_tree_.unary.size()));
+    int total_splitting_tree = splitting_tree_overhead + splitting_tree_.fixed.size() + splitting_tree_.unary.size();
+    space_usage.push_back(std::make_pair("Total Splitting Tree", total_splitting_tree));
+
+    space_usage.push_back(std::make_pair("Bucket Node Prefixes", elias_fano_space(bucket_node_prefixes_ef_)));
+    space_usage.push_back(std::make_pair("Bucket Unary Prefixes", elias_fano_space(bucket_unary_prefixes_ef_)));
+    space_usage.push_back(std::make_pair("Bucket Fixed Prefixes", elias_fano_space(bucket_fixed_prefixes_ef_)));
+    int total_bucket_prefixes = elias_fano_space(bucket_node_prefixes_ef_) + elias_fano_space(bucket_unary_prefixes_ef_) + elias_fano_space(bucket_fixed_prefixes_ef_);
+    space_usage.push_back(std::make_pair("Total Bucket Prefixes", total_bucket_prefixes));
+
+    int total_bits = total_bucket_prefixes + total_splitting_tree;
+    double bits_per_key = total_bits / (double)keys_.size();
+    return HashFunctionSpace{space_usage, total_bits, bits_per_key, (int)keys_.size()};
 }   
 
 

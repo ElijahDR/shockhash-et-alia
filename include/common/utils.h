@@ -5,6 +5,7 @@
 #include <cmath>
 #include <string>
 #include "algos/sichash.h"
+#include "algos/hash_function.h"
 
 #ifdef DEBUG
 #define DEBUG_LOG(x) std::cout << "[" << __FILE__ << ":" << __LINE__ << "] " << "DEBUG: " << x << std::endl
@@ -87,6 +88,11 @@ inline std::string special_string(const std::string &msg, ConsoleColour colour) 
 }
 
 
+template <typename T1, typename T2>
+inline std::ostream& operator<<(std::ostream& os, const std::pair<T1, T2> &data) {
+    os << "{" << data.first << ", " << data.second << "}";
+    return os;
+}
 
 // Vector printing
 template <typename T>
@@ -108,12 +114,16 @@ inline std::ostream& operator<<(std::ostream& os, const std::map<K, V> &data) {
     return os;
 }
 
-template <typename T1, typename T2>
-inline std::ostream& operator<<(std::ostream& os, const std::pair<T1, T2> &data) {
-    os << "{" << data.first << ", " << data.second << "}";
+
+inline std::ostream& operator<<(std::ostream& os, const HashFunctionSpace &data) {
+    os << "HashFunctionSpace {\n"
+       << "  space usage: " << data.space_usage << "\n"
+       << "  total bits: " << data.total_bits << "\n"
+       << "  bits per key: " << data.bits_per_key << "\n"
+       << "  number of keys: " << data.n_keys << "\n"
+       << "}";
     return os;
 }
-
 
 
 template <typename T>

@@ -3,12 +3,12 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
 
 struct HashFunctionSpace {
-    std::unordered_map<std::string, int> data_usage;
-    int overall;
+    std::vector<std::pair<std::string, int>> space_usage;
+    int total_bits;
     double bits_per_key;
+    int n_keys;
 };
 
 class HashFunction {

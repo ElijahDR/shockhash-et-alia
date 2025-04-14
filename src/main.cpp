@@ -71,11 +71,14 @@ bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_fun
     }
 }
 
-void run_recsplit_random_keys(int n=10000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
+void run_recsplit_random_keys(int n=100000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
     std::vector<std::string> keys = generate_random_keys(n);
 
     RecSplit recsplit(bucket_size, leaf_size);
     test_perfect_hashing(keys, recsplit);
+
+    HashFunctionSpace space = recsplit.space();
+    std::cout << space << std::endl;
 }
 
 void run_sichash_random_keys() {
@@ -180,8 +183,7 @@ void run_bipartite_shockhash_random_keys() {
 //     sichash.build(input_data_vector);
 // }
 
-int main()
-{
+int main(int argc, char *argv[]) {
     // test_recsplit_file("data/shakespeare.txt");
     // run_ribbon();
     // std::vector<std::string> test_keys = {"Hello",  "RecSplit", "Nelson", "Horatio", "Elijah", "World"};
