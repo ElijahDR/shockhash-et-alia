@@ -89,6 +89,10 @@ bool ShockHash::insert_into_hash_table(const int key_index, std::vector<int> &ha
     return false;
 }
 
+HashFunctionSpace ShockHash::space() {
+    return HashFunctionSpace{};
+}   
+
 uint32_t ShockHash::hash(const std::string &key) {
     return 1;
 }
@@ -181,6 +185,10 @@ bool BipartiteShockHash::insert_into_hash_table(const int key_index, std::vector
 
     return false;
 }
+
+HashFunctionSpace BipartiteShockHash::space() {
+    return HashFunctionSpace{};
+}   
 
 bool BipartiteShockHash::filter_bit_mask_half(const std::vector<uint32_t> &key_indexes, const uint32_t &seed) {
     int n_keys = key_indexes.size() / 2;

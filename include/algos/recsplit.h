@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include "common/utils.h"
 #include "common/broadword.h"
+#include "common/elias_fano.h"
 #include "algos/hash_function.h"
 
 struct EncodedSplittingTree { 
@@ -72,9 +73,7 @@ public:
 
     std::string name() override { return "RecSplit"; };
 
-    void space();
-
-    uint64_t space_bits();
+    HashFunctionSpace space() override;
 
 private:
 
@@ -95,7 +94,7 @@ private:
 
     std::vector<uint32_t> part_sizes_;
 
-    EncodedSplittingTree splitting_tree_;
+    EncodedSplittingTree splitting_tree_; 
     std::vector<uint32_t> splitting_tree_raw_;
     EncodedSplittingTreeSelect splitting_tree_select_;
 
@@ -109,6 +108,10 @@ private:
     std::vector<uint32_t> bucket_node_prefixes_;
     std::vector<uint32_t> bucket_unary_prefixes_;
     std::vector<uint32_t> bucket_fixed_prefixes_;
+
+    EliasFanoEncodedData bucket_node_prefixes_ef_;
+    EliasFanoEncodedData bucket_unary_prefixes_ef_;
+    EliasFanoEncodedData bucket_fixed_prefixes_ef_;
 
     std::vector<std::vector<SubtreeData>> grp_table_;
 };

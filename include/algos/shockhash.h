@@ -29,6 +29,8 @@ public:
     uint32_t hash(const std::string &key) override;
 
     std::string name() override { return "ShockHash"; };
+    
+    HashFunctionSpace space() override;
 
 private:
     bool filter_bit_mask(const std::vector<uint32_t> &keys, const uint32_t &seed);
@@ -61,6 +63,8 @@ public:
 
     std::string name() override { return "ShockHash"; };
 
+    HashFunctionSpace space() override;
+
 private:
     bool filter_bit_mask_half(const std::vector<uint32_t> &keys, const uint32_t &seed);
 
@@ -91,6 +95,8 @@ public:
     uint32_t hash(const std::string &key) override;
 
     std::string name() override { return "ShockHash"; };
+
+    HashFunctionSpace space() override;
 
 private:
     bool filter_bit_mask(const std::vector<uint32_t> &keys, const uint32_t &seed);

@@ -37,77 +37,78 @@ void RecSplit::build(const std::vector<std::string> &keys) {
         split(bucket);
     }
 
-    size_of_print(splitting_tree_.fixed);
-    size_of_print(splitting_tree_.unary);
-    DEBUG_LOG(splitting_tree_);
-    uint32_t total_bits = splitting_tree_.fixed.size() + splitting_tree_.unary.size();
-    std::cout << total_bits << std::endl;
-    total_bits += bucket_node_prefixes_.size() * 32;
-    total_bits += bucket_unary_prefixes_.size() * 32;
-    total_bits += bucket_fixed_prefixes_.size() * 32;
-
-    splitting_tree_select_.unary.build(splitting_tree_.unary, 128, 8);
-    splitting_tree_select_.fixed = splitting_tree_.fixed;
-
-    total_bits += bucket_sizes_.size() * 32;
-
-    float bits_per_key = (float)total_bits / keys_.size();
-    // std::cout << "Total Bits: " << total_bits << std::endl;
-    // std::cout << "Bits per Key: " << bits_per_key << std::endl;
 }
 
-void RecSplit::space() {
-    uint32_t splitting_tree_size = sizeof(splitting_tree_) * 8;
-    uint32_t splitting_tree_fixed_size = sizeof(splitting_tree_.fixed) * 8;
-    uint32_t splitting_tree_unary_size = sizeof(splitting_tree_.unary) * 8;
+HashFunctionSpace RecSplit::space() {
+    return HashFunctionSpace{};
+}   
 
-    std::cout << "###################### RecSplit Space Analysis ######################" << std::endl;
-    std::cout << "Total Keys: " << keys_.size() << std::endl;
-    std::cout << "Total Buckets: " << bucket_count_ << std::endl;
 
-    uint32_t splitting_tree_fixed_bits = splitting_tree_.fixed.size();
-    uint32_t splitting_tree_unary_bits = splitting_tree_.unary.size();
+// void RecSplit::space() {
+//     uint32_t splitting_tree_size = sizeof(splitting_tree_) * 8;
+//     uint32_t splitting_tree_fixed_size = sizeof(splitting_tree_.fixed) * 8;
+//     uint32_t splitting_tree_unary_size = sizeof(splitting_tree_.unary) * 8;
 
-    uint32_t total_splitting_tree_bits = splitting_tree_fixed_size + splitting_tree_unary_size + \
-             splitting_tree_fixed_bits + splitting_tree_unary_bits;
+//     std::cout << "###################### RecSplit Space Analysis ######################" << std::endl;
+//     std::cout << "Total Keys: " << keys_.size() << std::endl;
+//     std::cout << "Total Buckets: " << bucket_count_ << std::endl;
 
-    std::cout << "************************ Splitting Tree Data ************************" << std::endl;
-    std::cout << "Unary Component Overhead: " << splitting_tree_unary_size << " bits" << std::endl;
-    std::cout << "Fixed Component Overhead: " << splitting_tree_fixed_size << " bits" << std::endl;
-    std::cout << "Unary Bits: " << splitting_tree_unary_bits << " bits" << std::endl;
-    std::cout << "Fixed Bits: " << splitting_tree_fixed_bits << " bits" << std::endl;
-    std::cout << "====> Total Splitting Tree: " << special_string(std::to_string(total_splitting_tree_bits), ConsoleColour::Bold) << " bits" << std::endl;
+//     uint32_t splitting_tree_fixed_bits = splitting_tree_.fixed.size();
+//     uint32_t splitting_tree_unary_bits = splitting_tree_.unary.size();
+
+//     uint32_t total_splitting_tree_bits = splitting_tree_fixed_size + splitting_tree_unary_size + \
+//              splitting_tree_fixed_bits + splitting_tree_unary_bits;
+
+//     std::cout << "************************ Splitting Tree Data ************************" << std::endl;
+//     std::cout << "Unary Component Overhead: " << splitting_tree_unary_size << " bits" << std::endl;
+//     std::cout << "Fixed Component Overhead: " << splitting_tree_fixed_size << " bits" << std::endl;
+//     std::cout << "Unary Bits: " << splitting_tree_unary_bits << " bits" << std::endl;
+//     std::cout << "Fixed Bits: " << splitting_tree_fixed_bits << " bits" << std::endl;
+//     std::cout << "====> Total Splitting Tree: " << special_string(std::to_string(total_splitting_tree_bits), ConsoleColour::Bold) << " bits" << std::endl;
 
     
-    std::cout << "*************************** Bucket Data ****************************" << std::endl;
-}
+//     std::cout << "*************************** Bucket Data ****************************" << std::endl;
+// }
 
-uint64_t RecSplit::space_bits() {
-    uint64_t total_bits = splitting_tree_.fixed.size() + splitting_tree_.unary.size();
-    total_bits += bucket_node_prefixes_.size() * 32;
-    total_bits += bucket_unary_prefixes_.size() * 32;
-    total_bits += bucket_fixed_prefixes_.size() * 32;
-    total_bits += bucket_sizes_.size() * 32;
+// uint64_t RecSplit::space_bits() {
+//     uint64_t total_bits = splitting_tree_.fixed.size() + splitting_tree_.unary.size();
+//     total_bits += bucket_node_prefixes_.size() * 32;
+//     total_bits += bucket_unary_prefixes_.size() * 32;
+//     total_bits += bucket_fixed_prefixes_.size() * 32;
+//     total_bits += bucket_sizes_.size() * 32;
 
-    return total_bits;
-}
+//     return total_bits;
+// }
 
 uint32_t RecSplit::hash(const std::string &key) {
     DEBUG_LOG(splitting_tree_);
     DEBUG_LOG("Finding Hash for Key: " << key);
+    int n_buckets = buckets_.size();
+
+    // Extract elias fano data
+    std::vector<uint32_t> bucket_node_prefixes = elias_fano_decode(bucket_node_prefixes_ef_, n_buckets);
+    std::vector<uint32_t> bucket_unary_prefixes = elias_fano_decode(bucket_unary_prefixes_ef_, n_buckets);
+    std::vector<uint32_t> bucket_fixed_prefixes = elias_fano_decode(bucket_fixed_prefixes_ef_, n_buckets);
+    DEBUG_LOG("Decoded Bucket Node Prefixes: " << bucket_node_prefixes);
+    DEBUG_LOG("Decoded Bucket Unary Prefixes: " << bucket_unary_prefixes);
+    DEBUG_LOG("Decoded Bucket Fixed Prefixes: " << bucket_fixed_prefixes);
+
+    // Bucket finding and starting the unary pointer
     uint32_t bucket = assign_bucket(key, buckets_.size());
-    size_t node_count = bucket_node_prefixes_[bucket];
+
+
+    size_t node_count = bucket_node_prefixes[bucket];
     size_t ones_count = 0;
-    size_t unary_pointer = 0;
-    ones_count = bucket_unary_prefixes_[bucket];
-    size_t unary_pointer_select = splitting_tree_select_.unary.select(bucket_unary_prefixes_[bucket]);
+    ones_count = bucket_unary_prefixes[bucket];
+    size_t unary_pointer_select = splitting_tree_select_.unary.select(bucket_unary_prefixes[bucket]);
+
+    // unless the first item, need to start on a 0
     if (bucket_unary_prefixes_[bucket] > 0) {
         unary_pointer_select++;
     }
-    DEBUG_LOG("Unary Pointer: " << unary_pointer);
     DEBUG_LOG("Unary Pointer Select: " << unary_pointer_select);
 
-    size_t fixed_pointer = bucket_fixed_prefixes_[bucket];
+    size_t fixed_pointer = bucket_fixed_prefixes[bucket];
     size_t size = bucket_sizes_[bucket];
     DEBUG_LOG("Bucket Index: " << bucket);
     DEBUG_LOG("Bucket Size: " << size);
@@ -118,7 +119,7 @@ uint32_t RecSplit::hash(const std::string &key) {
         DEBUG_LOG("Current Size: " << size);
         DEBUG_LOG("Subtree Data: " << subtree_data);
         DEBUG_LOG("Fixed Pointer Before: " << fixed_pointer);
-        DEBUG_LOG("Unary Pointer Before: " << unary_pointer);
+        DEBUG_LOG("Unary Pointer Before: " << unary_pointer_select);
         std::vector<bool> fixed, unary;
         std::vector<bool> unary_select;     
         while (splitting_tree_.unary[unary_pointer_select] != 1) {
@@ -136,7 +137,7 @@ uint32_t RecSplit::hash(const std::string &key) {
             fixed_pointer++;
         }
         DEBUG_LOG("Fixed Pointer After: " << fixed_pointer);
-        DEBUG_LOG("Unary Pointer After: " << unary_pointer);
+        DEBUG_LOG("Unary Pointer After: " << unary_pointer_select);
         DEBUG_LOG("Fixed Data Extracted: " << fixed);
         DEBUG_LOG("Unary Data Extracted: " << unary);
 
@@ -162,7 +163,7 @@ uint32_t RecSplit::hash(const std::string &key) {
         ones_count += nodes_to_skip + 1;
         unary_pointer_select = splitting_tree_select_.unary.select(ones_count) + 1;
 
-        DEBUG_LOG("Unary Pointer: " << unary_pointer);
+        DEBUG_LOG("Unary Pointer: " << unary_pointer_select);
         DEBUG_LOG("Unary Pointer Select: " << unary_pointer_select);
 
         DEBUG_LOG("Node Count: " << node_count);
@@ -295,6 +296,10 @@ void RecSplit::create_buckets() {
     bucket_node_prefixes_.push_back(bucket_node_prefix);
     bucket_unary_prefixes_.push_back(bucket_unary_prefix);
     bucket_fixed_prefixes_.push_back(bucket_fixed_prefix);
+    
+    bucket_node_prefixes_ef_ = elias_fano_encode(bucket_node_prefixes_);
+    bucket_unary_prefixes_ef_ = elias_fano_encode(bucket_unary_prefixes_);
+    bucket_fixed_prefixes_ef_ = elias_fano_encode(bucket_fixed_prefixes_);
 
     DEBUG_LOG("Bucket Node Prefixes: " << bucket_node_prefixes_);
     DEBUG_LOG("Bucket Unary Prefixes: " << bucket_unary_prefixes_);

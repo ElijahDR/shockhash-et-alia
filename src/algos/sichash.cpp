@@ -151,6 +151,10 @@ uint32_t SicHash::extract_class_assignment(size_t index) {
     }
 }
 
+HashFunctionSpace SicHash::space() {
+    return HashFunctionSpace{};
+}   
+
 void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
     uint32_t seed = 0;
     while (true) {

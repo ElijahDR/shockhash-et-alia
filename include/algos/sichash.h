@@ -20,6 +20,7 @@ public:
     uint32_t naive_hash(const std::string &key);
 
     std::string name() override { return "SicHash"; };
+    HashFunctionSpace space() override;
 
 private:
     void create_buckets();
