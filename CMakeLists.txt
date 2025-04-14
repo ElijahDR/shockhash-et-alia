@@ -14,6 +14,20 @@ else()
     message(STATUS "Debugging is disabled.")
 endif()
 
+option(TESTS "Enable Test Compiling" ON)
+
+if(TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+    message(STATUS "Test Compilation is enabled.")
+else()
+    message(STATUS "Test Compilation is disabled.")
+endif()
+
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native")
+message(STATUS "Compiler optimization flags: -O3 -march=native")
+
 set(SOURCES
     src/main.cpp
     src/common/murmurhash.cpp
