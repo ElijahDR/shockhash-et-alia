@@ -49,3 +49,7 @@ std::vector<uint32_t> elias_fano_decode(EliasFanoEncodedData &data, uint32_t n) 
 
     return data_decoded;
 }
+
+uint32_t elias_fano_space(EliasFanoEncodedData &data) {
+    return (sizeof(data.lower) + sizeof(data.upper) + sizeof(data.m)) * 8 + data.upper.size() + data.lower.size();
+}

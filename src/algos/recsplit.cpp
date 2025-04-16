@@ -104,9 +104,9 @@ uint32_t RecSplit::hash(const std::string &key) {
     int n_buckets = buckets_.size();
 
     // Extract elias fano data
-    std::vector<uint32_t> bucket_node_prefixes = elias_fano_decode(bucket_node_prefixes_ef_, n_buckets);
-    std::vector<uint32_t> bucket_unary_prefixes = elias_fano_decode(bucket_unary_prefixes_ef_, n_buckets);
-    std::vector<uint32_t> bucket_fixed_prefixes = elias_fano_decode(bucket_fixed_prefixes_ef_, n_buckets);
+    std::vector<uint32_t> bucket_node_prefixes = elias_fano_decode(bucket_node_prefixes_ef_, n_buckets+1);
+    std::vector<uint32_t> bucket_unary_prefixes = elias_fano_decode(bucket_unary_prefixes_ef_, n_buckets+1);
+    std::vector<uint32_t> bucket_fixed_prefixes = elias_fano_decode(bucket_fixed_prefixes_ef_, n_buckets+1);
     DEBUG_LOG("Decoded Bucket Node Prefixes: " << bucket_node_prefixes);
     DEBUG_LOG("Decoded Bucket Unary Prefixes: " << bucket_unary_prefixes);
     DEBUG_LOG("Decoded Bucket Fixed Prefixes: " << bucket_fixed_prefixes);

@@ -30,6 +30,20 @@ TEST(EliasFanoTest, EncodingBig) {
 }
 
 
+TEST(EliasFanoTest, EncodingTwo) {
+    std::vector<uint32_t> data = {1, 1000};
+    int n = data.size();
+    EliasFanoEncodedData encoded = elias_fano_encode(data);
+    DEBUG_LOG(encoded.upper);
+    DEBUG_LOG(encoded.upper.size());
+    DEBUG_LOG(encoded.lower);
+    DEBUG_LOG(encoded.lower.size());
+    DEBUG_LOG(encoded.m);
+    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded, n);
+    EXPECT_EQ(data, decoded_data);
+}
+
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
