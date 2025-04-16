@@ -11,7 +11,6 @@ TEST(EliasFanoTest, Encoding) {
     DEBUG_LOG(encoded.m);
     std::vector<uint32_t> decoded_data = elias_fano_decode(encoded, n);
     EXPECT_EQ(data, decoded_data);
-    EXPECT_EQ(1, 0);
 }
 
 TEST(EliasFanoTest, EncodingBig) {
@@ -28,7 +27,6 @@ TEST(EliasFanoTest, EncodingBig) {
     DEBUG_LOG(encoded.m);
     std::vector<uint32_t> decoded_data = elias_fano_decode(encoded, n);
     EXPECT_EQ(data, decoded_data);
-    EXPECT_EQ(1, 0);
 }
 
 
