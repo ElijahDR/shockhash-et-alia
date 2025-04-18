@@ -102,13 +102,13 @@ HashTestResult run_hash_function(std::vector<std::string> &keys, HashTestParamet
     if (p.hash_function == "RecSplit") {
         for (int i = 0; i < test_runs; i++) {
             RecSplit recsplit = RecSplit(p.params["bucket_size"], p.params["leaf_size"], i);
-            times.push_back(time_hashing(keys, recsplit));
+            times.push_back(time_hashing(tmp_keys, recsplit));
             spaces.push_back(recsplit.space());
         }
     } else if (p.hash_function == "SicHash") {
         for (int i = 0; i < test_runs; i++) {
             SicHash sichash = SicHash(p.params["bucket_size"], p.params["p1"], p.params["p2"], p.params["alpha"]);
-            times.push_back(time_hashing(keys, sichash));
+            times.push_back(time_hashing(tmp_keys, sichash));
             spaces.push_back(sichash.space());
         }
     }
@@ -118,7 +118,7 @@ HashTestResult run_hash_function(std::vector<std::string> &keys, HashTestParamet
 
 void test_hashing_molecules() {
     // std::vector<std::string> molecules_keys = read_file("data/temp/molecules-100000.txt");
-    std::vector<std::string> molecules_keys = generate_random_keys(100000);
+    std::vector<std::string> molecules_keys = generate_random_keys(1000000);
     // std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
     //     {"n_keys", std::vector<double>{100000}},
     //     {"bucket_size", std::vector<double>{500, 1000, 2000}},
@@ -136,11 +136,11 @@ void test_hashing_molecules() {
     //     std::cout << result << std::endl;
     // }
     std::unordered_map<std::string, std::vector<double>> param_ranges_sichash = {
-        {"n_keys", std::vector<double>{1000000}},
+        {"n_keys", std::vector<double>{2000}},
         {"bucket_size", std::vector<double>{500, 1000, 2000}},
-        {"p1", std::vector<double>{0.33, 0.5}},
-        {"p2", std::vector<double>{0.33, 0.5}},
-        {"alpha", std::vector<double>{0.9}},
+        {"p1", std::vector<double>{0.8}},
+        {"p2", std::vector<double>{0.2}},
+        {"alpha", std::vector<double>{0.7}},
     };
     std::vector<HashTestParameters> parameters_sichash = generate_test_params("SicHash", param_ranges_sichash);
     for (auto p : parameters_sichash) {
