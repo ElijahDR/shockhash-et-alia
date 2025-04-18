@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <bit>
+#include <algorithm> 
 
 SimpleSelect::SimpleSelect() {
     return;
@@ -99,24 +100,37 @@ uint64_t SimpleSelect::select(uint64_t r) {
     if (r == 0) { 
         return 0;
     }
-    uint64_t primary_index = std::floor((float)r / L_spacing_);
-    uint64_t previous_primary_index = primary_index;
-    DEBUG_LOG("Primary Index: " << primary_index);
+    // uint64_t primary_index = std::floor((float)r / L_spacing_);
+    // uint64_t previous_primary_index = primary_index;
+    // DEBUG_LOG("Primary Index: " << primary_index);
+    // uint64_t current_rank = primary_inventory[primary_index];
+    // int gap = 1;
+    // DEBUG_LOG("Current Rank: " << current_rank);
+    // while (current_rank < r) {
+    //     primary_index++;
+    //     current_rank = primary_inventory[primary_index];
+    //     if (primary_inventory[primary_index-1] != primary_inventory[primary_index-2]) {
+    //         gap = 1;
+    //     } else {
+    //         gap++;
+    //     }
+    //     DEBUG_LOG("Gap: " << gap);
+    // }
+    // primary_index = primary_index < gap ? 0 : primary_index - gap;
+    // current_rank = primary_inventory[primary_index];
+    // DEBUG_LOG("Primary Index: " << primary_index);
+    // DEBUG_LOG("Current Rank: " << current_rank);
+
+    // uint64_t rank_left = r - current_rank;
+    // DEBUG_LOG("Rank Left: " << rank_left);
+    // if (rank_left == 0) {
+    //     return (primary_index * L_spacing_);
+    // }
+
+    auto it = std::lower_bound(primary_inventory.begin(), primary_inventory.end(), r);
+    uint64_t primary_index = std::distance(primary_inventory.begin(), it) - 1;
+
     uint64_t current_rank = primary_inventory[primary_index];
-    int gap = 1;
-    DEBUG_LOG("Current Rank: " << current_rank);
-    while (current_rank < r) {
-        primary_index++;
-        current_rank = primary_inventory[primary_index];
-        if (primary_inventory[primary_index-1] != primary_inventory[primary_index-2]) {
-            gap = 1;
-        } else {
-            gap++;
-        }
-        DEBUG_LOG("Gap: " << gap);
-    }
-    primary_index = primary_index < gap ? 0 : primary_index - gap;
-    current_rank = primary_inventory[primary_index];
     DEBUG_LOG("Primary Index: " << primary_index);
     DEBUG_LOG("Current Rank: " << current_rank);
 
@@ -125,13 +139,14 @@ uint64_t SimpleSelect::select(uint64_t r) {
     if (rank_left == 0) {
         return (primary_index * L_spacing_);
     }
+
     uint64_t secondary_index = LM_ratio_ * primary_index;
     uint64_t previous_secondary_index = secondary_index;
     DEBUG_LOG("Secondary Index: " << secondary_index);
     uint64_t secondary_rank = secondary_inventory[secondary_index];
     DEBUG_LOG("Secondary Rank: " << secondary_rank);
     
-    gap = 1;
+    int gap = 1;
     while (secondary_rank < rank_left && secondary_index < LM_ratio_ * (primary_index+1)) {
         secondary_index++;
         DEBUG_LOG("Secondary Index: " << secondary_index);

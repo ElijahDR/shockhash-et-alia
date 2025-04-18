@@ -1,5 +1,6 @@
 #include "algos/recsplit.h"
 #include "common/murmurhash.h"
+#include "common/MurmurHash3.h"
 #include "common/utils.h"
 #include "common/golomb_rice.h"
 #include <cmath>
@@ -105,9 +106,13 @@ uint32_t RecSplit::hash(const std::string &key) {
     int n_buckets = buckets_.size();
 
     // Extract elias fano data
-    std::vector<uint32_t> bucket_node_prefixes = elias_fano_decode(bucket_node_prefixes_ef_, n_buckets+1);
-    std::vector<uint32_t> bucket_unary_prefixes = elias_fano_decode(bucket_unary_prefixes_ef_, n_buckets+1);
-    std::vector<uint32_t> bucket_fixed_prefixes = elias_fano_decode(bucket_fixed_prefixes_ef_, n_buckets+1);
+    // std::vector<uint32_t> bucket_node_prefixes = elias_fano_decode(bucket_node_prefixes_ef_, n_buckets+1);
+    // std::vector<uint32_t> bucket_unary_prefixes = elias_fano_decode(bucket_unary_prefixes_ef_, n_buckets+1);
+    // std::vector<uint32_t> bucket_fixed_prefixes = elias_fano_decode(bucket_fixed_prefixes_ef_, n_buckets+1);
+    std::vector<uint32_t> bucket_node_prefixes = bucket_node_prefixes_;
+    std::vector<uint32_t> bucket_unary_prefixes = bucket_unary_prefixes_;
+    std::vector<uint32_t> bucket_fixed_prefixes = bucket_fixed_prefixes_;
+    
     DEBUG_LOG("Decoded Bucket Node Prefixes: " << bucket_node_prefixes);
     DEBUG_LOG("Decoded Bucket Unary Prefixes: " << bucket_unary_prefixes);
     DEBUG_LOG("Decoded Bucket Fixed Prefixes: " << bucket_fixed_prefixes);
@@ -361,9 +366,9 @@ uint32_t find_bijection(const std::vector<std::string> &keys) {
 
 uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &fanout_data) {
     uint32_t seed = 0;
+    std::vector<uint32_t> counts(fanout_data.fanout);
     while (true) {
         DEBUG_LOG("Seed: " << seed);
-        std::vector<uint32_t> counts(fanout_data.fanout);
         for (const std::string &key : keys) {
             counts[map_key_to_split(key, seed, fanout_data)] +=1;
         }
@@ -374,6 +379,7 @@ uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &
         }
 
         seed++;
+        std::fill(counts.begin(), counts.end(), 0);    
     }
 }
 

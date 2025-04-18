@@ -14,15 +14,19 @@
 #include <random>
 #include <chrono>
 
-void run_recsplit_random_keys(int n=1000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
+void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
     std::vector<std::string> keys = generate_random_keys(n);
 
-    RecSplit recsplit(bucket_size, leaf_size);
-    test_perfect_hashing(keys, recsplit);
-
-    HashFunctionSpace space = recsplit.space();
-    std::cout << space << std::endl;
-}
+    for (int i = 0; i < 1; i++) {
+        RecSplit recsplit(bucket_size, leaf_size, i);
+        test_perfect_hashing(keys, recsplit);
+        // HashFunctionTime time = time_hashing(keys, recsplit);
+        // std::cout << time << std::endl;
+    
+        HashFunctionSpace space = recsplit.space();
+        std::cout << space << std::endl;
+    }
+    }
 
 void run_sichash_random_keys() {
     std::vector<std::string> keys = generate_random_keys(100000);
@@ -151,8 +155,9 @@ void test_hashing_molecules() {
 }
 
 int main(int argc, char *argv[]) {
-    test_hashing_molecules();
+    // test_hashing_molecules();
     // run_sichash_random_keys();
+    run_recsplit_random_keys();
 
     return 0;
 }
