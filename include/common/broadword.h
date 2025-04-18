@@ -3,6 +3,8 @@
 
 #include "common/utils.h"
 #include <vector>
+#include <bitset>
+
 
 const uint64_t L8 = 0x0101010101010101;
 
