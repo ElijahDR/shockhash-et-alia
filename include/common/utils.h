@@ -7,6 +7,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <map>
+#include <chrono>
 #include "algos/hash_function.h"
 
 #ifdef DEBUG
