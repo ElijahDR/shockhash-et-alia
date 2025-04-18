@@ -50,6 +50,7 @@ private:
     std::vector<BasicRibbon> ribbons;
 
     EliasFanoEncodedData holes_ef_;
+    std::vector<uint32_t> holes_;
     uint32_t n_holes_;
 
     uint32_t bucket_seed_;

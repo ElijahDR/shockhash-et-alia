@@ -30,9 +30,10 @@ void SicHash::build(const std::vector<std::string> &keys) {
         build_cuckoo_hash_table(bucket);
     }
 
-    ribbons.push_back(BasicRibbon(keys_classes_[0], hash_indexes_per_class_[0], 1, 0.25));
-    ribbons.push_back(BasicRibbon(keys_classes_[1], hash_indexes_per_class_[1], 2, 0.25));
-    ribbons.push_back(BasicRibbon(keys_classes_[2], hash_indexes_per_class_[2], 3, 0.25));
+    std::cout << "Cuckoo Hash Tables Created, making ribbons..." << std::endl;
+    ribbons.push_back(BasicRibbon(keys_classes_[0], hash_indexes_per_class_[0], 1, 0.1));
+    ribbons.push_back(BasicRibbon(keys_classes_[1], hash_indexes_per_class_[1], 2, 0.1));
+    ribbons.push_back(BasicRibbon(keys_classes_[2], hash_indexes_per_class_[2], 3, 0.1));
 
     std::cout << "Bucket Seeds: " << bucket_seeds_ << std::endl;
 
@@ -70,7 +71,7 @@ void SicHash::make_minimal() {
 
     holes_ef_ = elias_fano_encode(holes_to_encode);
     n_holes_ = holes_to_encode.size();
-
+    holes_ = holes_to_encode;
 }
 
 uint32_t SicHash::hash(const std::string &key) {
@@ -97,9 +98,10 @@ uint32_t SicHash::hash(const std::string &key) {
 
     uint32_t curr_hash = global_index + hash_table_index;
     if (curr_hash > keys_.size()) {
-        std::vector<uint32_t> decoded_holes = elias_fano_decode(holes_ef_, n_holes_);
-        DEBUG_LOG(decoded_holes);
-        return decoded_holes[curr_hash - keys_.size()];
+        // std::vector<uint32_t> decoded_holes = elias_fano_decode(holes_ef_, n_holes_);
+        // DEBUG_LOG(decoded_holes);
+        // return decoded_holes[curr_hash - keys_.size()];
+        return holes_[curr_hash - keys_.size()];
     }
     return curr_hash;
 }

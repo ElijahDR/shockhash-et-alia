@@ -124,23 +124,23 @@ void test_hashing_molecules() {
     //     {"bucket_size", std::vector<double>{500, 1000, 2000}},
     //     {"leaf_size", std::vector<double>{8, 10, 12, 14, 16, 18, 20, 22}},
     // };
-    // std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
-    //     {"n_keys", std::vector<double>{1000000}},
-    //     {"bucket_size", std::vector<double>{500, 1000, 2000}},
-    //     {"leaf_size", std::vector<double>{8}},
-    // };
-    // std::vector<HashTestParameters> parameters_recsplit = generate_test_params("RecSplit", param_ranges_recsplit);
-    // for (auto p : parameters_recsplit) {
-    //     std::cout << p << std::endl;
-    //     HashTestResult result = run_hash_function(molecules_keys, p, 2);
-    //     std::cout << result << std::endl;
-    // }
-    std::unordered_map<std::string, std::vector<double>> param_ranges_sichash = {
-        {"n_keys", std::vector<double>{2000}},
+    std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
+        {"n_keys", std::vector<double>{1000000}},
         {"bucket_size", std::vector<double>{500, 1000, 2000}},
-        {"p1", std::vector<double>{0.8}},
-        {"p2", std::vector<double>{0.2}},
-        {"alpha", std::vector<double>{0.7}},
+        {"leaf_size", std::vector<double>{8, 16, 24}},
+    };
+    std::vector<HashTestParameters> parameters_recsplit = generate_test_params("RecSplit", param_ranges_recsplit);
+    for (auto p : parameters_recsplit) {
+        std::cout << p << std::endl;
+        HashTestResult result = run_hash_function(molecules_keys, p, 2);
+        std::cout << result << std::endl;
+    }
+    std::unordered_map<std::string, std::vector<double>> param_ranges_sichash = {
+        {"n_keys", std::vector<double>{100000}},
+        {"bucket_size", std::vector<double>{500, 1000, 2000}},
+        {"p1", std::vector<double>{0.33, 0.5}},
+        {"p2", std::vector<double>{0.33, 0.5}},
+        {"alpha", std::vector<double>{0.95}},
     };
     std::vector<HashTestParameters> parameters_sichash = generate_test_params("SicHash", param_ranges_sichash);
     for (auto p : parameters_sichash) {
