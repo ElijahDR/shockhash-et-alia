@@ -8,14 +8,12 @@
 #include <iostream>
 #include <random>
 
-const uint32_t BUCKET_SEED = 12;
-
 std::unordered_map<std::string, uint32_t> memo_murmur;
 
 
-RecSplit::RecSplit(uint32_t bucket_size, uint32_t leaf_size)
-    : bucket_size_(bucket_size), leaf_size_(leaf_size), splitting_tree_() {
-
+RecSplit::RecSplit(uint32_t bucket_size, uint32_t leaf_size, uint32_t bucket_seed)
+: bucket_size_(bucket_size), leaf_size_(leaf_size), splitting_tree_(), bucket_seed_(bucket_seed) {
+    
     golomb_rice_parameters_leaf_.resize(leaf_size+1);
     for (uint32_t i = 2; i <= leaf_size; i++) {
         golomb_rice_parameters_leaf_[i] = compute_grp_bijection(i);
@@ -23,9 +21,11 @@ RecSplit::RecSplit(uint32_t bucket_size, uint32_t leaf_size)
     DEBUG_LOG("Golomb Rice Parameter Table: " << golomb_rice_parameters_leaf_);
 
     grp_table_ = generate_all_grp();
+    DEBUG_LOG("Generating GRP Done");
 }
 
 void RecSplit::build(const std::vector<std::string> &keys) {
+    DEBUG_LOG("Building RecSplit");
     keys_ = keys;
     DEBUG_LOG("Creating Buckets...");
 
@@ -47,7 +47,8 @@ HashFunctionSpace RecSplit::space() {
     space_usage.push_back(std::make_pair("Splitting Tree Overhead", splitting_tree_overhead));
     space_usage.push_back(std::make_pair("Splitting Tree Fixed", splitting_tree_.fixed.size()));
     space_usage.push_back(std::make_pair("Splitting Tree Unary", splitting_tree_.unary.size()));
-    int total_splitting_tree = splitting_tree_overhead + splitting_tree_.fixed.size() + splitting_tree_.unary.size();
+    // int total_splitting_tree = splitting_tree_overhead + splitting_tree_.fixed.size() + splitting_tree_.unary.size();
+    int total_splitting_tree = splitting_tree_.fixed.size() + splitting_tree_.unary.size();
     space_usage.push_back(std::make_pair("Total Splitting Tree", total_splitting_tree));
 
     space_usage.push_back(std::make_pair("Bucket Node Prefixes", elias_fano_space(bucket_node_prefixes_ef_)));
@@ -58,7 +59,7 @@ HashFunctionSpace RecSplit::space() {
 
     int total_bits = total_bucket_prefixes + total_splitting_tree;
     double bits_per_key = total_bits / (double)keys_.size();
-    return HashFunctionSpace{space_usage, total_bits, bits_per_key, (int)keys_.size()};
+    return HashFunctionSpace{space_usage, total_bits, bits_per_key};
 }   
 
 
@@ -327,6 +328,15 @@ void RecSplit::create_buckets() {
     DEBUG_LOG("Bucket Fixed Prefixes: " << bucket_fixed_prefixes_);
 }
 
+
+
+uint32_t RecSplit::assign_bucket(const std::string &key, uint32_t bucket_count) {
+    uint32_t hash = murmur32(key, bucket_seed_) >> 16;
+    uint32_t bucket = floor((hash * bucket_count) >> 16);
+
+    return bucket;
+}
+
 uint32_t find_bijection(const std::vector<std::string> &keys) {
     uint32_t seed = 0;
     while (true) {
@@ -380,13 +390,6 @@ uint32_t map_key_to_split(const std::string &key, const uint32_t &seed, const Fa
     }
 
     // throw "Map Key to Split function didn't work...";
-}
-
-uint32_t assign_bucket(const std::string &key, uint32_t bucket_count) {
-    uint32_t hash = murmur32(key, BUCKET_SEED) >> 16;
-    uint32_t bucket = floor((hash * bucket_count) >> 16);
-
-    return bucket;
 }
 
 FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size) { 

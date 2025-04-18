@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <fstream>
+#include <unordered_map>
 #include "algos/sichash.h"
 #include "algos/hash_function.h"
 
@@ -20,6 +22,11 @@ int log2_approx(int x);
 
 std::string generate_random_string(int length);
 std::vector<std::string> generate_random_keys(int n);
+std::vector<std::string> read_file(std::string file_name);
+bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_function);
+HashTestResult test_hashing(std::vector<std::string> &keys, HashFunction &hash_function);
+HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash_function);
+
 
 const double PI = 3.14159265358979323846;
 const double GOLDEN_RATIO = (std::sqrt(5.0) + 1.0) / 2.0;
@@ -114,13 +121,48 @@ inline std::ostream& operator<<(std::ostream& os, const std::map<K, V> &data) {
     return os;
 }
 
+template <typename K, typename V>
+inline std::ostream& operator<<(std::ostream& os, const std::unordered_map<K, V> &data) {
+    os << "{";
+    for (const auto &[key, value] : data) {
+        os << key << ": " << value << ", ";
+    }
+    os << "}";
+    return os;
+}
+
 
 inline std::ostream& operator<<(std::ostream& os, const HashFunctionSpace &data) {
     os << "HashFunctionSpace {\n"
        << "  space usage: " << data.space_usage << "\n"
        << "  total bits: " << data.total_bits << "\n"
        << "  bits per key: " << data.bits_per_key << "\n"
-       << "  number of keys: " << data.n_keys << "\n"
+       << "}";
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const HashFunctionTime &data) {
+    os << "HashFunctionTime {\n"
+       << "  build time: " << data.build_time << "\n"
+       << "  hashing time: " << data.hashing_time << "\n"
+       << "  throughput (keys/s): " << data.throughput << "\n"
+       << "}";
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const HashTestResult &data) {
+    os << "HashTestResult {\n"
+       << "  space: " << data.space << "\n"
+       << "  time: " << data.time << "\n"
+       << "}";
+    return os;
+}
+
+
+inline std::ostream& operator<<(std::ostream& os, const HashTestParameters &data) {
+    os << "HashTestParameters {\n"
+       << "  hash function: " << data.hash_function << "\n"
+       << "  params: " << data.params << "\n"
        << "}";
     return os;
 }

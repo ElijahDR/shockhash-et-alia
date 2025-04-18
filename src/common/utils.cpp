@@ -47,3 +47,84 @@ std::vector<std::string> generate_random_keys(int n) {
 
     return std::vector<std::string>(unique_keys.begin(), unique_keys.end());
 }
+
+std::vector<std::string> read_file(std::string file_name) {
+    std::cout << "Reading file: " << file_name << std::endl;
+    std::ifstream input_file(file_name);
+    std::unordered_set<std::string> keys;
+    std::string line;
+
+    while (getline(input_file, line)){
+        keys.insert(line);
+    }
+
+    input_file.close();
+    DEBUG_LOG(keys.size());
+    std::cout << "Finished Reading in file" << std::endl;
+    return std::vector<std::string>(keys.begin(), keys.end());
+}
+
+
+bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_function) {
+    auto start_time = std::chrono::steady_clock::now();
+    hash_function.build(keys);
+    auto end_time = std::chrono::steady_clock::now();
+    auto duration = end_time - start_time;
+    auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    std::cout << "Build took: " << build_duration.count() << " ms" << std::endl;
+    std::unordered_set<uint32_t> hashes;
+    int collisions = 0;
+    start_time = std::chrono::steady_clock::now();
+    for (auto key : keys) {
+        uint32_t hash = hash_function.hash(key);
+        if (hashes.contains(hash)) {
+            print_colour(key + " collided with another", ConsoleColour::Red);
+            collisions++;
+        }
+        hashes.insert(hash);
+    }
+    DEBUG_LOG("Hashing Finished");
+    end_time = std::chrono::steady_clock::now();
+    duration = end_time - start_time;
+    auto hashing_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    std::cout << "Hashing took: " << hashing_duration.count() << " ms" << std::endl;
+
+    if (collisions == 0) {
+        DEBUG_LOG("Here");
+        if (hashes.size() == keys.size()) {
+            print_colour(hash_function.name() + " succeeded minimal perfect hashing!", ConsoleColour::Green);
+        } else {
+            print_colour(hash_function.name() + " succeeded perfect hashing!", ConsoleColour::Green);
+        }
+        return true;
+    } else {
+        print_colour(hash_function.name() + " failed to correctly hash, with " + std::to_string(collisions) + " collisions", ConsoleColour::Red);
+        return false;
+    }
+}
+
+HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash_function) {
+    HashFunctionTime result;
+    auto start_time = std::chrono::steady_clock::now();
+    hash_function.build(keys);
+    auto end_time = std::chrono::steady_clock::now();
+    auto duration = end_time - start_time;
+    auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    result.build_time = build_duration.count();
+    std::cout << "Build took: " << build_duration.count() << " ms" << std::endl;
+    start_time = std::chrono::steady_clock::now();
+    for (auto key : keys) {
+        uint32_t hash = hash_function.hash(key);
+    }
+    DEBUG_LOG("Hashing Finished");
+    end_time = std::chrono::steady_clock::now();
+    duration = end_time - start_time;
+    auto hashing_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    result.hashing_time = hashing_duration.count();
+    std::cout << "Hashing took: " << hashing_duration.count() << " ms" << std::endl;
+    double throughput = (double)keys.size() / ((double)hashing_duration.count() / 1000);
+    std::cout << "Throughput: " << throughput << " (keys/s)" << std::endl;
+    result.throughput = throughput;
+
+    return result;
+}

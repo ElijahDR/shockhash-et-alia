@@ -4,7 +4,7 @@ from tqdm import tqdm
 import git
 
 dataset_info_dict = {
-    "molecules" : {"url" : "HoangHa/belka-smiles-train-raw", "filename" : "molecules", "column_filter_name" : "protein_name", "column_filter_name" : "BRD4", "column_value" : "molecule_smiles"},
+    "molecules" : {"url" : "HoangHa/belka-smiles-train-raw", "filename" : "molecules", "column_filter_name" : "protein_name", "column_filter_value" : "BRD4", "column_value" : "molecule_smiles"},
 }
 
 def get_git_root():
@@ -26,11 +26,11 @@ if __name__ == "__main__":
     while n != 0:
         print(f"Writing {n} samples")
         pbar = tqdm(total=n)
-        with open(f"{dataset_info["filename"]}-{n}.txt", "w+") as f:
+        with open(f"{file_root}{dataset_info["filename"]}-{n}.txt", "w+") as f:
             i = 1
             for example in shuffled_dataset["train"]:
-                if example[dataset_info["column_filter_name"]] == dataset_info["column_filter_name"]:
-                    f.write(dataset_info["coumn_value"] + "\n")
+                if example[dataset_info["column_filter_name"]] == dataset_info["column_filter_value"]:
+                    f.write(example[dataset_info["column_value"]] + "\n")
                     if i >= n:
                         break
                     i+=1

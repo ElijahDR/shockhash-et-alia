@@ -3,12 +3,28 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 struct HashFunctionSpace {
     std::vector<std::pair<std::string, int>> space_usage;
     int total_bits;
     double bits_per_key;
-    int n_keys;
+};
+
+struct HashFunctionTime {
+    int build_time;
+    int hashing_time;
+    double throughput;
+};
+
+struct HashTestParameters {
+    std::string hash_function;
+    std::unordered_map<std::string, double> params;
+};
+
+struct HashTestResult {
+    HashFunctionSpace space;
+    HashFunctionTime time;
 };
 
 class HashFunction {
