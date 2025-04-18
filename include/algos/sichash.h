@@ -8,6 +8,7 @@
 #include <iostream>
 #include "algos/hash_function.h"
 #include "common/ribbon.h"
+#include "common/elias_fano.h"
 
 
 class SicHash : public HashFunction {
@@ -17,6 +18,7 @@ public:
     void build(const std::vector<std::string> &keys) override;
 
     uint32_t hash(const std::string &key) override;
+    uint32_t perfect_hash(const std::string &key);
     uint32_t naive_hash(const std::string &key);
 
     std::string name() override { return "SicHash"; };
@@ -24,6 +26,7 @@ public:
 
 private:
     void create_buckets();
+    void make_minimal();
     uint32_t assign_bucket(const std::string &key);
     void assign_classes();
     std::vector<uint32_t> generate_hash(size_t index, uint32_t base_seed);
@@ -46,6 +49,9 @@ private:
 
     std::vector<BasicRibbon> ribbons;
 
+    EliasFanoEncodedData holes_ef_;
+    uint32_t n_holes_;
+
     uint32_t bucket_seed_;
     uint32_t bucket_size_;
     std::vector<std::string> keys_;
@@ -58,7 +64,8 @@ private:
     std::vector<std::vector<uint64_t>> hash_indexes_per_class_;
 
     std::vector<uint32_t> bucket_seeds_;
-    std::vector<size_t> bucket_prefixes_;
+    std::vector<uint32_t> bucket_prefixes_;
+    EliasFanoEncodedData bucket_prefixes_ef_;
 };
 
 

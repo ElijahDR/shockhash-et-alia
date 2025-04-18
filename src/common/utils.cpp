@@ -128,3 +128,8 @@ HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash
 
     return result;
 }
+
+void write_result_to_file(HashTestResult &result, std::string file_name) {
+    std::ofstream file(file_name);
+    file << "hash_function,params,total_bits,bits_per_key,build_time,hashing_time,throughput,space_usage\n";
+}

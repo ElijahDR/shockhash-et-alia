@@ -35,9 +35,77 @@ void SicHash::build(const std::vector<std::string> &keys) {
     ribbons.push_back(BasicRibbon(keys_classes_[2], hash_indexes_per_class_[2], 3, 0.25));
 
     std::cout << "Bucket Seeds: " << bucket_seeds_ << std::endl;
+
+    make_minimal();
+    bucket_prefixes_ef_ = elias_fano_encode(bucket_prefixes_);
+}
+
+void SicHash::make_minimal() {
+    std::vector<bool> taken(bucket_prefixes_.back(), 0);
+    for (auto key : keys_) {
+        taken[perfect_hash(key)] = 1;
+    }
+
+    DEBUG_LOG(taken);
+    std::vector<uint32_t> holes;
+    for (int i = 0; i < keys_.size(); i++) {
+        if (!taken[i]) {
+            holes.push_back(i);
+        }
+    }
+
+    std::vector<uint32_t> holes_to_encode;
+    int curr = 0;
+    int i = 0;
+    for (int j = 0; j < (bucket_prefixes_.back() - keys_.size()); j++) {
+        if (taken[keys_.size() + j]) {
+            curr = holes[i];
+            i++;
+        }
+        holes_to_encode.push_back(curr);
+    }
+
+
+    DEBUG_LOG(holes_to_encode);
+
+    holes_ef_ = elias_fano_encode(holes_to_encode);
+    n_holes_ = holes_to_encode.size();
+
 }
 
 uint32_t SicHash::hash(const std::string &key) {
+    DEBUG_LOG("===================");
+    DEBUG_LOG("Key: " << key);
+    // auto it = std::find(keys_.begin(), keys_.end(), key);
+    // DEBUG_LOG("Index: " << it - keys_.begin());
+    int bucket = assign_bucket(key);
+    DEBUG_LOG("Bucket for key " << key << ": " << bucket);
+    std::vector<uint32_t> bucket_prefixes = elias_fano_decode(bucket_prefixes_ef_, bucket_sizes_.size()+1);
+    int global_index = bucket_prefixes_[bucket];
+    DEBUG_LOG("Global Index for key " << key << ": " << global_index);
+    uint32_t bucket_seed = bucket_seeds_[bucket];
+
+    uint64_t class_for_key = key_class(key);
+    uint64_t hash_index = ribbons[class_for_key].query(key);
+    // int hash_index = bits_to_int(hash_index_map_[key]);
+    // int hash_index = hash_index_map_raw_[key];
+    DEBUG_LOG("Hash Index for key " << key << ": " << hash_index);
+    int table_size = bucket_sizes_[bucket] / alpha_;
+    int hash_table_index = murmur32(key, (bucket_seed * 8) + hash_index) % table_size;
+    DEBUG_LOG("Hash Table Index for key " << key << ": " << hash_table_index);
+    DEBUG_LOG("Overall Hash for key" << key << ": " << global_index + hash_table_index);
+
+    uint32_t curr_hash = global_index + hash_table_index;
+    if (curr_hash > keys_.size()) {
+        std::vector<uint32_t> decoded_holes = elias_fano_decode(holes_ef_, n_holes_);
+        DEBUG_LOG(decoded_holes);
+        return decoded_holes[curr_hash - keys_.size()];
+    }
+    return curr_hash;
+}
+
+
+uint32_t SicHash::perfect_hash(const std::string &key) {
     DEBUG_LOG("===================");
     DEBUG_LOG("Key: " << key);
     // auto it = std::find(keys_.begin(), keys_.end(), key);
@@ -59,6 +127,25 @@ uint32_t SicHash::hash(const std::string &key) {
     DEBUG_LOG("Overall Hash for key" << key << ": " << global_index + hash_table_index);
 
     return global_index + hash_table_index;
+}
+
+HashFunctionSpace SicHash::space() {
+    std::vector<std::pair<std::string, int>> space_usage;
+    int ribbon_1 = ribbons[0].space();
+    int ribbon_2 = ribbons[1].space();
+    int ribbon_3 = ribbons[2].space();
+    space_usage.push_back(std::make_pair("1 Bit Ribbon", ribbon_1));
+    space_usage.push_back(std::make_pair("2 Bit Ribbon", ribbon_2));
+    space_usage.push_back(std::make_pair("3 Bit Ribbon", ribbon_3));
+    int total_ribbon = ribbon_1 + ribbon_2 + ribbon_3;
+    space_usage.push_back(std::make_pair("Total Ribbon", total_ribbon));
+
+    int holes = elias_fano_space(holes_ef_);
+    space_usage.push_back(std::make_pair("Holes", holes));
+
+    int total_bits = total_ribbon + holes;
+    double bits_per_key = total_bits / (double)keys_.size();
+    return HashFunctionSpace{space_usage, total_bits, bits_per_key};
 }
 
 uint32_t SicHash::naive_hash(const std::string &key) {
@@ -151,44 +238,24 @@ uint32_t SicHash::extract_class_assignment(size_t index) {
     }
 }
 
-HashFunctionSpace SicHash::space() {
-    // std::vector<std::pair<std::string, int>> space_usage;
-    // int splitting_tree_overhead = (sizeof(splitting_tree_) + sizeof(splitting_tree_.fixed) + sizeof(splitting_tree_.unary)) * 8;
-    // space_usage.push_back(std::make_pair("Splitting Tree Overhead", splitting_tree_overhead));
-    // space_usage.push_back(std::make_pair("Splitting Tree Fixed", splitting_tree_.fixed.size()));
-    // space_usage.push_back(std::make_pair("Splitting Tree Unary", splitting_tree_.unary.size()));
-    // int total_splitting_tree = splitting_tree_overhead + splitting_tree_.fixed.size() + splitting_tree_.unary.size();
-    // space_usage.push_back(std::make_pair("Total Splitting Tree", total_splitting_tree));
-
-    // space_usage.push_back(std::make_pair("Bucket Node Prefixes", elias_fano_space(bucket_node_prefixes_ef_)));
-    // space_usage.push_back(std::make_pair("Bucket Unary Prefixes", elias_fano_space(bucket_unary_prefixes_ef_)));
-    // space_usage.push_back(std::make_pair("Bucket Fixed Prefixes", elias_fano_space(bucket_fixed_prefixes_ef_)));
-    // int total_bucket_prefixes = elias_fano_space(bucket_node_prefixes_ef_) + elias_fano_space(bucket_unary_prefixes_ef_) + elias_fano_space(bucket_fixed_prefixes_ef_);
-    // space_usage.push_back(std::make_pair("Total Bucket Prefixes", total_bucket_prefixes));
-
-    // int total_bits = total_bucket_prefixes + total_splitting_tree;
-    // double bits_per_key = total_bits / (double)keys_.size();
-    // return HashFunctionSpace{space_usage, total_bits, bits_per_key, (int)keys_.size()};
-    return HashFunctionSpace{};
-}   
 
 void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
     uint32_t seed = 0;
     while (true) {
         rattle_counters_.assign(keys_.size(), 0);
-        DEBUG_LOG("Alpha: " << alpha_);
+        // DEBUG_LOG("Alpha: " << alpha_);
         int table_size = bucket.size() / alpha_;
-        DEBUG_LOG("Table Size: " << table_size);
+        // DEBUG_LOG("Table Size: " << table_size);
         std::vector<int> table(table_size, -1);
         bool insert;
         for (int i = 0; i < bucket.size(); i++) {
             // if (i % 500 == 0) {
             //     std::cout << "Inserted " << i << " elements" << std::endl;
             // }
-            DEBUG_LOG("Seed: " << seed << " index: " << i);
+            // DEBUG_LOG("Seed: " << seed << " index: " << i);
             insert = insert_into_hash_table(bucket[i], seed * 8, table);
-            DEBUG_LOG("Current Hash Table: " << table);
-            DEBUG_LOG("Current Rattle Counters: " << rattle_counters_);
+            // DEBUG_LOG("Current Hash Table: " << table);
+            // DEBUG_LOG("Current Rattle Counters: " << rattle_counters_);
             if (!insert) break;
         }
 

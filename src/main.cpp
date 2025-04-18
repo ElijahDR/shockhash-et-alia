@@ -32,9 +32,11 @@ void run_sichash_random_keys() {
 }
 
 void run_sichash_build() {
-    std::vector<std::string> keys = generate_random_keys(15);
-    SicHash sichash(15, 0.33, 0.34, 0.99);
+    std::vector<std::string> keys = generate_random_keys(100);
+    SicHash sichash(100, 0.33, 0.34, 0.99);
     sichash.build(keys);
+
+    test_perfect_hashing(keys, sichash);
 }
 
 void run_shockhash_random_keys() {
@@ -90,42 +92,67 @@ std::vector<HashTestParameters> generate_test_params(std::string hash_function_n
     
 }
 
-HashTestResult run_hash_function(std::vector<std::string> &keys, HashTestParameters &p) {
+HashTestResult run_hash_function(std::vector<std::string> &keys, HashTestParameters &p, int test_runs=1) {
     HashFunctionTime time;
     HashFunctionSpace space;
+    std::vector<HashFunctionTime> times;
+    std::vector<HashFunctionSpace> spaces;
     std::vector<std::string> tmp_keys(keys.begin(), keys.begin() + p.params["n_keys"]);
     DEBUG_LOG(tmp_keys);
     if (p.hash_function == "RecSplit") {
-        RecSplit recsplit = RecSplit(p.params["bucket_size"], p.params["leaf_size"]);
-        time = time_hashing(keys, recsplit);
-        space = recsplit.space();
+        for (int i = 0; i < test_runs; i++) {
+            RecSplit recsplit = RecSplit(p.params["bucket_size"], p.params["leaf_size"], i);
+            times.push_back(time_hashing(keys, recsplit));
+            spaces.push_back(recsplit.space());
+        }
+    } else if (p.hash_function == "SicHash") {
+        for (int i = 0; i < test_runs; i++) {
+            SicHash sichash = SicHash(p.params["bucket_size"], p.params["p1"], p.params["p2"], p.params["alpha"]);
+            times.push_back(time_hashing(keys, sichash));
+            spaces.push_back(sichash.space());
+        }
     }
 
-    return HashTestResult{space, time};
+    return HashTestResult{average_space(spaces), average_time(times)};
 }
 
 void test_hashing_molecules() {
+    // std::vector<std::string> molecules_keys = read_file("data/temp/molecules-100000.txt");
+    std::vector<std::string> molecules_keys = generate_random_keys(100000);
     // std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
     //     {"n_keys", std::vector<double>{100000}},
     //     {"bucket_size", std::vector<double>{500, 1000, 2000}},
     //     {"leaf_size", std::vector<double>{8, 10, 12, 14, 16, 18, 20, 22}},
     // };
-    std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
-        {"n_keys", std::vector<double>{100}},
-        {"bucket_size", std::vector<double>{100}},
-        {"leaf_size", std::vector<double>{8}},
+    // std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
+    //     {"n_keys", std::vector<double>{1000000}},
+    //     {"bucket_size", std::vector<double>{500, 1000, 2000}},
+    //     {"leaf_size", std::vector<double>{8}},
+    // };
+    // std::vector<HashTestParameters> parameters_recsplit = generate_test_params("RecSplit", param_ranges_recsplit);
+    // for (auto p : parameters_recsplit) {
+    //     std::cout << p << std::endl;
+    //     HashTestResult result = run_hash_function(molecules_keys, p, 2);
+    //     std::cout << result << std::endl;
+    // }
+    std::unordered_map<std::string, std::vector<double>> param_ranges_sichash = {
+        {"n_keys", std::vector<double>{1000000}},
+        {"bucket_size", std::vector<double>{500, 1000, 2000}},
+        {"p1", std::vector<double>{0.33, 0.5}},
+        {"p2", std::vector<double>{0.33, 0.5}},
+        {"alpha", std::vector<double>{0.9}},
     };
-    std::vector<HashTestParameters> parameters = generate_test_params("RecSplit", param_ranges_recsplit);
-    std::vector<std::string> molecules_keys = read_file("data/temp/molecules-1000.txt");
-    for (auto p : parameters) {
+    std::vector<HashTestParameters> parameters_sichash = generate_test_params("SicHash", param_ranges_sichash);
+    for (auto p : parameters_sichash) {
         std::cout << p << std::endl;
-        HashTestResult result = run_hash_function(molecules_keys, p);
+        HashTestResult result = run_hash_function(molecules_keys, p, 2);
         std::cout << result << std::endl;
     }
 }
 
 int main(int argc, char *argv[]) {
     test_hashing_molecules();
+    // run_sichash_random_keys();
 
     return 0;
 }

@@ -492,9 +492,7 @@ tests/CMakeFiles/test_elias_fano.dir/common/elias_fano.test.cpp.o: tests/common/
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stdint.h \
   include/algos/hash_function.h \
-  include/algos/sichash.h \
   include/common/elias_fano.h \
-  include/common/ribbon.h \
   include/common/utils.h \
   /opt/homebrew/include/gtest/gtest-assertion-result.h \
   /opt/homebrew/include/gtest/gtest-death-test.h \
@@ -548,8 +546,6 @@ tests/CMakeFiles/test_elias_fano.dir/common/elias_fano.test.cpp.o: tests/common/
 /opt/homebrew/include/gtest/gtest-assertion-result.h:
 
 include/common/utils.h:
-
-include/algos/sichash.h:
 
 include/algos/hash_function.h:
 
@@ -1280,8 +1276,6 @@ include/algos/hash_function.h:
 /Library/Developer/CommandLineTools/usr/include/c++/v1/__iterator/istreambuf_iterator.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk/usr/include/string.h:
-
-include/common/ribbon.h:
 
 /Library/Developer/CommandLineTools/usr/include/c++/v1/__algorithm/remove_copy_if.h:
 

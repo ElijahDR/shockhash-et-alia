@@ -492,7 +492,6 @@ tests/CMakeFiles/test_ribbon.dir/common/ribbon.test.cpp.o: tests/common/ribbon.t
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stdint.h \
   include/algos/hash_function.h \
-  include/algos/sichash.h \
   include/common/murmurhash.h \
   include/common/ribbon.h \
   include/common/utils.h \
@@ -550,8 +549,6 @@ tests/CMakeFiles/test_ribbon.dir/common/ribbon.test.cpp.o: tests/common/ribbon.t
 include/common/utils.h:
 
 include/common/murmurhash.h:
-
-include/algos/sichash.h:
 
 include/algos/hash_function.h:
 

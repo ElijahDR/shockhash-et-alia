@@ -6,7 +6,7 @@
 #include <string>
 #include <fstream>
 #include <unordered_map>
-#include "algos/sichash.h"
+#include <map>
 #include "algos/hash_function.h"
 
 #ifdef DEBUG

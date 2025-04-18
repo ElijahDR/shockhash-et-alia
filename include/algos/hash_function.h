@@ -37,5 +37,48 @@ public:
     virtual HashFunctionSpace space() = 0;
 };
 
+inline HashFunctionTime average_time(std::vector<HashFunctionTime> &times) {
+    int total_build_time = 0;
+    int total_hash_time = 0;
+    double total_throughput = 0;
+
+    for (auto t : times) {
+        total_build_time += t.build_time;
+        total_hash_time += t.hashing_time;
+        total_throughput += t.throughput;
+    }
+
+    return HashFunctionTime{
+        (int)(total_build_time / times.size()), 
+        (int)(total_hash_time / times.size()), 
+        (double)(total_throughput / times.size()), 
+    };
+}
+
+inline HashFunctionSpace average_space(std::vector<HashFunctionSpace> &spaces) {
+    int total_bits = 0;
+    double total_bits_per_key = 0;
+    std::vector<int> space_usages(spaces[0].space_usage.size(), 0);
+
+    for (auto s : spaces) {
+        total_bits += s.total_bits;
+        total_bits_per_key += s.bits_per_key;
+        for (int i = 0; i < s.space_usage.size(); i++) {
+            space_usages[i] += s.space_usage[i].second;
+        }
+    }
+
+    std::vector<std::pair<std::string, int>> total_space_usage;
+    for (int i = 0; i < space_usages.size(); i++) {
+        total_space_usage.push_back(std::make_pair(spaces[0].space_usage[i].first, space_usages[i] / spaces.size()));
+    }
+
+    return HashFunctionSpace{
+        total_space_usage,
+        (int)(total_bits / spaces.size()), 
+        (double)((double)total_bits_per_key / (double)spaces.size()), 
+    };
+}
+
 
 #endif

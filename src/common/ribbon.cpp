@@ -44,6 +44,10 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
     make_compact_z();
 }
 
+uint32_t BasicRibbon::space() {
+    return compact_Z.size() * 64;
+}
+
 void BasicRibbon::make_compact_z() {
     int number_compact = std::ceil((m * r) / 64);
     // compact_Z.resize(number_compact, 0);
