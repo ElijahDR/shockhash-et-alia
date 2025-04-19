@@ -154,10 +154,24 @@ void test_hashing_molecules() {
     }
 }
 
+void test_elias_fano() {
+    std::vector<uint32_t> data = {};
+    for (int i = 0; i < 10; i++) {
+        data.push_back(1234 + i);
+    }
+    int n = data.size();
+    std::cout << data << std::endl;
+    EliasFanoEncodedData encoded = elias_fano_encode(data);
+    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded, n);
+    std::cout << encoded.lower << encoded.lower.size() << std::endl;
+    std::cout << encoded.upper << encoded.upper.size() << std::endl;
+}
+
 int main(int argc, char *argv[]) {
     // test_hashing_molecules();
     // run_sichash_random_keys();
-    run_recsplit_random_keys();
+    // run_recsplit_random_keys();
+    test_elias_fano();
 
     return 0;
 }

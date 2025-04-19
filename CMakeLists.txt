@@ -28,7 +28,7 @@ option(PROFILE "Enable Profiling" OFF)
 
 if(PROFILE)
     set(CMAKE_BUILD_TYPE Debug)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pg  -Ofast -march=native")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
     message(STATUS "Profling is enabled.")
 else()
     message(STATUS "Profiling is disabled.")
@@ -37,10 +37,12 @@ else()
 endif()
 
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
 set(SOURCES
     src/main.cpp
     src/common/murmurhash.cpp
+    src/common/MurmurHash3.cpp
     src/common/utils.cpp
     src/common/golomb_rice.cpp
     src/common/elias_fano.cpp

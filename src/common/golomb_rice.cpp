@@ -54,7 +54,7 @@ uint32_t compute_grp_bijection(uint32_t m) {
     return compute_golomb_rice_parameter(p);
 }
 
-uint32_t compute_grp_buckets(std::vector<uint32_t> sizes) {
+uint32_t compute_grp_buckets(std::vector<uint16_t> sizes) {
     uint32_t k = 1;
     uint32_t m = 0;
     for (auto size : sizes) {

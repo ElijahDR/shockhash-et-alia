@@ -24,7 +24,7 @@ struct EncodedSplittingTreeSelect {
 struct FanoutData {
     uint32_t size;
     uint32_t fanout;
-    std::vector<uint32_t> part_sizes;
+    std::vector<uint16_t> part_sizes;
 };
 
 struct SubtreeData { 

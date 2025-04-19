@@ -242,7 +242,7 @@ void RecSplit::split(const std::vector<std::string> &keys) {
 
     FanoutData fanout_data = calculate_fanout(keys.size(), leaf_size_);
     uint32_t fanout = fanout_data.fanout;
-    std::vector<uint32_t> part_sizes = fanout_data.part_sizes;
+    std::vector<uint16_t> part_sizes = fanout_data.part_sizes;
     DEBUG_LOG("Keys: " << keys);
     DEBUG_LOG("Fanout: " << fanout);
 
@@ -366,11 +366,12 @@ uint32_t find_bijection(const std::vector<std::string> &keys) {
 
 uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &fanout_data) {
     uint32_t seed = 0;
-    std::vector<uint32_t> counts(fanout_data.fanout);
+    std::vector<uint16_t> counts(fanout_data.fanout);
     while (true) {
         DEBUG_LOG("Seed: " << seed);
         for (const std::string &key : keys) {
-            counts[map_key_to_split(key, seed, fanout_data)] +=1;
+            uint32_t index = map_key_to_split(key, seed, fanout_data);
+            counts[index] +=1;
         }
 
         DEBUG_LOG("Actual Counts: " << counts);
@@ -383,7 +384,7 @@ uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &
     }
 }
 
-uint32_t map_key_to_split(const std::string &key, const uint32_t &seed, const FanoutData &fanout_data) {
+inline uint32_t map_key_to_split(const std::string &key, const uint32_t &seed, const FanoutData &fanout_data) {
     uint32_t hash = murmur32(key, seed);
     uint32_t index = hash % fanout_data.size;
 
@@ -415,7 +416,7 @@ FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size) {
         fanout = (size + leaf_size - 1) / leaf_size;
     }
 
-    std::vector<uint32_t> part_sizes(fanout);
+    std::vector<uint16_t> part_sizes(fanout);
     int total = 0;
     for (int i = 0; i < fanout - 1; i++) {
         part_sizes[i] = part_size;
