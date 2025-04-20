@@ -8,6 +8,7 @@ add_library(common_lib STATIC
     ${PROJECT_SOURCE_DIR}/src/common/broadword.cpp
     ${PROJECT_SOURCE_DIR}/src/common/ribbon.cpp
     ${PROJECT_SOURCE_DIR}/src/common/murmurhash.cpp
+    ${PROJECT_SOURCE_DIR}/src/common/MurmurHash3.cpp
     ${PROJECT_SOURCE_DIR}/src/common/utils.cpp
 )
 target_include_directories(common_lib PUBLIC ${PROJECT_SOURCE_DIR}/include)

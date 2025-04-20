@@ -11,7 +11,7 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
     e = epsilon;
     m = (uint64_t)((1 + e) * n) + 1;
     if (m < 64) {
-        m = 65;
+        m = 64;
     }
 
     if (w != 64) {
@@ -45,6 +45,7 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
 }
 
 uint32_t BasicRibbon::space() {
+
     return compact_Z.size() * 64;
 }
 
@@ -78,6 +79,9 @@ void BasicRibbon::make_compact_z() {
 uint64_t BasicRibbon::query(const std::string &key) {
     // DEBUG_LOG("Query of " << key);
     uint64_t start_pos = murmur64(key, seed_) % (m - w);
+    if (m - w == 0) {
+        start_pos = 0;
+    }
     // DEBUG_LOG("Start Pos: " << start_pos);
 
     int num_words_per_bit = std::ceil((double)m / 64);
@@ -148,6 +152,9 @@ bool BasicRibbon::insert(std::string &key, std::uint8_t value, uint32_t seed) {
     DEBUG_LOG("Inserting Key: " << key << " with Value: " << std::bitset<8>(value) << " and Seed: " << seed);
     uint64_t row_vector = murmur64(key, seed);
     uint64_t start_pos = murmur64(key, seed) % (m - w);
+    if (m - w == 0) {
+        start_pos = 0;
+    }
     DEBUG_LOG("Current Row Vector (random bits): " << std::bitset<64>(row_vector));
     DEBUG_LOG("Current Start Pos: " << start_pos);
 

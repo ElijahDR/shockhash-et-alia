@@ -133,3 +133,51 @@ void write_result_to_file(HashTestResult &result, std::string file_name) {
     std::ofstream file(file_name);
     file << "hash_function,params,total_bits,bits_per_key,build_time,hashing_time,throughput,space_usage\n";
 }
+
+ProgressBar::ProgressBar(int total, int bar_width) : total_(total), bar_width_(bar_width) {
+    start_time = std::chrono::steady_clock::now();
+    return;
+}
+
+void ProgressBar::update() {
+    progress_++;
+    display();
+}
+
+void ProgressBar::display() {
+    std::cout << "[";
+    float progress = (double)progress_ / total_;
+    int pos = bar_width_ * progress;
+    for (int i = 0; i < bar_width_; ++i) {
+        if (i < pos) std::cout << "=";
+        else if (i == pos) std::cout << ">";
+        else std::cout << " ";
+    }
+    std::cout << "] " << int(progress * 100.0) << " % ";
+    // Calculate elapsed and remaining time
+    auto current_time = std::chrono::steady_clock::now();
+    auto elapsed_total = current_time - start_time;
+    auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed_total).count();
+    int elapsed_minutes = elapsed_seconds / 60;
+    int elapsed_remaining_seconds = elapsed_seconds % 60;
+
+    int remaining_seconds = static_cast<int>((1.0 - progress) * elapsed_seconds / progress);
+    int remaining_minutes = remaining_seconds / 60;
+    remaining_seconds %= 60;
+
+    // Print elapsed and remaining time
+    std::cout << "[" 
+                << std::setw(2) << std::setfill('0') << elapsed_minutes << ":" 
+                << std::setw(2) << std::setfill('0') << elapsed_remaining_seconds 
+                << " | " 
+                << std::setw(2) << std::setfill('0') << remaining_minutes << ":" 
+                << std::setw(2) << std::setfill('0') << remaining_seconds 
+                << "]";
+
+    std::cout << "\r";
+    std::cout.flush();
+
+    if (progress == 1) {
+        std::cout << std::endl;
+    }
+}

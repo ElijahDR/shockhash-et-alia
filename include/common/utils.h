@@ -47,6 +47,11 @@ enum class ConsoleColour {
     White = 37
 };
 
+struct SimpleSpace {
+    std::vector<std::pair<std::string, int>> space_usage;
+    int total_bits;
+};
+
 template <typename T>
 inline size_t size_of_print(const T data) {
     std::cout << "Size: " << sizeof(T) * 8 << " bits" << std::endl;
@@ -185,5 +190,19 @@ void print_vector(const std::vector<T> &vec) {
     }
     std::cout << std::endl;
 }
+
+class ProgressBar {
+public:
+    ProgressBar(int total, int bar_width=70);
+
+    void update();
+private:
+    void display();
+    std::chrono::steady_clock::time_point start_time;
+    std::chrono::milliseconds interval;
+    int total_;
+    int progress_ = 0;
+    int bar_width_;
+};
 
 #endif

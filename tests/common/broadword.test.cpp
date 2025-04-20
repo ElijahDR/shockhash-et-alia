@@ -178,6 +178,38 @@ TEST(SimpleSelectTest, AlternatingBits) {
     EXPECT_EQ(result, 91);
 }
 
+
+TEST(SimpleRankTest, AllSetBitSearch) {
+    std::vector<uint64_t> data = {0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF};
+    SimpleSelect simple;
+    simple.build(data, 64, 4);
+
+    uint64_t result = simple.rank(3);
+    EXPECT_EQ(result, 4);
+    result = simple.rank(13);
+    EXPECT_EQ(result, 14);
+    result = simple.rank(64);
+    EXPECT_EQ(result, 65);
+}
+
+TEST(SimpleRankTest, AlternatingBits) {
+    std::vector<uint64_t> data = {0x0F0F0F0F0F0F0F0F, 0x0F0F0F0F0F0F0F0F};
+    SimpleSelect simple;
+    simple.build(data, 64, 4);
+    uint64_t result = simple.rank(2);
+    EXPECT_EQ(result, 3);
+    result = simple.rank(8);
+    EXPECT_EQ(result, 5);
+    result = simple.rank(11);
+    EXPECT_EQ(result, 8);
+    result = simple.rank(59);
+    EXPECT_EQ(result, 32);
+    result = simple.rank(67);
+    EXPECT_EQ(result, 36);
+    result = simple.rank(91);
+    EXPECT_EQ(result, 48);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

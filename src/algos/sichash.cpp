@@ -25,9 +25,13 @@ void SicHash::build(const std::vector<std::string> &keys) {
     create_buckets();
     std::cout << "Bucket Sizes: " << bucket_sizes_ << std::endl;
     
-    for (auto bucket : buckets_) {
+    ProgressBar build_pbar(buckets_.size());
+
+    for (int i = 0; i < buckets_.size(); i++) {
+        std::vector<size_t> bucket = buckets_[i];
         DEBUG_LOG("Building Bucket: " << bucket);
         build_cuckoo_hash_table(bucket);
+        build_pbar.update();
     }
 
     std::cout << "Cuckoo Hash Tables Created, making ribbons..." << std::endl;
@@ -55,23 +59,33 @@ void SicHash::make_minimal() {
         }
     }
 
-    std::vector<uint32_t> holes_to_encode;
-    int curr = 0;
-    int i = 0;
-    for (int j = 0; j < (bucket_prefixes_.back() - keys_.size()); j++) {
-        if (taken[keys_.size() + j]) {
-            curr = holes[i];
-            i++;
-        }
-        holes_to_encode.push_back(curr);
-    }
+    // std::vector<uint32_t> holes_to_encode;
+    // int curr = 0;
+    // int i = 0;
+    // for (int j = 0; j < (bucket_prefixes_.back() - keys_.size()); j++) {
+    //     if (taken[keys_.size() + j]) {
+    //         curr = holes[i];
+    //         holes_to_encode.push_back(curr);
+    //         i++;
+    //     }
+    // }
 
 
-    DEBUG_LOG(holes_to_encode);
+    DEBUG_LOG("Holes: " << holes);
+    std::vector<bool> taken_rank(taken.begin() + keys_.size(), taken.end());
+    DEBUG_LOG("Taken Ranks: " << taken_rank);
+    // perfect_rank_.build(taken_rank, 64, 16);
 
-    holes_ef_ = elias_fano_encode(holes_to_encode);
-    n_holes_ = holes_to_encode.size();
-    holes_ = holes_to_encode;
+    // taken_ranks_ = bool_to_uint64(taken_rank);
+    // for (auto x : taken_ranks_) {
+    //     DEBUG_LOG("Taken Ranks Data: " << (std::bitset<64>)x);
+    // }
+
+    minimal_rank_.build(taken_rank);
+    holes_ef_ = elias_fano_encode(holes);
+    n_holes_ = holes.size();
+    DEBUG_LOG("Number of Holes: " << n_holes_);
+    holes_ = holes;
 }
 
 uint32_t SicHash::hash(const std::string &key) {
@@ -101,7 +115,12 @@ uint32_t SicHash::hash(const std::string &key) {
         // std::vector<uint32_t> decoded_holes = elias_fano_decode(holes_ef_, n_holes_);
         // DEBUG_LOG(decoded_holes);
         // return decoded_holes[curr_hash - keys_.size()];
-        return holes_[curr_hash - keys_.size()];
+        // int rank = perfect_rank_.rank(curr_hash - keys_.size());
+        int rank = minimal_rank_.rank(curr_hash - keys_.size() + 1);
+        // int rank = rank9(taken_ranks_, counts_, curr_hash - keys_.size());
+        DEBUG_LOG("Rank: " << rank);
+        DEBUG_LOG("New Index: " << holes_[rank-1]);
+        return holes_[rank-1];
     }
     return curr_hash;
 }
@@ -143,9 +162,13 @@ HashFunctionSpace SicHash::space() {
     space_usage.push_back(std::make_pair("Total Ribbon", total_ribbon));
 
     int holes = elias_fano_space(holes_ef_);
-    space_usage.push_back(std::make_pair("Holes", holes));
+    space_usage.push_back(std::make_pair("Holes EF", holes));
 
-    int total_bits = total_ribbon + holes;
+    std::cout << minimal_rank_.space().space_usage << std::endl;
+    int rank = minimal_rank_.space().total_bits;
+    space_usage.push_back(std::make_pair("Rank Structure", rank));
+
+    int total_bits = total_ribbon + holes + rank;
     double bits_per_key = total_bits / (double)keys_.size();
     return HashFunctionSpace{space_usage, total_bits, bits_per_key};
 }

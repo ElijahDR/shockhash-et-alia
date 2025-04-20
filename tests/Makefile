@@ -266,6 +266,30 @@ run_all_tests/fast:
 	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/run_all_tests.dir/build.make tests/CMakeFiles/run_all_tests.dir/build
 .PHONY : run_all_tests/fast
 
+__/src/common/MurmurHash3.o: __/src/common/MurmurHash3.cpp.o
+.PHONY : __/src/common/MurmurHash3.o
+
+# target to build an object file
+__/src/common/MurmurHash3.cpp.o:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.o
+.PHONY : __/src/common/MurmurHash3.cpp.o
+
+__/src/common/MurmurHash3.i: __/src/common/MurmurHash3.cpp.i
+.PHONY : __/src/common/MurmurHash3.i
+
+# target to preprocess a source file
+__/src/common/MurmurHash3.cpp.i:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.i
+.PHONY : __/src/common/MurmurHash3.cpp.i
+
+__/src/common/MurmurHash3.s: __/src/common/MurmurHash3.cpp.s
+.PHONY : __/src/common/MurmurHash3.s
+
+# target to generate assembly for a file
+__/src/common/MurmurHash3.cpp.s:
+	cd /Users/elijah/Desktop/diss && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/common_lib.dir/build.make tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.s
+.PHONY : __/src/common/MurmurHash3.cpp.s
+
 __/src/common/broadword.o: __/src/common/broadword.cpp.o
 .PHONY : __/src/common/broadword.o
 
@@ -525,6 +549,9 @@ help:
 	@echo "... test_elias_fano"
 	@echo "... test_golomb_rice"
 	@echo "... test_ribbon"
+	@echo "... __/src/common/MurmurHash3.o"
+	@echo "... __/src/common/MurmurHash3.i"
+	@echo "... __/src/common/MurmurHash3.s"
 	@echo "... __/src/common/broadword.o"
 	@echo "... __/src/common/broadword.i"
 	@echo "... __/src/common/broadword.s"

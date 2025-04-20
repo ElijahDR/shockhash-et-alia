@@ -29,15 +29,16 @@ void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=1000, uint32_t
     }
 
 void run_sichash_random_keys() {
-    std::vector<std::string> keys = generate_random_keys(100000);
+    std::vector<std::string> keys = generate_random_keys(1000000);
 
-    SicHash sichash(1000, 0.3, 0.3, 0.99);
+    SicHash sichash(1000, 0.5, 0.4, 0.96);
     test_perfect_hashing(keys, sichash);
+    std::cout << sichash.space() << std::endl;
 }
 
 void run_sichash_build() {
     std::vector<std::string> keys = generate_random_keys(100);
-    SicHash sichash(100, 0.33, 0.34, 0.99);
+    SicHash sichash(100, 0.5, 0.5, 0.99);
     sichash.build(keys);
 
     test_perfect_hashing(keys, sichash);
@@ -157,8 +158,9 @@ void test_hashing_molecules() {
 void test_elias_fano() {
     std::vector<uint32_t> data = {};
     for (int i = 0; i < 10; i++) {
-        data.push_back(1234 + i);
+        data.push_back(1234);
     }
+    data.push_back(1300);
     int n = data.size();
     std::cout << data << std::endl;
     EliasFanoEncodedData encoded = elias_fano_encode(data);
@@ -167,11 +169,67 @@ void test_elias_fano() {
     std::cout << encoded.upper << encoded.upper.size() << std::endl;
 }
 
+void test_broadword() {
+    std::bitset<64> first = 10488084004835287442;
+    std::bitset<36> second = 45739767294;
+    std::vector<bool> data;
+    for (int i = 0; i < first.size(); i++) {
+        data.push_back(first[i]);
+    }
+    for (int i = 0; i < second.size(); i++) {
+        data.push_back(second[i]);
+    }
+
+    // std::reverse(data.begin(), data.end());
+    DEBUG_LOG("Data: " << data);
+
+    SimpleSelect select;
+    select.build(data, 64, 16);
+    //  0 1 0 0 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 0 1  0  1  0  1  0  1  0  0  0  1  1  0  1  0  1  0  1  1  0  0  0  1  0  1  0  0  1  0  1  1  0  0  0  1  1  0  0  0  1  0  0  1  0  1  1  1  1  1  1  1  1  0  1  0  1  1  1  0  1  0  1  1  0  0  1  0  0  1  1  0  0  1  0  1  0  1  0  1  
+    
+    
+    std::vector<int> ranks = {
+        0,1,1,1,2,2,2,3,4,4,4,4,4,5,6,7,8,8,8,9,9,10,10,11,11,12,12,13,13,13,13,14,15,15,16,16,17,17,18,19,19,19,19,20,20,21,21,21,22,22,23,24,24,24,24,25,26,26,26,26,27,27,27,28,28,29,30,31,32,33,34,35,36,36,37,37,38,39,40,40,41,41,42,43,43,43,44,44,44,45,46,46,46,47,47,48,48,49,49,50
+    };
+
+    for (int i = 0; i < 100; i++) {
+        int rank = select.rank(i);
+        DEBUG_LOG("Rank: " << rank << " at index " << i);
+        if (rank != ranks[i]) {
+            DEBUG_LOG("################# ERROR at index " << i);
+            DEBUG_LOG("Expected: " << ranks[i]);
+        }
+    }
+
+    int rank = select.rank(10);
+    DEBUG_LOG("Rank: " << rank);
+    rank = select.rank(50);
+    DEBUG_LOG("Rank: " << rank);
+    rank = select.rank(76);
+    DEBUG_LOG("Rank: " << rank);
+    rank = select.rank(92);
+    DEBUG_LOG("Rank: " << rank);
+
+    std::vector<uint64_t> counts;
+    std::vector<uint64_t> new_data = bool_to_uint64(data);
+    generate_rank_counts(new_data, counts);
+
+    for (int i = 0; i < 100; i++) {
+        int rank = rank9(new_data, counts, i);
+        DEBUG_LOG("Rank: " << rank << " at index " << i);
+        if (rank != ranks[i]) {
+            DEBUG_LOG("################# ERROR at index " << i);
+            DEBUG_LOG("Expected: " << ranks[i]);
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     // test_hashing_molecules();
-    // run_sichash_random_keys();
+    run_sichash_random_keys();
     // run_recsplit_random_keys();
-    test_elias_fano();
+    // test_elias_fano();
+    // test_broadword();
 
     return 0;
 }

@@ -9,6 +9,7 @@
 #include "algos/hash_function.h"
 #include "common/ribbon.h"
 #include "common/elias_fano.h"
+#include "common/broadword.h"
 
 
 class SicHash : public HashFunction {
@@ -49,9 +50,14 @@ private:
 
     std::vector<BasicRibbon> ribbons;
 
+    SimpleSelect perfect_rank_;
     EliasFanoEncodedData holes_ef_;
     std::vector<uint32_t> holes_;
     uint32_t n_holes_;
+    std::vector<uint64_t> counts_;
+    std::vector<uint64_t> taken_ranks_;
+
+    Rank9 minimal_rank_;
 
     uint32_t bucket_seed_;
     uint32_t bucket_size_;

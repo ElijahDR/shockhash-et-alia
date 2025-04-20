@@ -142,10 +142,24 @@ tests/CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.s"
 	cd /Users/elijah/Desktop/diss/tests && /Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/elijah/Desktop/diss/src/common/murmurhash.cpp -o CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.s
 
+tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.o: tests/CMakeFiles/common_lib.dir/flags.make
+tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.o: src/common/MurmurHash3.cpp
+tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.o: tests/CMakeFiles/common_lib.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.o"
+	cd /Users/elijah/Desktop/diss/tests && /Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.o -MF CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.o.d -o CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.o -c /Users/elijah/Desktop/diss/src/common/MurmurHash3.cpp
+
+tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.i"
+	cd /Users/elijah/Desktop/diss/tests && /Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/elijah/Desktop/diss/src/common/MurmurHash3.cpp > CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.i
+
+tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.s"
+	cd /Users/elijah/Desktop/diss/tests && /Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/elijah/Desktop/diss/src/common/MurmurHash3.cpp -o CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.s
+
 tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o: tests/CMakeFiles/common_lib.dir/flags.make
 tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o: src/common/utils.cpp
 tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o: tests/CMakeFiles/common_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o"
 	cd /Users/elijah/Desktop/diss/tests && /Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o -MF CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o.d -o CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o -c /Users/elijah/Desktop/diss/src/common/utils.cpp
 
 tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.i: cmake_force
@@ -163,6 +177,7 @@ common_lib_OBJECTS = \
 "CMakeFiles/common_lib.dir/__/src/common/broadword.cpp.o" \
 "CMakeFiles/common_lib.dir/__/src/common/ribbon.cpp.o" \
 "CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.o" \
+"CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.o" \
 "CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o"
 
 # External object files for target common_lib
@@ -173,10 +188,11 @@ tests/libcommon_lib.a: tests/CMakeFiles/common_lib.dir/__/src/common/golomb_rice
 tests/libcommon_lib.a: tests/CMakeFiles/common_lib.dir/__/src/common/broadword.cpp.o
 tests/libcommon_lib.a: tests/CMakeFiles/common_lib.dir/__/src/common/ribbon.cpp.o
 tests/libcommon_lib.a: tests/CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.o
+tests/libcommon_lib.a: tests/CMakeFiles/common_lib.dir/__/src/common/MurmurHash3.cpp.o
 tests/libcommon_lib.a: tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o
 tests/libcommon_lib.a: tests/CMakeFiles/common_lib.dir/build.make
 tests/libcommon_lib.a: tests/CMakeFiles/common_lib.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX static library libcommon_lib.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/elijah/Desktop/diss/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX static library libcommon_lib.a"
 	cd /Users/elijah/Desktop/diss/tests && $(CMAKE_COMMAND) -P CMakeFiles/common_lib.dir/cmake_clean_target.cmake
 	cd /Users/elijah/Desktop/diss/tests && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/common_lib.dir/link.txt --verbose=$(VERBOSE)
 

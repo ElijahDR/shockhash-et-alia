@@ -128,7 +128,9 @@ uint64_t SimpleSelect::select(uint64_t r) {
     // }
 
     auto it = std::lower_bound(primary_inventory.begin(), primary_inventory.end(), r);
-    uint64_t primary_index = std::distance(primary_inventory.begin(), it) - 1;
+    uint64_t primary_index = std::distance(primary_inventory.begin(), it);
+    DEBUG_LOG("Primary Index Before Min: " << primary_index);
+    primary_index = primary_index > 0 ? primary_index - 1 : 0;
 
     uint64_t current_rank = primary_inventory[primary_index];
     DEBUG_LOG("Primary Index: " << primary_index);
@@ -215,7 +217,27 @@ uint64_t SimpleSelect::bit_search(uint64_t curr_pos, uint64_t r) {
     return -1;
 }
 
-SimpleSelectSpace SimpleSelect::space() {
+uint64_t SimpleSelect::rank(uint32_t i) {
+    DEBUG_LOG("Rank for Index: " << i);
+    int primary_index = std::floor((double)i / L_spacing_);
+    DEBUG_LOG("Primary Index: " << primary_index);
+    int secondary_index = (LM_ratio_ * primary_index) + std::floor((i - primary_index * L_spacing_) / (double)M_spacing_);
+    DEBUG_LOG("Secondary Index: " << secondary_index);
+    int bit_index = i - (secondary_index * M_spacing_);
+    DEBUG_LOG("Bit Index: " << bit_index);
+    int word_index = std::floor((double)i / 64);
+    int counted_index = (secondary_index * M_spacing_) % 64;
+    int leftover_index = i - counted_index;
+    DEBUG_LOG("Counted Index: " << counted_index);
+    DEBUG_LOG("Word: " << std::bitset<64>(data_[word_index]));
+    uint64_t masked_word = data_[word_index] & ~(((uint128_t)1 << (counted_index+1)) - 1);
+    DEBUG_LOG("Masked Word: " << std::bitset<64>(masked_word));
+    masked_word = masked_word & (((uint128_t)1 << (bit_index+counted_index+1)) - 1);
+    DEBUG_LOG("Masked Word: " << std::bitset<64>(masked_word));
+    return primary_inventory[primary_index] + secondary_inventory[secondary_index] + popcount(masked_word);
+}
+
+SimpleSpace SimpleSelect::space() {
     
 }
 
@@ -261,6 +283,109 @@ void generate_rank_counts(std::vector<uint64_t> &data, std::vector<uint64_t> &co
     }
 }
 
+Rank9::Rank9() {
+    return;
+}
+
+void Rank9::build(std::vector<bool> &bool_data) {
+    // Convert to uint64_t
+    uint64_t n_words = std::ceil((double)bool_data.size() / 64);
+    DEBUG_LOG("N Words: " << n_words);
+    // std::vector<uint64_t> data_(n_words, 0);
+    for (int w = 0; w < n_words; w++) {
+        uint64_t word = 0;
+        for (int i = 0; i < 64; i++) {
+            DEBUG_LOG("Word: " << (std::bitset<64>)word);
+            uint64_t index = (64 * w) + i;
+            DEBUG_LOG("Index: " << index);
+            if (index > bool_data.size()) {
+                break;
+            }
+            
+            uint64_t mask = (uint64_t)bool_data[index] << i;
+            DEBUG_LOG("Mask: " << (std::bitset<64>)mask);
+            // DEBUG_LOG("Word and Mask: " << (word | mask));
+            word |= mask;
+        }
+        data.push_back(word);
+    }
+
+    // Generate Counts
+    // std::cout << data << std::endl;
+    size_t basic_blocks = std::ceil((float)data.size() / 8);
+    // std::cout << data.size() << std::endl;
+    uint64_t current_rank = 0;
+
+    for (int i = 0; i < basic_blocks; i++) {
+        // First Level Count
+        counts.push_back(current_rank);
+        std::bitset<9> current_rank_bin(current_rank);
+        // std::cout << "First Count: " << current_rank_bin << std::endl;
+
+        uint64_t second_count = 0;
+        // Second Level Count
+        uint64_t total_count = 0;
+        for (int k = 1; k <= 7; k++) {
+            size_t data_index = (8 * i) + k - 1;
+            total_count += data_index > data.size() ? 0 : popcount(data[data_index]);
+            std::bitset<9> total_count_bin(total_count);
+            // std::cout << "Total Count: " << total_count_bin << std::endl;
+            second_count |= total_count << (9 * (k - 1));
+            std::bitset<64> second_count_bin(second_count);
+            // std::cout << "Second Count: " << second_count_bin << std::endl;
+        }
+        counts.push_back(second_count);
+        current_rank += total_count;
+        // Account for last word in block for next rank(p) calc
+        current_rank += popcount(data[8 * (i + 1) - 1]);
+    }
+}
+
+uint64_t Rank9::rank(uint32_t i){
+    DEBUG_LOG("Rank for index: " << i);
+    for (auto x : data) {
+        DEBUG_LOG("Data: " << std::bitset<64>(x));
+    }
+    DEBUG_LOG("Counts: " << counts);
+    size_t w = std::floor((float)i / 64);
+    DEBUG_LOG("Word Location: " << w);
+    const size_t position = i & 63;
+    DEBUG_LOG("Position in Word: " << position);
+    size_t s_i = (w & 7);
+    DEBUG_LOG("Position in Word: " << position);
+    size_t t = (s_i) - 1;
+
+    size_t count_index = std::floor((float)w / 8) * 2;
+    DEBUG_LOG("Count Index: " << count_index);
+    // std::cout << "Counts: " << counts << std::endl;
+    uint64_t first_count = counts[count_index];
+    uint64_t second_count = counts[count_index+1];
+    DEBUG_LOG("First Count: " << first_count);
+    uint64_t second_count_wanted = second_count >> (t + (t >> 60 & 8)) * 9 & (0x1FF);
+    DEBUG_LOG("second_count_wanted: " << (std::bitset<64>)second_count_wanted);
+    DEBUG_LOG("Second Count: " << second_count_wanted);
+
+    uint64_t count = first_count + second_count_wanted;
+    DEBUG_LOG("Count: " << count);
+
+    uint64_t mask = ((uint128_t)1 << (position)) - 1;
+    DEBUG_LOG("Mask: " << (std::bitset<64>)mask);
+    DEBUG_LOG("Masked Word: " << (std::bitset<64>)(data[w] & mask));
+    uint64_t poopcnt = popcount(data[w] & mask);
+    DEBUG_LOG("Pop Count From Word: " << poopcnt);
+    count += popcount(data[w] & mask);
+
+    return count;
+}
+
+SimpleSpace Rank9::space() {
+    std::vector<std::pair<std::string, int>> usage = {
+        std::make_pair("Data", data.size()*64),
+        std::make_pair("Overhead", counts.size()*64),
+    };
+    return SimpleSpace{usage, (int)(counts.size() * 64 + data.size() * 64)};
+}
+
 uint64_t rank9(std::vector<uint64_t> &data, std::vector<uint64_t> &counts, size_t p){
     DEBUG_LOG("Data: " << data);
     DEBUG_LOG("Counts: " << counts);
@@ -276,15 +401,45 @@ uint64_t rank9(std::vector<uint64_t> &data, std::vector<uint64_t> &counts, size_
     // std::cout << "Counts: " << counts << std::endl;
     uint64_t first_count = counts[count_index];
     uint64_t second_count = counts[count_index+1];
-
+    DEBUG_LOG("First Count: " << first_count);
     uint64_t second_count_wanted = second_count >> (t + (t >> 60 & 8)) * 9 & (0x1FF);
     DEBUG_LOG("second_count_wanted: " << (std::bitset<64>)second_count_wanted);
 
     uint64_t count = first_count + second_count_wanted;
+    DEBUG_LOG("Count: " << count);
 
-    uint64_t mask = std::pow(2, position) - 1;
+    uint64_t mask = ((uint128_t)1 << (position + 1)) - 1;
     DEBUG_LOG("Mask: " << (std::bitset<64>)mask);
+    DEBUG_LOG("Masked Word: " << (std::bitset<64>)(data[w] & mask));
+    uint64_t poopcnt = popcount(data[w] & mask);
+    DEBUG_LOG("Pop Count From Work: " << poopcnt);
     count += popcount(data[w] & mask);
 
     return count;
+}
+
+std::vector<uint64_t> bool_to_uint64(std::vector<bool> &data) {
+    std::vector<uint64_t> data_;
+    uint64_t n_words = std::ceil((double)data.size() / 64);
+    DEBUG_LOG("N Words: " << n_words);
+    // std::vector<uint64_t> data_(n_words, 0);
+    for (int w = 0; w < n_words; w++) {
+        uint64_t word = 0;
+        for (int i = 0; i < 64; i++) {
+            DEBUG_LOG("Word: " << (std::bitset<64>)word);
+            uint64_t index = (64 * w) + i;
+            DEBUG_LOG("Index: " << index);
+            if (index > data.size()) {
+                break;
+            }
+            
+            uint64_t mask = (uint64_t)data[index] << i;
+            DEBUG_LOG("Mask: " << (std::bitset<64>)mask);
+            // DEBUG_LOG("Word and Mask: " << (word | mask));
+            word |= mask;
+        }
+        data_.push_back(word);
+    }
+
+    return data_;
 }

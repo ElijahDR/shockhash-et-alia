@@ -2,10 +2,12 @@
 
 EliasFanoEncodedData elias_fano_encode(std::vector<uint32_t> data) {
     const int n = data.size();
-    const uint32_t m = *data.rbegin() + 1;
+    const uint32_t m = data.back();
 
-    int l = std::floor(std::log2(m/n));
-    int r = std::ceil(std::log2(m)) - l; 
+    int l = std::ceil(std::log2(m/n));
+    int r = std::floor(std::log2(m)) - l; 
+
+    int q = std::ceil(m/n);
 
     std::vector<bool> lower;
     std::vector<bool> upper;
@@ -30,7 +32,7 @@ EliasFanoEncodedData elias_fano_encode(std::vector<uint32_t> data) {
 }
 
 std::vector<uint32_t> elias_fano_decode(EliasFanoEncodedData &data, uint32_t n) {
-    int l = std::floor(std::log2(data.m/n));
+    int l = std::ceil(std::log2(data.m/n));
     std::vector<uint32_t> data_decoded;
 
     uint32_t upper = 0, count = 0;
