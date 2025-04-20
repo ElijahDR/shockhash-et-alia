@@ -266,12 +266,12 @@ uint32_t SicHash::extract_class_assignment(size_t index) {
 
 void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
     uint32_t seed = 0;
+    int table_size = bucket.size() / alpha_;
+    std::vector<int> table(table_size, -1);
     while (true) {
         rattle_counters_.assign(keys_.size(), 0);
         // DEBUG_LOG("Alpha: " << alpha_);
-        int table_size = bucket.size() / alpha_;
         // DEBUG_LOG("Table Size: " << table_size);
-        std::vector<int> table(table_size, -1);
         bool insert;
         for (int i = 0; i < bucket.size(); i++) {
             // if (i % 500 == 0) {
@@ -288,6 +288,7 @@ void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
             break;
         }
 
+        std::fill(table.begin(), table.end(), -1);
         seed++;
     }
 
