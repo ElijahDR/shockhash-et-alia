@@ -111,10 +111,15 @@ HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash
     auto duration = end_time - start_time;
     auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
     result.build_time = build_duration.count();
+    double throughput = (double)keys.size() / ((double)build_duration.count() / 1000);
     std::cout << "Build took: " << build_duration.count() << " ms" << std::endl;
+    std::cout << "Build Throughput: " << throughput << " (keys/s)" << std::endl;
+    result.build_throughput = throughput;
     start_time = std::chrono::steady_clock::now();
+    // ProgressBar pbar(keys.size(), "Hashing Keys");
     for (auto key : keys) {
         uint32_t hash = hash_function.hash(key);
+        // pbar.update();
     }
     DEBUG_LOG("Hashing Finished");
     end_time = std::chrono::steady_clock::now();
@@ -122,9 +127,9 @@ HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash
     auto hashing_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
     result.hashing_time = hashing_duration.count();
     std::cout << "Hashing took: " << hashing_duration.count() << " ms" << std::endl;
-    double throughput = (double)keys.size() / ((double)hashing_duration.count() / 1000);
-    std::cout << "Throughput: " << throughput << " (keys/s)" << std::endl;
-    result.throughput = throughput;
+    throughput = (double)keys.size() / ((double)hashing_duration.count() / 1000);
+    std::cout << "Hashing Throughput: " << throughput << " (keys/s)" << std::endl;
+    result.hash_throughput = throughput;
 
     return result;
 }
@@ -134,7 +139,8 @@ void write_result_to_file(HashTestResult &result, std::string file_name) {
     file << "hash_function,params,total_bits,bits_per_key,build_time,hashing_time,throughput,space_usage\n";
 }
 
-ProgressBar::ProgressBar(int total, int bar_width) : total_(total), bar_width_(bar_width) {
+ProgressBar::ProgressBar(int total, std::string title, int bar_width) : 
+total_(total), bar_width_(bar_width), title_(title) {
     start_time = std::chrono::steady_clock::now();
     return;
 }
@@ -145,7 +151,7 @@ void ProgressBar::update() {
 }
 
 void ProgressBar::display() {
-    std::cout << "[";
+    std::cout << title_ << " [";
     float progress = (double)progress_ / total_;
     int pos = bar_width_ * progress;
     for (int i = 0; i < bar_width_; ++i) {

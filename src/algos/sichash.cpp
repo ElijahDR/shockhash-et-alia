@@ -10,7 +10,7 @@
 
 SicHash::SicHash(uint32_t bucket_size, double p1, double p2, double alpha, uint32_t bucket_seed, uint32_t class_seed) : 
 bucket_size_(bucket_size), p1_(p1), p2_(p2), alpha_(alpha), 
-bucket_seed_(bucket_seed), class_seed_(class_seed), class_assignments_() {
+bucket_seed_(bucket_seed), class_seed_(class_seed) {
     
     return;
 }
@@ -35,9 +35,9 @@ void SicHash::build(const std::vector<std::string> &keys) {
     }
 
     std::cout << "Cuckoo Hash Tables Created, making ribbons..." << std::endl;
-    ribbons.push_back(BasicRibbon(keys_classes_[0], hash_indexes_per_class_[0], 1, 0.1));
-    ribbons.push_back(BasicRibbon(keys_classes_[1], hash_indexes_per_class_[1], 2, 0.1));
-    ribbons.push_back(BasicRibbon(keys_classes_[2], hash_indexes_per_class_[2], 3, 0.1));
+    ribbons.push_back(BasicRibbon(keys_classes_[0], hash_indexes_per_class_[0], 1, 0.15));
+    ribbons.push_back(BasicRibbon(keys_classes_[1], hash_indexes_per_class_[1], 2, 0.15));
+    ribbons.push_back(BasicRibbon(keys_classes_[2], hash_indexes_per_class_[2], 3, 0.15));
 
     std::cout << "Bucket Seeds: " << bucket_seeds_ << std::endl;
 
@@ -83,6 +83,9 @@ void SicHash::make_minimal() {
 
     minimal_rank_.build(taken_rank);
     holes_ef_ = elias_fano_encode(holes);
+    // std::cout << holes << " " << holes.size() << std::endl;
+    // std::cout << holes_ef_.upper << " " << holes_ef_.upper.size() << std::endl;
+    // std::cout << holes_ef_.lower << " " << holes_ef_.lower.size() << std::endl;
     n_holes_ = holes.size();
     DEBUG_LOG("Number of Holes: " << n_holes_);
     holes_ = holes;
@@ -95,7 +98,7 @@ uint32_t SicHash::hash(const std::string &key) {
     // DEBUG_LOG("Index: " << it - keys_.begin());
     int bucket = assign_bucket(key);
     DEBUG_LOG("Bucket for key " << key << ": " << bucket);
-    std::vector<uint32_t> bucket_prefixes = elias_fano_decode(bucket_prefixes_ef_, bucket_sizes_.size()+1);
+    // std::vector<uint32_t> bucket_prefixes = elias_fano_decode(bucket_prefixes_ef_, bucket_sizes_.size()+1);
     int global_index = bucket_prefixes_[bucket];
     DEBUG_LOG("Global Index for key " << key << ": " << global_index);
     uint32_t bucket_seed = bucket_seeds_[bucket];
@@ -168,7 +171,10 @@ HashFunctionSpace SicHash::space() {
     int rank = minimal_rank_.space().total_bits;
     space_usage.push_back(std::make_pair("Rank Structure", rank));
 
-    int total_bits = total_ribbon + holes + rank;
+    int bucket_prefix_space = elias_fano_space(bucket_prefixes_ef_);
+    space_usage.push_back(std::make_pair("Bucket Prefixes", bucket_prefix_space));
+
+    int total_bits = total_ribbon + holes + rank + bucket_prefix_space;
     double bits_per_key = total_bits / (double)keys_.size();
     return HashFunctionSpace{space_usage, total_bits, bits_per_key};
 }
@@ -209,14 +215,17 @@ void SicHash::assign_classes() {
         // DEBUG_LOG("Class Value: " << class_val);
 
         if (class_val < p1_) { 
-            class_assignments_.insert(class_assignments_.end(), {0, 1});
+            // class_assignments_.insert(class_assignments_.end(), {0, 1});
             class_counts[0]++;
+            keys_n_hashes_.push_back(2);
         } else if (class_val < (p1_ + p2_)) {
-            class_assignments_.insert(class_assignments_.end(), {1, 0});
+            // class_assignments_.insert(class_assignments_.end(), {1, 0});
             class_counts[1]++;
+            keys_n_hashes_.push_back(4);
         } else {
-            class_assignments_.insert(class_assignments_.end(), {1, 1});
+            // class_assignments_.insert(class_assignments_.end(), {1, 1});
             class_counts[2]++;
+            keys_n_hashes_.push_back(8);
         }
     }
 
@@ -237,9 +246,23 @@ uint64_t SicHash::key_class(const std::string &key) {
     }
 }
 
+
+uint64_t SicHash::key_n_hash(const std::string &key) {
+    uint32_t hash = murmur32(key, class_seed_);
+    double class_val = (double)hash / UINT32_MAX;
+
+    if (class_val < p1_) { 
+        return 2;
+    } else if (class_val < (p1_ + p2_)) {
+        return 4;
+    } else {
+        return 8;
+    }
+}
+
 std::vector<uint32_t> SicHash::generate_hash(size_t index, uint32_t base_seed) {
     std::string key = keys_[index];
-    int n_hash = extract_class_assignment(index);
+    int n_hash = key_n_hash(keys_[index]);
 
     std::vector<uint32_t> hashes(n_hash);
     for (int i = 0; i < n_hash; i++) {
@@ -295,7 +318,7 @@ void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
     bucket_seeds_.push_back(seed);
 
     for (auto index : bucket) {
-        uint32_t n_hash = extract_class_assignment(index);
+        uint32_t n_hash = key_n_hash(keys_[index]);
         size_t hash_index = rattle_counters_[index] % n_hash;
 
         uint64_t class_n = key_class(keys_[index]);
@@ -303,27 +326,31 @@ void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
         keys_classes_[key_class(keys_[index])].push_back(keys_[index]);
         hash_indexes_per_class_[key_class(keys_[index])].push_back(hash_index);
 
-        hash_indexes_[index] = int_to_bits(hash_index);
+        // hash_indexes_[index] = int_to_bits(hash_index);
 
-        hash_index_map_[keys_[index]] = int_to_bits(hash_index);
-        hash_index_map_raw_[keys_[index]] = hash_index;
+        // hash_index_map_[keys_[index]] = int_to_bits(hash_index);
+        // hash_index_map_raw_[keys_[index]] = hash_index;
     }
     DEBUG_LOG("Hash Index Map: " << hash_index_map_);
 }
 
 bool SicHash::insert_into_hash_table(size_t key_index, uint32_t base_seed, std::vector<int> &hash_table) {
     int retries = 0;
-    while (retries < hash_table.size() * 2) {
+    int table_size = hash_table.size();
+    while (retries < table_size * 2) {
         DEBUG_LOG("Current Hash Table: " << hash_table);
         DEBUG_LOG("Try: " << retries << " inserting: " << key_index);
         DEBUG_LOG("Element being inserted: " << keys_[key_index]);
         DEBUG_LOG("Key Index being inserted: " << key_index);
-        int n_hash = extract_class_assignment(key_index);
+        // int n_hash = key_n_hash(key);
+        int n_hash = keys_n_hashes_[key_index];
         DEBUG_LOG("N Hashes: " << n_hash);
-        std::vector<uint32_t> hashes = generate_hash(key_index, base_seed);
+        // std::vector<uint32_t> hashes = generate_hash(key_index, base_seed);
         int hash_index = rattle_counters_[key_index] % n_hash;
+
+        size_t table_index = murmur32(keys_[key_index], base_seed + hash_index) % table_size;
         DEBUG_LOG("Hash Index: " << hash_index);
-        size_t table_index = hashes[hash_index] % hash_table.size();
+        // size_t table_index = hashes[hash_index] % hash_table.size();
         DEBUG_LOG("Table Index: " << table_index);
         if (hash_table[table_index] == -1) {
             DEBUG_LOG("Straight In");

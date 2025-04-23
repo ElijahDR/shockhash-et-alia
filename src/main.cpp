@@ -14,14 +14,14 @@
 #include <random>
 #include <chrono>
 
-void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=1000, uint32_t leaf_size=8) {
+void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=500, uint32_t leaf_size=12) {
     std::vector<std::string> keys = generate_random_keys(n);
 
     for (int i = 0; i < 1; i++) {
         RecSplit recsplit(bucket_size, leaf_size, i);
-        test_perfect_hashing(keys, recsplit);
-        // HashFunctionTime time = time_hashing(keys, recsplit);
-        // std::cout << time << std::endl;
+        // test_perfect_hashing(keys, recsplit);
+        HashFunctionTime time = time_hashing(keys, recsplit);
+        std::cout << time << std::endl;
     
         HashFunctionSpace space = recsplit.space();
         std::cout << space << std::endl;
@@ -31,8 +31,10 @@ void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=1000, uint32_t
 void run_sichash_random_keys() {
     std::vector<std::string> keys = generate_random_keys(1000000);
 
-    SicHash sichash(1000, 0.5, 0.4, 0.96);
+    SicHash sichash(10000, 0.66, 0.34, 0.82);
     test_perfect_hashing(keys, sichash);
+    // HashFunctionTime time = time_hashing(keys, sichash);
+    std::cout << time << std::endl;
     std::cout << sichash.space() << std::endl;
 }
 
@@ -225,6 +227,19 @@ void test_broadword() {
 }
 
 int main(int argc, char *argv[]) {
+
+#if defined(__POPCNT__) || defined(_MSC_VER)
+    std::cout << "POPCNT Instruction Found" << std::endl;
+#else
+    std::cout << "Non POPCNT Instruction" << std::endl;
+#endif
+#if INTPTR_MAX == INT64_MAX
+    std::cout << "64 bit" << std::endl;
+#elif INTPTR_MAX == INT32_MAX
+    std::cout << "32 bit" << std::endl;
+#else
+    #error Unknown pointer size or missing size macros!
+#endif
     // test_hashing_molecules();
     run_sichash_random_keys();
     // run_recsplit_random_keys();

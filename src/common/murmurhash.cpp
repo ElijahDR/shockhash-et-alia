@@ -86,10 +86,14 @@ inline uint64_t fmix64 (uint64_t k) {
 
   return k;
 }
-
+uint128_t murmur128(const std::string &key, const uint32_t &seed) {
+    uint128_t result = 0;
+    MurmurHash3_x64_128(key.data(), (int)key.size(), seed, &result);
+    return result;
+}
 
 // https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp
-uint128_t murmur128(const std::string &key, const uint32_t &seed) {
+uint128_t murmur128_old(const std::string &key, const uint32_t &seed) {
     uint64_t h1 = seed;
     uint64_t h2 = seed;
 

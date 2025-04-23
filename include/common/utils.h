@@ -151,7 +151,8 @@ inline std::ostream& operator<<(std::ostream& os, const HashFunctionTime &data) 
     os << "HashFunctionTime {\n"
        << "  build time: " << data.build_time << "\n"
        << "  hashing time: " << data.hashing_time << "\n"
-       << "  throughput (keys/s): " << data.throughput << "\n"
+       << "  build throughput (keys/s): " << data.build_throughput << "\n"
+       << "  hash throughput (keys/s): " << data.hash_throughput << "\n"
        << "}";
     return os;
 }
@@ -193,7 +194,7 @@ void print_vector(const std::vector<T> &vec) {
 
 class ProgressBar {
 public:
-    ProgressBar(int total, int bar_width=70);
+    ProgressBar(int total, std::string title="", int bar_width=70);
 
     void update();
 private:
@@ -201,6 +202,7 @@ private:
     std::chrono::steady_clock::time_point start_time;
     std::chrono::milliseconds interval;
     int total_;
+    std::string title_;
     int progress_ = 0;
     int bar_width_;
 };
