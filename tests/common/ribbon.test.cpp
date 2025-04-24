@@ -54,7 +54,7 @@
 // }
 
 TEST(BurrTest, OneBitTest) {
-    int n = 1000000;
+    int n = 10000000;
     std::vector<std::string> keys = generate_random_keys(n);
     std::vector<uint64_t> values(keys.size());
     for (int i = 0; i < keys.size(); i++) {
@@ -63,7 +63,7 @@ TEST(BurrTest, OneBitTest) {
 
     int w = 64; 
     int b = 64;
-    double e = (double)-4 / 64;
+    double e = -(double)4/w;
     BuRR burr(keys, values, 1, e, b, 4, w);
 
     ProgressBar pbar(100);
