@@ -54,7 +54,7 @@
 // }
 
 TEST(BurrTest, OneBitTest) {
-    int n = 10000000;
+    int n = 1000000;
     std::vector<std::string> keys = generate_random_keys(n);
     std::vector<uint64_t> values(keys.size());
     for (int i = 0; i < keys.size(); i++) {

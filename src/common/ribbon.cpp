@@ -377,12 +377,16 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
     table.resize(m, 0);
     b.resize(m, 0);
 
-
+    // vector of pairs of counts of bumped keys, and the corresponding seed.
+    std::vector<std::pair<int, uint32_t>> seed_bumped_counts;
 
     // DEBUG_LOG("Building BuRR with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r << " num layers: " << num_layers << " bucket_size: " << bucket_size);
     std::cout << "Building BuRR with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r << " num layers: " << num_layers_ << " bucket_size: " << bucket_size << std::endl;
-    seed_ = -num_layers_ + 4;
-    while (true) {
+    seed_ = 0;
+    bool bumped = false;
+    while (seed_ < 50) {
+        std::fill(table.begin(), table.end(), 0);
+        std::fill(b.begin(), b.end(), 0);
         std::vector<uint64_t> bumped_values;
         std::vector<std::string> bumped_keys;
         std::vector<std::pair<uint64_t, uint64_t>> start_positions;
@@ -394,7 +398,7 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
 
         metadata.clear();
         metadata.resize(std::ceil((double)m / bucket_size), 0);
-        bool bumped = false;
+        bumped = false;
         for (size_t i = 0; i < start_positions.size();) {
             uint64_t bucket_start = i;
             DEBUG_LOG("Bucket Start: " << bucket_start);
@@ -481,21 +485,142 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
             }
         }
         if (bumped && num_layers_ > 0) {
-            DEBUG_LOG("Bumping " << bumped_keys.size() << " keys");
-            if (num_layers_ == 1) {
-                fallback_ribbon_ptr = std::make_unique<BasicRibbon>(bumped_keys, bumped_values, r, -e);
-                used_fallback = true;
-                break;
-            }
-            fallback_burr_ptr = std::make_unique<BuRR>(bumped_keys, bumped_values, r, e, bucket_size, num_layers_-1);
-            used_fallback = true;
-            break;
+            seed_bumped_counts.push_back(std::make_pair(bumped_keys.size(), seed_));
+            std::cout << "Seed and counts: " << seed_bumped_counts.back() << std::endl;
+            seed_++;
+            // DEBUG_LOG("Bumping " << bumped_keys.size() << " keys");
+            // if (num_layers_ == 1) {
+            //     fallback_ribbon_ptr = std::make_unique<BasicRibbon>(bumped_keys, bumped_values, r, -e);
+            //     used_fallback = true;
+            //     break;
+            // }
+            // fallback_burr_ptr = std::make_unique<BuRR>(bumped_keys, bumped_values, r, e, bucket_size, num_layers_-1);
+            // used_fallback = true;
+            // break;
         } else if (bumped) {
             seed_++;
         } else {
             break;
         }
     }
+
+    if (bumped) {
+        std::sort(seed_bumped_counts.begin(), seed_bumped_counts.end());
+        std::cout << "Seed and counts: " << seed_bumped_counts << std::endl;
+        seed_ = seed_bumped_counts[0].second;
+
+        std::fill(table.begin(), table.end(), 0);
+        std::fill(b.begin(), b.end(), 0);
+        std::vector<uint64_t> bumped_values;
+        std::vector<std::string> bumped_keys;
+        std::vector<std::pair<uint64_t, uint64_t>> start_positions;
+        for (int i = 0; i < keys.size(); i++) {
+            uint64_t start_pos= murmur64(keys[i], seed_) % (m - w);
+            start_positions.push_back(std::make_pair(start_pos, i));
+        }
+        std::sort(start_positions.begin(), start_positions.end());
+
+        metadata.clear();
+        metadata.resize(std::ceil((double)m / bucket_size), 0);
+        bumped = false;
+        for (size_t i = 0; i < start_positions.size();) {
+            uint64_t bucket_start = i;
+            DEBUG_LOG("Bucket Start: " << bucket_start);
+            uint64_t bucket_index = std::floor(start_positions[i].first / bucket_size);
+            uint64_t first_start_pos_of_bucket = bucket_index * bucket_size;
+
+            // Find the end of the current bucket
+            while (i < start_positions.size() && (start_positions[i].first / bucket_size) == bucket_index) {
+                i++;
+            }
+
+            for (size_t j = i; j > bucket_start;) {
+                previous_insertions.clear();
+                j--;
+                DEBUG_LOG("J: " << j);
+                size_t key_idx = start_positions[j].second;
+                if (!insert(keys[key_idx], values[key_idx], seed_)) {
+                    bumped = true;
+                    uint64_t start_pos = start_positions[j].first;
+                    uint64_t bucket_idx = std::floor((double)start_pos / bucket_size);
+
+                    DEBUG_LOG("first_start_pos_of_bucket: " << first_start_pos_of_bucket);
+                    DEBUG_LOG("start_pos: " << start_pos);
+                    DEBUG_LOG("thresholds: " << threshold_values);
+                    DEBUG_LOG("bucket_idx: " << bucket_idx);
+                    DEBUG_LOG("metadata[bucket_idx]: " << metadata[bucket_idx]);
+                    for (int k = 1; k < 4; k++){
+                        if (start_pos <= first_start_pos_of_bucket + threshold_values[k]) {
+                            metadata[bucket_idx] = k;
+                            DEBUG_LOG("Selected Metadata: " << k);
+                            DEBUG_LOG("Selected threshold_values[k]: " << threshold_values[k]);
+                            break;
+                        }
+                    }
+                    
+                    // Undo previous insertions
+                    int threshold_start_pos = first_start_pos_of_bucket + threshold_values[metadata[bucket_idx]];
+                    DEBUG_LOG("Bumping all start pos < " << threshold_start_pos);
+                    DEBUG_LOG("Undoing previous table insertions");
+                    DEBUG_LOG("bucket_start: " << bucket_start);
+                    DEBUG_LOG("previous_insertions.size(): " << previous_insertions.size());
+                    for (int k = previous_insertions.size()-1; k >= 0; k--) {
+                        DEBUG_LOG("K: " << k << " size: " << previous_insertions.size());
+                        if (previous_insertions[k].first > threshold_start_pos) {
+                            break;
+                        }
+
+                        table[previous_insertions[k].second] = 0;
+                        b[previous_insertions[k].second] = 0;
+                        previous_insertions.pop_back();
+                    }
+
+                    DEBUG_LOG("Bumping previously inserted keys with start position > current");
+                    // Bump all keys start position > current, but less than bumping threshold
+                    for (int k = j + 1; k < i; k++) {
+                        if (start_positions[k].first > threshold_start_pos) {
+                            break;
+                        }
+                        DEBUG_LOG("Bumping start pos: " << start_positions[k].first);
+                        bumped_keys.push_back(keys[start_positions[k].second]);
+                        bumped_values.push_back(values[start_positions[k].second]);
+                    }
+
+                    DEBUG_LOG("Bumping current keys");
+                    bumped_keys.push_back(keys[key_idx]);
+                    bumped_values.push_back(values[key_idx]);
+
+                    DEBUG_LOG("Bumping keys not yet added");
+                    // All other elements in bucket will have lower start pos so just bump them
+                    for (int k = j - 1; k >= bucket_start; k--) {
+                        if (k < 0) { 
+                            break;
+                        }
+                        DEBUG_LOG("K: " << k);
+                        DEBUG_LOG("bucket_start: " << bucket_start);
+                        DEBUG_LOG("first_start_pos_of_bucket: " << first_start_pos_of_bucket);
+                        DEBUG_LOG("Bumping start pos: " << start_positions[k].first);
+                        
+                        bumped_keys.push_back(keys[start_positions[k].second]);
+                        bumped_values.push_back(values[start_positions[k].second]);
+                    }
+                    break;
+                }
+            }
+        }
+
+        DEBUG_LOG("Bumping " << bumped_keys.size() << " keys");
+        if (num_layers_ == 1) {
+            fallback_ribbon_ptr = std::make_unique<BasicRibbon>(bumped_keys, bumped_values, r, -e);
+            used_fallback = true;
+        } else {
+            fallback_burr_ptr = std::make_unique<BuRR>(bumped_keys, bumped_values, r, e, bucket_size, num_layers_-1);
+            used_fallback = true;
+        }
+    }
+
+
+
 
     solve();
     make_compact_z();
