@@ -36,8 +36,8 @@ std::string generate_random_string(int length) {
 
 std::vector<std::string> generate_random_keys(int n) {
     std::unordered_set<std::string> unique_keys;
-    // const int length = std::ceil(std::log(n) / std::log(charset.size()));
-    const int length = 10;
+    int length = std::ceil(std::log(n) / std::log(charset.size()));
+    length = std::max(10, length);
     std::cout << "Generating " << n << " keys with length " << length << std::endl;
     while (unique_keys.size() < n) {
         std::string key = generate_random_string(length);

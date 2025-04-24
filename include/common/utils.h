@@ -9,6 +9,7 @@
 #include <map>
 #include <chrono>
 #include "algos/hash_function.h"
+#include "common/ribbon.h"
 
 #ifdef DEBUG
 #define DEBUG_LOG(x) std::cout << "[" << __FILE__ << ":" << __LINE__ << "] " << "DEBUG: " << x << std::endl
@@ -116,6 +117,12 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<T> &data) {
     return os;
 }
 
+// Vector printing
+inline std::ostream& operator<<(std::ostream& os, const uint128_t &data) {
+    os << data;
+    return os;
+}
+
 // Map Printing
 template <typename K, typename V>
 inline std::ostream& operator<<(std::ostream& os, const std::map<K, V> &data) {
@@ -143,6 +150,16 @@ inline std::ostream& operator<<(std::ostream& os, const HashFunctionSpace &data)
        << "  space usage: " << data.space_usage << "\n"
        << "  total bits: " << data.total_bits << "\n"
        << "  bits per key: " << data.bits_per_key << "\n"
+       << "}";
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const BuRRSpace&data) {
+    os << "BuRRSpace {\n"
+       << "  space usage: " << data.space_usage << "\n"
+       << "  total bits: " << data.total_bits << "\n"
+       << "  total Z: " << data.total_Z << "\n"
+       << "  total metadata: " << data.total_metadata << "\n"
        << "}";
     return os;
 }

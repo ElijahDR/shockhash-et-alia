@@ -497,6 +497,7 @@ tests/CMakeFiles/common_lib.dir/__/src/common/broadword.cpp.o
  /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stdint.h
  /Users/elijah/Desktop/diss/include/algos/hash_function.h
  /Users/elijah/Desktop/diss/include/common/broadword.h
+ /Users/elijah/Desktop/diss/include/common/ribbon.h
  /Users/elijah/Desktop/diss/include/common/utils.h
 
 tests/CMakeFiles/common_lib.dir/__/src/common/elias_fano.cpp.o
@@ -965,6 +966,7 @@ tests/CMakeFiles/common_lib.dir/__/src/common/elias_fano.cpp.o
  /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stdint.h
  /Users/elijah/Desktop/diss/include/algos/hash_function.h
  /Users/elijah/Desktop/diss/include/common/elias_fano.h
+ /Users/elijah/Desktop/diss/include/common/ribbon.h
  /Users/elijah/Desktop/diss/include/common/utils.h
 
 tests/CMakeFiles/common_lib.dir/__/src/common/golomb_rice.cpp.o
@@ -1433,6 +1435,7 @@ tests/CMakeFiles/common_lib.dir/__/src/common/golomb_rice.cpp.o
  /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stdint.h
  /Users/elijah/Desktop/diss/include/algos/hash_function.h
  /Users/elijah/Desktop/diss/include/common/golomb_rice.h
+ /Users/elijah/Desktop/diss/include/common/ribbon.h
  /Users/elijah/Desktop/diss/include/common/utils.h
 
 tests/CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.o
@@ -1903,6 +1906,7 @@ tests/CMakeFiles/common_lib.dir/__/src/common/murmurhash.cpp.o
  /Users/elijah/Desktop/diss/include/algos/hash_function.h
  /Users/elijah/Desktop/diss/include/common/MurmurHash3.h
  /Users/elijah/Desktop/diss/include/common/murmurhash.h
+ /Users/elijah/Desktop/diss/include/common/ribbon.h
  /Users/elijah/Desktop/diss/include/common/utils.h
 
 tests/CMakeFiles/common_lib.dir/__/src/common/ribbon.cpp.o
@@ -2842,5 +2846,6 @@ tests/CMakeFiles/common_lib.dir/__/src/common/utils.cpp.o
  /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stddef.h
  /Library/Developer/CommandLineTools/usr/lib/clang/16/include/stdint.h
  /Users/elijah/Desktop/diss/include/algos/hash_function.h
+ /Users/elijah/Desktop/diss/include/common/ribbon.h
  /Users/elijah/Desktop/diss/include/common/utils.h
 
