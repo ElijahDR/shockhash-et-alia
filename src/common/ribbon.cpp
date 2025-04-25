@@ -164,26 +164,20 @@ bool BasicRibbon::insert(std::string &key, std::uint8_t value, uint32_t seed) {
     DEBUG_LOG("Current Row Vector (random bits): " << std::bitset<64>(row_vector));
     DEBUG_LOG("Current Start Pos: " << start_pos);
 
-    uint64_t index = 0;
-    while (row_vector > 0) {
-        // Find the position of the most significant bit (MSB)
-        int msb_position = 63 - __builtin_clzll(row_vector);
+    for (int i = 0; i < w; i++) {
+        if (row_vector & ((uint64_t)1 << 63)) {
+            if (table[start_pos + i] & ((uint64_t)1 << 63)) {
+                row_vector ^= table[start_pos + i];
+                value ^= b[start_pos + i];
+            } else {
+                table[start_pos + i] = row_vector;
+                b[start_pos + i] = value;
+                return true;
+            }
 
-        // Shift row_vector to align the MSB to the leftmost position
-        row_vector <<= (63 - msb_position);
-        index += (63 - msb_position);
-
-        // Check if the corresponding entry in the table has the MSB set
-        if (table[start_pos + index] & ((uint64_t)1 << 63)) {
-            row_vector ^= table[start_pos + index];
-            value ^= b[start_pos + index];
-        } else {
-            table[start_pos + index] = row_vector;
-            b[start_pos + index] = value;
-            return true;
         }
+        row_vector <<= 1;
     }
-
     return false;
 }
 
@@ -223,9 +217,9 @@ void BasicRibbon::build(std::vector<std::string> &keys, std::vector<std::uint8_t
 
     seed_ = seed;
 
-    // for (auto entry : table) {
-    //     DEBUG_LOG(std::bitset<64>(entry));
-    // }
+    for (auto entry : table) {
+        std::cout << std::bitset<64>(entry) << std::endl;
+    }
 
     // for (auto entry : b) {
     //     DEBUG_LOG(std::bitset<8>(entry));
@@ -253,7 +247,6 @@ bool BasicRibbon::solve() {
             if (value == 0) {
                 break;
             }
-
         }
 
         Z[i] = z_value;
