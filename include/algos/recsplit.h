@@ -24,7 +24,7 @@ struct EncodedSplittingTreeSelect {
 struct FanoutData {
     uint32_t size;
     uint32_t fanout;
-    std::vector<uint32_t> part_sizes;
+    std::vector<uint16_t> part_sizes;
 };
 
 struct SubtreeData { 
@@ -65,7 +65,7 @@ inline std::ostream& operator<<(std::ostream& os, const EncodedSplittingTree &da
 
 class RecSplit : public HashFunction {
 public:
-    RecSplit(uint32_t bucket_size, uint32_t leaf_size);
+    RecSplit(uint32_t bucket_size, uint32_t leaf_size, uint32_t bucket_seed=42);
 
     void build(const std::vector<std::string> &keys) override;
 
@@ -80,6 +80,7 @@ private:
     void split(const std::vector<std::string> &keys);
     
     void create_buckets();
+    uint32_t assign_bucket(const std::string &key, uint32_t bucket_count);
 
     uint32_t find_bijection_random(const std::vector<std::string> &keys);
 
@@ -88,6 +89,7 @@ private:
 
     uint32_t bucket_size_;
     uint32_t bucket_count_;
+    uint32_t bucket_seed_;
     const uint32_t leaf_size_;
 
     std::vector<uint32_t> golomb_rice_parameters_leaf_;
@@ -119,7 +121,6 @@ private:
 uint32_t find_bijection(const std::vector<std::string> &keys);
 FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size);
 std::vector<std::vector<SubtreeData>> generate_all_grp();
-uint32_t assign_bucket(const std::string &key, uint32_t bucket_count);
 uint32_t map_key_to_split(const std::string &key, const uint32_t &seed, const FanoutData &fanout_data);
 uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &fanout_data);
 

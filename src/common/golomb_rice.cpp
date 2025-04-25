@@ -49,12 +49,12 @@ uint32_t compute_golomb_rice_parameter(float p) {
 uint32_t compute_grp_bijection(uint32_t m) {
     double trials = pow(exp(1), m) / sqrt(2 * PI * m);
     double p = 1 / trials;
-    // DEBUG_LOG("GRP BIJECTION --- Size: " << m << " Est. Trials: " << trials << " Prob: " << p);
+    DEBUG_LOG("GRP BIJECTION --- Size: " << m << " Est. Trials: " << trials << " Prob: " << p);
 
     return compute_golomb_rice_parameter(p);
 }
 
-uint32_t compute_grp_buckets(std::vector<uint32_t> sizes) {
+uint32_t compute_grp_buckets(std::vector<uint16_t> sizes) {
     uint32_t k = 1;
     uint32_t m = 0;
     for (auto size : sizes) {
@@ -66,7 +66,7 @@ uint32_t compute_grp_buckets(std::vector<uint32_t> sizes) {
     double trials = std::sqrt((pow((2*PI), s-1) * k) / m);
     double p = 1 / trials;
 
-    // DEBUG_LOG("GRP BUCKETS --- Size: " << m << " Est. Trials: " << trials << " Prob: " << p);
-    // DEBUG_LOG("GRP BUCKETS --- Sizes: " << sizes);
+    DEBUG_LOG("GRP BUCKETS --- Size: " << m << " Est. Trials: " << trials << " Prob: " << p);
+    DEBUG_LOG("GRP BUCKETS --- Sizes: " << sizes);
     return compute_golomb_rice_parameter(p);
 }

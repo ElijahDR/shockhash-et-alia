@@ -4,8 +4,12 @@
 #include <iostream>
 #include <cmath>
 #include <string>
-#include "algos/sichash.h"
+#include <fstream>
+#include <unordered_map>
+#include <map>
+#include <chrono>
 #include "algos/hash_function.h"
+#include "common/ribbon.h"
 
 #ifdef DEBUG
 #define DEBUG_LOG(x) std::cout << "[" << __FILE__ << ":" << __LINE__ << "] " << "DEBUG: " << x << std::endl
@@ -20,6 +24,11 @@ int log2_approx(int x);
 
 std::string generate_random_string(int length);
 std::vector<std::string> generate_random_keys(int n);
+std::vector<std::string> read_file(std::string file_name);
+bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_function);
+HashTestResult test_hashing(std::vector<std::string> &keys, HashFunction &hash_function);
+HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash_function);
+
 
 const double PI = 3.14159265358979323846;
 const double GOLDEN_RATIO = (std::sqrt(5.0) + 1.0) / 2.0;
@@ -37,6 +46,11 @@ enum class ConsoleColour {
     Magenta = 35,
     Cyan = 36,
     White = 37
+};
+
+struct SimpleSpace {
+    std::vector<std::pair<std::string, int>> space_usage;
+    int total_bits;
 };
 
 template <typename T>
@@ -103,9 +117,25 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<T> &data) {
     return os;
 }
 
+// Vector printing
+inline std::ostream& operator<<(std::ostream& os, const uint128_t &data) {
+    os << data;
+    return os;
+}
+
 // Map Printing
 template <typename K, typename V>
 inline std::ostream& operator<<(std::ostream& os, const std::map<K, V> &data) {
+    os << "{";
+    for (const auto &[key, value] : data) {
+        os << key << ": " << value << ", ";
+    }
+    os << "}";
+    return os;
+}
+
+template <typename K, typename V>
+inline std::ostream& operator<<(std::ostream& os, const std::unordered_map<K, V> &data) {
     os << "{";
     for (const auto &[key, value] : data) {
         os << key << ": " << value << ", ";
@@ -120,7 +150,43 @@ inline std::ostream& operator<<(std::ostream& os, const HashFunctionSpace &data)
        << "  space usage: " << data.space_usage << "\n"
        << "  total bits: " << data.total_bits << "\n"
        << "  bits per key: " << data.bits_per_key << "\n"
-       << "  number of keys: " << data.n_keys << "\n"
+       << "}";
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const BuRRSpace&data) {
+    os << "BuRRSpace {\n"
+       << "  space usage: " << data.space_usage << "\n"
+       << "  total bits: " << data.total_bits << "\n"
+       << "  total Z: " << data.total_Z << "\n"
+       << "  total metadata: " << data.total_metadata << "\n"
+       << "}";
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const HashFunctionTime &data) {
+    os << "HashFunctionTime {\n"
+       << "  build time: " << data.build_time << "\n"
+       << "  hashing time: " << data.hashing_time << "\n"
+       << "  build throughput (keys/s): " << data.build_throughput << "\n"
+       << "  hash throughput (keys/s): " << data.hash_throughput << "\n"
+       << "}";
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const HashTestResult &data) {
+    os << "HashTestResult {\n"
+       << "  space: " << data.space << "\n"
+       << "  time: " << data.time << "\n"
+       << "}";
+    return os;
+}
+
+
+inline std::ostream& operator<<(std::ostream& os, const HashTestParameters &data) {
+    os << "HashTestParameters {\n"
+       << "  hash function: " << data.hash_function << "\n"
+       << "  params: " << data.params << "\n"
        << "}";
     return os;
 }
@@ -142,5 +208,20 @@ void print_vector(const std::vector<T> &vec) {
     }
     std::cout << std::endl;
 }
+
+class ProgressBar {
+public:
+    ProgressBar(int total, std::string title="", int bar_width=70);
+
+    void update();
+private:
+    void display();
+    std::chrono::steady_clock::time_point start_time;
+    std::chrono::milliseconds interval;
+    int total_;
+    std::string title_;
+    int progress_ = 0;
+    int bar_width_;
+};
 
 #endif

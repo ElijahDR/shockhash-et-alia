@@ -24,13 +24,25 @@ else()
     message(STATUS "Test Compilation is disabled.")
 endif()
 
+option(PROFILE "Enable Profiling" OFF)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native")
-message(STATUS "Compiler optimization flags: -O3 -march=native")
+if(PROFILE)
+    set(CMAKE_BUILD_TYPE Debug)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pg -Ofast -march=native")
+    message(STATUS "Profling is enabled.")
+else()
+    message(STATUS "Profiling is disabled.")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -march=native")
+    message(STATUS "Compiler optimization flags: -Ofast -march=native")
+endif()
+
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 set(SOURCES
     src/main.cpp
     src/common/murmurhash.cpp
+    src/common/MurmurHash3.cpp
     src/common/utils.cpp
     src/common/golomb_rice.cpp
     src/common/elias_fano.cpp

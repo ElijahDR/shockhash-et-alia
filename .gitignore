@@ -3,7 +3,7 @@
 /CMakeFiles/
 /bin/
 /lib/
-/data/
+/data/temp/
 
 # Ignore generated files
 *.o
@@ -59,3 +59,16 @@ __pycache__/
 # Ignore other common build artifacts
 Testing/
 CTestTestfile.cmake
+
+# Ignore test executables and build artifacts
+/tests/*.exe
+/tests/*.out
+/tests/CMakeFiles/
+/tests/cmake_install.cmake
+/tests/Makefile
+/tests/CTestTestfile.cmake
+
+# Ignore test-specific output files (e.g., logs, temporary files)
+/tests/*.log
+/tests/output/
+/tests/temp/

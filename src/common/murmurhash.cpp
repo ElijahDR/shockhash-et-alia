@@ -1,4 +1,5 @@
 #include "common/murmurhash.h"
+#include "common/MurmurHash3.h"
 #include <bit>
 #include <cstdint>  
 #include <cstring>
@@ -9,8 +10,14 @@ inline uint32_t ROL32(uint32_t k, uint32_t n) {
     return l | r;
 }
 
-// https://en.wikipedia.org/wiki/MurmurHash#Algorithm
 uint32_t murmur32(const std::string_view &key, const uint32_t seed) {
+    uint32_t result = 0;
+    MurmurHash3_x86_32(key.data(), (int)key.size(), seed, &result);
+    return result;
+}
+
+// https://en.wikipedia.org/wiki/MurmurHash#Algorithm
+uint32_t murmur32_old(const std::string_view &key, const uint32_t seed) {
     constexpr uint32_t c1 = 0xcc9e2d51;
     constexpr uint32_t c2 = 0x1b873593;
     constexpr int r1 = 15;
@@ -79,10 +86,14 @@ inline uint64_t fmix64 (uint64_t k) {
 
   return k;
 }
-
+uint128_t murmur128(const std::string &key, const uint32_t &seed) {
+    uint128_t result = 0;
+    MurmurHash3_x64_128(key.data(), (int)key.size(), seed, &result);
+    return result;
+}
 
 // https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp
-uint128_t murmur128(const std::string &key, const uint32_t &seed) {
+uint128_t murmur128_old(const std::string &key, const uint32_t &seed) {
     uint64_t h1 = seed;
     uint64_t h2 = seed;
 

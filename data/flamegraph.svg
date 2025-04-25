@@ -1,0 +1,1006 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" width="1200" height="358" onload="init(evt)" viewBox="0 0 1200 358" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples. -->
+<!-- NOTES:  -->
+<defs>
+	<linearGradient id="background" y1="0" y2="1" x1="0" x2="0" >
+		<stop stop-color="#eeeeee" offset="5%" />
+		<stop stop-color="#eeeeb0" offset="95%" />
+	</linearGradient>
+</defs>
+<style type="text/css">
+	text { font-family:Verdana; font-size:12px; fill:rgb(0,0,0); }
+	#search, #ignorecase { opacity:0.1; cursor:pointer; }
+	#search:hover, #search.show, #ignorecase:hover, #ignorecase.show { opacity:1; }
+	#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+	#title { text-anchor:middle; font-size:17px}
+	#unzoom { cursor:pointer; }
+	#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+	.hide { display:none; }
+	.parent { opacity:0.5; }
+</style>
+<script type="text/ecmascript">
+<![CDATA[
+	"use strict";
+	var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
+	function init(evt) {
+		details = document.getElementById("details").firstChild;
+		searchbtn = document.getElementById("search");
+		ignorecaseBtn = document.getElementById("ignorecase");
+		unzoombtn = document.getElementById("unzoom");
+		matchedtxt = document.getElementById("matched");
+		svg = document.getElementsByTagName("svg")[0];
+		searching = 0;
+		currentSearchTerm = null;
+
+		// use GET parameters to restore a flamegraphs state.
+		var params = get_params();
+		if (params.x && params.y)
+			zoom(find_group(document.querySelector('[x="' + params.x + '"][y="' + params.y + '"]')));
+                if (params.s) search(params.s);
+	}
+
+	// event listeners
+	window.addEventListener("click", function(e) {
+		var target = find_group(e.target);
+		if (target) {
+			if (target.nodeName == "a") {
+				if (e.ctrlKey === false) return;
+				e.preventDefault();
+			}
+			if (target.classList.contains("parent")) unzoom(true);
+			zoom(target);
+			if (!document.querySelector('.parent')) {
+				// we have basically done a clearzoom so clear the url
+				var params = get_params();
+				if (params.x) delete params.x;
+				if (params.y) delete params.y;
+				history.replaceState(null, null, parse_params(params));
+				unzoombtn.classList.add("hide");
+				return;
+			}
+
+			// set parameters for zoom state
+			var el = target.querySelector("rect");
+			if (el && el.attributes && el.attributes.y && el.attributes._orig_x) {
+				var params = get_params()
+				params.x = el.attributes._orig_x.value;
+				params.y = el.attributes.y.value;
+				history.replaceState(null, null, parse_params(params));
+			}
+		}
+		else if (e.target.id == "unzoom") clearzoom();
+		else if (e.target.id == "search") search_prompt();
+		else if (e.target.id == "ignorecase") toggle_ignorecase();
+	}, false)
+
+	// mouse-over for info
+	// show
+	window.addEventListener("mouseover", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = "Function: " + g_to_text(target);
+	}, false)
+
+	// clear
+	window.addEventListener("mouseout", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = ' ';
+	}, false)
+
+	// ctrl-F for search
+	// ctrl-I to toggle case-sensitive search
+	window.addEventListener("keydown",function (e) {
+		if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+			e.preventDefault();
+			search_prompt();
+		}
+		else if (e.ctrlKey && e.keyCode === 73) {
+			e.preventDefault();
+			toggle_ignorecase();
+		}
+	}, false)
+
+	// functions
+	function get_params() {
+		var params = {};
+		var paramsarr = window.location.search.substr(1).split('&');
+		for (var i = 0; i < paramsarr.length; ++i) {
+			var tmp = paramsarr[i].split("=");
+			if (!tmp[0] || !tmp[1]) continue;
+			params[tmp[0]]  = decodeURIComponent(tmp[1]);
+		}
+		return params;
+	}
+	function parse_params(params) {
+		var uri = "?";
+		for (var key in params) {
+			uri += key + '=' + encodeURIComponent(params[key]) + '&';
+		}
+		if (uri.slice(-1) == "&")
+			uri = uri.substring(0, uri.length - 1);
+		if (uri == '?')
+			uri = window.location.href.split('?')[0];
+		return uri;
+	}
+	function find_child(node, selector) {
+		var children = node.querySelectorAll(selector);
+		if (children.length) return children[0];
+	}
+	function find_group(node) {
+		var parent = node.parentElement;
+		if (!parent) return;
+		if (parent.id == "frames") return node;
+		return find_group(parent);
+	}
+	function orig_save(e, attr, val) {
+		if (e.attributes["_orig_" + attr] != undefined) return;
+		if (e.attributes[attr] == undefined) return;
+		if (val == undefined) val = e.attributes[attr].value;
+		e.setAttribute("_orig_" + attr, val);
+	}
+	function orig_load(e, attr) {
+		if (e.attributes["_orig_"+attr] == undefined) return;
+		e.attributes[attr].value = e.attributes["_orig_" + attr].value;
+		e.removeAttribute("_orig_"+attr);
+	}
+	function g_to_text(e) {
+		var text = find_child(e, "title").firstChild.nodeValue;
+		return (text)
+	}
+	function g_to_func(e) {
+		var func = g_to_text(e);
+		// if there's any manipulation we want to do to the function
+		// name before it's searched, do it here before returning.
+		return (func);
+	}
+	function update_text(e) {
+		var r = find_child(e, "rect");
+		var t = find_child(e, "text");
+		var w = parseFloat(r.attributes.width.value) -3;
+		var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+		t.attributes.x.value = parseFloat(r.attributes.x.value) + 3;
+
+		// Smaller than this size won't fit anything
+		if (w < 2 * 12 * 0.59) {
+			t.textContent = "";
+			return;
+		}
+
+		t.textContent = txt;
+		var sl = t.getSubStringLength(0, txt.length);
+		// check if only whitespace or if we can fit the entire string into width w
+		if (/^ *$/.test(txt) || sl < w)
+			return;
+
+		// this isn't perfect, but gives a good starting point
+		// and avoids calling getSubStringLength too often
+		var start = Math.floor((w/sl) * txt.length);
+		for (var x = start; x > 0; x = x-2) {
+			if (t.getSubStringLength(0, x + 2) <= w) {
+				t.textContent = txt.substring(0, x) + "..";
+				return;
+			}
+		}
+		t.textContent = "";
+	}
+
+	// zoom
+	function zoom_reset(e) {
+		if (e.attributes != undefined) {
+			orig_load(e, "x");
+			orig_load(e, "width");
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_reset(c[i]);
+		}
+	}
+	function zoom_child(e, x, ratio) {
+		if (e.attributes != undefined) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = (parseFloat(e.attributes.x.value) - x - 10) * ratio + 10;
+				if (e.tagName == "text")
+					e.attributes.x.value = find_child(e.parentNode, "rect[x]").attributes.x.value + 3;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseFloat(e.attributes.width.value) * ratio;
+			}
+		}
+
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_child(c[i], x - 10, ratio);
+		}
+	}
+	function zoom_parent(e) {
+		if (e.attributes) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = 10;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseInt(svg.width.baseVal.value) - (10 * 2);
+			}
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_parent(c[i]);
+		}
+	}
+	function zoom(node) {
+		var attr = find_child(node, "rect").attributes;
+		var width = parseFloat(attr.width.value);
+		var xmin = parseFloat(attr.x.value);
+		var xmax = parseFloat(xmin + width);
+		var ymin = parseFloat(attr.y.value);
+		var ratio = (svg.width.baseVal.value - 2 * 10) / width;
+
+		// XXX: Workaround for JavaScript float issues (fix me)
+		var fudge = 0.0001;
+
+		unzoombtn.classList.remove("hide");
+
+		var el = document.getElementById("frames").children;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var a = find_child(e, "rect").attributes;
+			var ex = parseFloat(a.x.value);
+			var ew = parseFloat(a.width.value);
+			var upstack;
+			// Is it an ancestor
+			if (0 == 0) {
+				upstack = parseFloat(a.y.value) > ymin;
+			} else {
+				upstack = parseFloat(a.y.value) < ymin;
+			}
+			if (upstack) {
+				// Direct ancestor
+				if (ex <= xmin && (ex+ew+fudge) >= xmax) {
+					e.classList.add("parent");
+					zoom_parent(e);
+					update_text(e);
+				}
+				// not in current path
+				else
+					e.classList.add("hide");
+			}
+			// Children maybe
+			else {
+				// no common path
+				if (ex < xmin || ex + fudge >= xmax) {
+					e.classList.add("hide");
+				}
+				else {
+					zoom_child(e, xmin, ratio);
+					update_text(e);
+				}
+			}
+		}
+		search();
+	}
+	function unzoom(dont_update_text) {
+		unzoombtn.classList.add("hide");
+		var el = document.getElementById("frames").children;
+		for(var i = 0; i < el.length; i++) {
+			el[i].classList.remove("parent");
+			el[i].classList.remove("hide");
+			zoom_reset(el[i]);
+			if(!dont_update_text) update_text(el[i]);
+		}
+		search();
+	}
+	function clearzoom() {
+		unzoom();
+
+		// remove zoom state
+		var params = get_params();
+		if (params.x) delete params.x;
+		if (params.y) delete params.y;
+		history.replaceState(null, null, parse_params(params));
+	}
+
+	// search
+	function toggle_ignorecase() {
+		ignorecase = !ignorecase;
+		if (ignorecase) {
+			ignorecaseBtn.classList.add("show");
+		} else {
+			ignorecaseBtn.classList.remove("show");
+		}
+		reset_search();
+		search();
+	}
+	function reset_search() {
+		var el = document.querySelectorAll("#frames rect");
+		for (var i = 0; i < el.length; i++) {
+			orig_load(el[i], "fill")
+		}
+		var params = get_params();
+		delete params.s;
+		history.replaceState(null, null, parse_params(params));
+	}
+	function search_prompt() {
+		if (!searching) {
+			var term = prompt("Enter a search term (regexp " +
+			    "allowed, eg: ^ext4_)"
+			    + (ignorecase ? ", ignoring case" : "")
+			    + "\nPress Ctrl-i to toggle case sensitivity", "");
+			if (term != null) search(term);
+		} else {
+			reset_search();
+			searching = 0;
+			currentSearchTerm = null;
+			searchbtn.classList.remove("show");
+			searchbtn.firstChild.nodeValue = "Search"
+			matchedtxt.classList.add("hide");
+			matchedtxt.firstChild.nodeValue = ""
+		}
+	}
+	function search(term) {
+		if (term) currentSearchTerm = term;
+		if (currentSearchTerm === null) return;
+
+		var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
+		var el = document.getElementById("frames").children;
+		var matches = new Object();
+		var maxwidth = 0;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var func = g_to_func(e);
+			var rect = find_child(e, "rect");
+			if (func == null || rect == null)
+				continue;
+
+			// Save max width. Only works as we have a root frame
+			var w = parseFloat(rect.attributes.width.value);
+			if (w > maxwidth)
+				maxwidth = w;
+
+			if (func.match(re)) {
+				// highlight
+				var x = parseFloat(rect.attributes.x.value);
+				orig_save(rect, "fill");
+				rect.attributes.fill.value = "rgb(230,0,230)";
+
+				// remember matches
+				if (matches[x] == undefined) {
+					matches[x] = w;
+				} else {
+					if (w > matches[x]) {
+						// overwrite with parent
+						matches[x] = w;
+					}
+				}
+				searching = 1;
+			}
+		}
+		if (!searching)
+			return;
+		var params = get_params();
+		params.s = currentSearchTerm;
+		history.replaceState(null, null, parse_params(params));
+
+		searchbtn.classList.add("show");
+		searchbtn.firstChild.nodeValue = "Reset Search";
+
+		// calculate percent matched, excluding vertical overlap
+		var count = 0;
+		var lastx = -1;
+		var lastw = 0;
+		var keys = Array();
+		for (k in matches) {
+			if (matches.hasOwnProperty(k))
+				keys.push(k);
+		}
+		// sort the matched frames by their x location
+		// ascending, then width descending
+		keys.sort(function(a, b){
+			return a - b;
+		});
+		// Step through frames saving only the biggest bottom-up frames
+		// thanks to the sort order. This relies on the tree property
+		// where children are always smaller than their parents.
+		var fudge = 0.0001;	// JavaScript floating point
+		for (var k in keys) {
+			var x = parseFloat(keys[k]);
+			var w = matches[keys[k]];
+			if (x >= lastx + lastw - fudge) {
+				count += w;
+				lastx = x;
+				lastw = w;
+			}
+		}
+		// display matched percent
+		matchedtxt.classList.remove("hide");
+		var pct = 100 * count / maxwidth;
+		if (pct != 100) pct = pct.toFixed(1)
+		matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+	}
+]]>
+</script>
+<rect x="0.0" y="0" width="1200.0" height="358.0" fill="url(#background)"  />
+<text id="title" x="600.00" y="24" >Flame Graph</text>
+<text id="details" x="10.00" y="341" > </text>
+<text id="unzoom" x="10.00" y="24" class="hide">Reset Zoom</text>
+<text id="search" x="1090.00" y="24" >Search</text>
+<text id="ignorecase" x="1174.00" y="24" >ic</text>
+<text id="matched" x="1090.00" y="341" > </text>
+<g id="frames">
+<g >
+<title>_mcount (162,975,966 samples, 0.15%)</title><rect x="1133.7" y="181" width="1.8" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1136.72" y="191.5" ></text>
+</g>
+<g >
+<title>_int_malloc (215,495,996 samples, 0.20%)</title><rect x="1180.4" y="277" width="2.4" height="15.0" fill="rgb(215,47,11)" rx="2" ry="2" />
+<text  x="1183.35" y="287.5" ></text>
+</g>
+<g >
+<title>murmur32 (53,345,558 samples, 0.05%)</title><rect x="806.1" y="149" width="0.6" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="809.14" y="159.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (650,948,826 samples, 0.62%)</title><rect x="788.0" y="133" width="7.3" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="791.00" y="143.5" ></text>
+</g>
+<g >
+<title>__memmove_avx_unaligned_erms (489,060,216 samples, 0.46%)</title><rect x="1158.6" y="197" width="5.4" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="1161.56" y="207.5" ></text>
+</g>
+<g >
+<title>std::vector&lt;bool, std::allocator&lt;bool&gt; &gt;::vector (54,347,347 samples, 0.05%)</title><rect x="110.6" y="37" width="0.6" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="113.57" y="47.5" ></text>
+</g>
+<g >
+<title>RecSplit::~RecSplit (53,271,486 samples, 0.05%)</title><rect x="13.4" y="213" width="0.6" height="15.0" fill="rgb(236,146,35)" rx="2" ry="2" />
+<text  x="16.37" y="223.5" ></text>
+</g>
+<g >
+<title>RecSplit::split (53,917,675,741 samples, 50.97%)</title><rect x="50.3" y="117" width="601.4" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="53.26" y="127.5" >RecSplit::split</text>
+</g>
+<g >
+<title>malloc (217,320,665 samples, 0.21%)</title><rect x="1140.4" y="181" width="2.4" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1143.37" y="191.5" ></text>
+</g>
+<g >
+<title>_mcount (433,068,409 samples, 0.41%)</title><rect x="701.1" y="101" width="4.9" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="704.14" y="111.5" ></text>
+</g>
+<g >
+<title>generate_random_keys[abi:cxx11] (2,883,244,487 samples, 2.73%)</title><rect x="14.0" y="213" width="32.1" height="15.0" fill="rgb(207,10,2)" rx="2" ry="2" />
+<text  x="16.96" y="223.5" >ge..</text>
+</g>
+<g >
+<title>__libc_start_main (103,965,647,111 samples, 98.28%)</title><rect x="12.8" y="261" width="1159.7" height="15.0" fill="rgb(236,142,34)" rx="2" ry="2" />
+<text  x="15.76" y="271.5" >__libc_start_main</text>
+</g>
+<g >
+<title>golomb_rice_decode (270,647,037 samples, 0.26%)</title><rect x="1137.4" y="181" width="3.0" height="15.0" fill="rgb(241,168,40)" rx="2" ry="2" />
+<text  x="1140.35" y="191.5" ></text>
+</g>
+<g >
+<title>generate_all_grp (54,028,551 samples, 0.05%)</title><rect x="12.8" y="197" width="0.6" height="15.0" fill="rgb(243,175,42)" rx="2" ry="2" />
+<text  x="15.76" y="207.5" ></text>
+</g>
+<g >
+<title>_mcount (107,670,333 samples, 0.10%)</title><rect x="795.9" y="133" width="1.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="798.87" y="143.5" ></text>
+</g>
+<g >
+<title>murmur32 (3,460,292,024 samples, 3.27%)</title><rect x="707.8" y="101" width="38.6" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="710.78" y="111.5" >mur..</text>
+</g>
+<g >
+<title>murmur32 (4,160,988,060 samples, 3.93%)</title><rect x="404.2" y="85" width="46.4" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="407.16" y="95.5" >murm..</text>
+</g>
+<g >
+<title>__mcount_internal (51,835,573 samples, 0.05%)</title><rect x="39.1" y="181" width="0.6" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="42.15" y="191.5" ></text>
+</g>
+<g >
+<title>cfree@GLIBC_2.2.5 (53,345,531 samples, 0.05%)</title><rect x="454.8" y="101" width="0.6" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="457.78" y="111.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (1,793,499,262 samples, 1.70%)</title><rect x="1113.1" y="181" width="20.0" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="1116.10" y="191.5" ></text>
+</g>
+<g >
+<title>golomb_rice_encode (53,344,959 samples, 0.05%)</title><rect x="78.6" y="69" width="0.6" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="81.61" y="79.5" ></text>
+</g>
+<g >
+<title>find_splitting (2,757,588,738 samples, 2.61%)</title><rect x="775.4" y="149" width="30.7" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="778.37" y="159.5" >fi..</text>
+</g>
+<g >
+<title>operator delete@plt (54,356,204 samples, 0.05%)</title><rect x="748.8" y="117" width="0.6" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="751.79" y="127.5" ></text>
+</g>
+<g >
+<title>memcpy@plt (53,335,316 samples, 0.05%)</title><rect x="163.0" y="69" width="0.6" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="166.03" y="79.5" ></text>
+</g>
+<g >
+<title>__memmove_avx_unaligned_erms (216,341,777 samples, 0.20%)</title><rect x="145.6" y="69" width="2.4" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="148.55" y="79.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (1,891,737,722 samples, 1.79%)</title><rect x="677.6" y="101" width="21.1" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="680.64" y="111.5" ></text>
+</g>
+<g >
+<title>unlink_chunk.isra.2 (161,208,454 samples, 0.15%)</title><rect x="1188.2" y="277" width="1.8" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="1191.20" y="287.5" ></text>
+</g>
+<g >
+<title>_int_free (380,063,391 samples, 0.36%)</title><rect x="1164.0" y="197" width="4.3" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="1167.01" y="207.5" ></text>
+</g>
+<g >
+<title>calculate_fanout (53,335,197 samples, 0.05%)</title><rect x="454.2" y="101" width="0.6" height="15.0" fill="rgb(246,190,45)" rx="2" ry="2" />
+<text  x="457.19" y="111.5" ></text>
+</g>
+<g >
+<title>_int_free (705,205,487 samples, 0.67%)</title><rect x="1172.5" y="277" width="7.9" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="1175.49" y="287.5" ></text>
+</g>
+<g >
+<title>_mcount (107,916,443 samples, 0.10%)</title><rect x="767.5" y="117" width="1.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="770.50" y="127.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (3,082,220,445 samples, 2.91%)</title><rect x="111.2" y="69" width="34.4" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="114.17" y="79.5" >__..</text>
+</g>
+<g >
+<title>murmur32 (812,865,363 samples, 0.77%)</title><rect x="797.1" y="133" width="9.0" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="800.07" y="143.5" ></text>
+</g>
+<g >
+<title>operator delete@plt (54,354,686 samples, 0.05%)</title><rect x="1171.9" y="197" width="0.6" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="1174.87" y="207.5" ></text>
+</g>
+<g >
+<title>murmur32 (6,476,638,261 samples, 6.12%)</title><rect x="571.0" y="85" width="72.3" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="574.02" y="95.5" >murmur32</text>
+</g>
+<g >
+<title>operator new@plt (54,336,354 samples, 0.05%)</title><rect x="1146.4" y="181" width="0.6" height="15.0" fill="rgb(232,125,29)" rx="2" ry="2" />
+<text  x="1149.43" y="191.5" ></text>
+</g>
+<g >
+<title>_mcount (107,693,588 samples, 0.10%)</title><rect x="750.0" y="133" width="1.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="753.01" y="143.5" ></text>
+</g>
+<g >
+<title>std::_Hash_bytes (53,284,863 samples, 0.05%)</title><rect x="35.6" y="197" width="0.6" height="15.0" fill="rgb(232,127,30)" rx="2" ry="2" />
+<text  x="38.63" y="207.5" ></text>
+</g>
+<g >
+<title>__memmove_avx_unaligned_erms (593,765,255 samples, 0.56%)</title><rect x="337.2" y="69" width="6.7" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="340.23" y="79.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (54,342,943 samples, 0.05%)</title><rect x="806.7" y="165" width="0.6" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="809.73" y="175.5" ></text>
+</g>
+<g >
+<title>malloc (53,707,519 samples, 0.05%)</title><rect x="643.3" y="101" width="0.6" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="646.26" y="111.5" ></text>
+</g>
+<g >
+<title>murmur32 (54,053,850 samples, 0.05%)</title><rect x="47.3" y="165" width="0.6" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="50.30" y="175.5" ></text>
+</g>
+<g >
+<title>RecSplit::build (72,945,420,316 samples, 68.96%)</title><rect x="46.1" y="197" width="813.7" height="15.0" fill="rgb(246,191,45)" rx="2" ry="2" />
+<text  x="49.12" y="207.5" >RecSplit::build</text>
+</g>
+<g >
+<title>memset@plt (54,359,268 samples, 0.05%)</title><rect x="1142.8" y="181" width="0.6" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="1145.80" y="191.5" ></text>
+</g>
+<g >
+<title>murmur32 (54,355,328 samples, 0.05%)</title><rect x="774.8" y="133" width="0.6" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="777.77" y="143.5" ></text>
+</g>
+<g >
+<title>RecSplit::split (72,735,748,661 samples, 68.76%)</title><rect x="48.5" y="181" width="811.3" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="51.46" y="191.5" >RecSplit::split</text>
+</g>
+<g >
+<title>std::uniform_int_distribution&lt;int&gt;::operator (469,921,655 samples, 0.44%)</title><rect x="30.4" y="181" width="5.2" height="15.0" fill="rgb(239,157,37)" rx="2" ry="2" />
+<text  x="33.39" y="191.5" ></text>
+</g>
+<g >
+<title>mcount@plt (108,681,147 samples, 0.10%)</title><rect x="402.3" y="85" width="1.2" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="405.34" y="95.5" ></text>
+</g>
+<g >
+<title>__memmove_avx_unaligned_erms (54,361,012 samples, 0.05%)</title><rect x="795.3" y="133" width="0.6" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="798.26" y="143.5" ></text>
+</g>
+<g >
+<title>_mcount (53,306,931 samples, 0.05%)</title><rect x="453.6" y="101" width="0.6" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="456.59" y="111.5" ></text>
+</g>
+<g >
+<title>[libstdc++.so.6.0.25] (108,680,542 samples, 0.10%)</title><rect x="1111.9" y="181" width="1.2" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="1114.89" y="191.5" ></text>
+</g>
+<g >
+<title>mcount@plt (108,671,495 samples, 0.10%)</title><rect x="350.5" y="69" width="1.2" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="353.49" y="79.5" ></text>
+</g>
+<g >
+<title>_mcount (594,760,852 samples, 0.56%)</title><rect x="343.9" y="69" width="6.6" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="346.86" y="79.5" ></text>
+</g>
+<g >
+<title>calculate_fanout (163,055,252 samples, 0.15%)</title><rect x="1135.5" y="181" width="1.9" height="15.0" fill="rgb(246,190,45)" rx="2" ry="2" />
+<text  x="1138.53" y="191.5" ></text>
+</g>
+<g >
+<title>murmur32 (217,370,419 samples, 0.21%)</title><rect x="1143.4" y="181" width="2.4" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="1146.40" y="191.5" ></text>
+</g>
+<g >
+<title>std::_Hashtable&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, std::allocator&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::__detail::_Identity, std::equal_to&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::hash&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits&lt;true, true, true&gt; &gt;::_M_insert_unique&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const&amp;, std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const&amp;, std::__detail::_AllocNode&lt;std::allocator&lt;std::__detail::_Hash_node&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, true&gt; &gt; &gt; &gt; (627,331,064 samples, 0.59%)</title><rect x="36.2" y="197" width="7.0" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="39.22" y="207.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (2,917,157,666 samples, 2.76%)</title><rect x="304.7" y="69" width="32.5" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="307.69" y="79.5" >__..</text>
+</g>
+<g >
+<title>murmur32 (4,485,932,105 samples, 4.24%)</title><rect x="352.3" y="69" width="50.0" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="355.30" y="79.5" >murmu..</text>
+</g>
+<g >
+<title>golomb_rice_encode (54,347,347 samples, 0.05%)</title><rect x="110.6" y="53" width="0.6" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="113.57" y="63.5" ></text>
+</g>
+<g >
+<title>main (103,965,647,111 samples, 98.28%)</title><rect x="12.8" y="245" width="1159.7" height="15.0" fill="rgb(243,179,42)" rx="2" ry="2" />
+<text  x="15.76" y="255.5" >main</text>
+</g>
+<g >
+<title>RecSplit::split (67,922,535,042 samples, 64.21%)</title><rect x="49.1" y="165" width="757.6" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="52.07" y="175.5" >RecSplit::split</text>
+</g>
+<g >
+<title>__memmove_avx_unaligned_erms (54,244,302 samples, 0.05%)</title><rect x="766.9" y="117" width="0.6" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="769.90" y="127.5" ></text>
+</g>
+<g >
+<title>RecSplit::split (35,887,216,322 samples, 33.92%)</title><rect x="50.9" y="101" width="400.3" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="53.86" y="111.5" >RecSplit::split</text>
+</g>
+<g >
+<title>_mcount (106,686,954 samples, 0.10%)</title><rect x="807.3" y="165" width="1.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="810.34" y="175.5" ></text>
+</g>
+<g >
+<title>std::__do_uninit_copy&lt;__gnu_cxx::__normal_iterator&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const*, std::vector&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, std::allocator&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt; &gt; &gt;, std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;*&gt; (49,631,693 samples, 0.05%)</title><rect x="47.9" y="165" width="0.6" height="15.0" fill="rgb(240,161,38)" rx="2" ry="2" />
+<text  x="50.91" y="175.5" ></text>
+</g>
+<g >
+<title>memcpy@plt (107,711,451 samples, 0.10%)</title><rect x="569.8" y="85" width="1.2" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="572.82" y="95.5" ></text>
+</g>
+<g >
+<title>compute_grp_buckets (54,028,551 samples, 0.05%)</title><rect x="12.8" y="181" width="0.6" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="15.76" y="191.5" ></text>
+</g>
+<g >
+<title>malloc (379,331,094 samples, 0.36%)</title><rect x="1182.8" y="277" width="4.2" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1185.77" y="287.5" ></text>
+</g>
+<g >
+<title>murmur32 (216,400,837 samples, 0.20%)</title><rect x="746.4" y="117" width="2.4" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="749.38" y="127.5" ></text>
+</g>
+<g >
+<title>__memcmp_avx2_movbe (53,306,985 samples, 0.05%)</title><rect x="252.8" y="85" width="0.6" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="255.78" y="95.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (2,324,298,720 samples, 2.20%)</title><rect x="226.9" y="85" width="25.9" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="229.85" y="95.5" >_..</text>
+</g>
+<g >
+<title>hashing_algos (105,784,018,388 samples, 100.00%)</title><rect x="10.0" y="293" width="1180.0" height="15.0" fill="rgb(232,128,30)" rx="2" ry="2" />
+<text  x="13.00" y="303.5" >hashing_algos</text>
+</g>
+<g >
+<title>SimpleSelect::select (21,348,305,140 samples, 20.18%)</title><rect x="873.8" y="181" width="238.1" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="876.76" y="191.5" >SimpleSelect::select</text>
+</g>
+<g >
+<title>time_hashing (100,975,102,587 samples, 95.45%)</title><rect x="46.1" y="213" width="1126.4" height="15.0" fill="rgb(248,198,47)" rx="2" ry="2" />
+<text  x="49.12" y="223.5" >time_hashing</text>
+</g>
+<g >
+<title>mcount@plt (54,351,821 samples, 0.05%)</title><rect x="837.5" y="149" width="0.6" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="840.49" y="159.5" ></text>
+</g>
+<g >
+<title>memcpy@plt (53,333,144 samples, 0.05%)</title><rect x="351.7" y="69" width="0.6" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="354.70" y="79.5" ></text>
+</g>
+<g >
+<title>all (105,784,018,388 samples, 100%)</title><rect x="10.0" y="309" width="1180.0" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="13.00" y="319.5" ></text>
+</g>
+<g >
+<title>operator new (54,353,702 samples, 0.05%)</title><rect x="1145.8" y="181" width="0.6" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1148.83" y="191.5" ></text>
+</g>
+<g >
+<title>RecSplit::split (65,057,255,205 samples, 61.50%)</title><rect x="49.7" y="149" width="725.7" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="52.67" y="159.5" >RecSplit::split</text>
+</g>
+<g >
+<title>__memcmp_avx2_movbe (162,995,595 samples, 0.15%)</title><rect x="451.2" y="101" width="1.8" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="454.18" y="111.5" ></text>
+</g>
+<g >
+<title>_mcount (651,193,483 samples, 0.62%)</title><rect x="256.4" y="85" width="7.3" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="259.39" y="95.5" ></text>
+</g>
+<g >
+<title>std::vector&lt;bool, std::allocator&lt;bool&gt; &gt;::_M_insert_aux (543,437,391 samples, 0.51%)</title><rect x="1147.0" y="181" width="6.1" height="15.0" fill="rgb(254,227,54)" rx="2" ry="2" />
+<text  x="1150.04" y="191.5" ></text>
+</g>
+<g >
+<title>__memmove_avx_unaligned_erms (107,682,353 samples, 0.10%)</title><rect x="834.5" y="149" width="1.2" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="837.47" y="159.5" ></text>
+</g>
+<g >
+<title>murmur32 (5,613,477,542 samples, 5.31%)</title><rect x="163.6" y="69" width="62.6" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="166.63" y="79.5" >murmur32</text>
+</g>
+<g >
+<title>RecSplit::hash (26,727,030,607 samples, 25.27%)</title><rect x="859.8" y="197" width="298.1" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="862.81" y="207.5" >RecSplit::hash</text>
+</g>
+<g >
+<title>__memmove_avx_unaligned_erms (217,360,033 samples, 0.21%)</title><rect x="557.2" y="85" width="2.4" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="560.16" y="95.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (990,790,512 samples, 0.94%)</title><rect x="18.8" y="181" width="11.0" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="21.76" y="191.5" ></text>
+</g>
+<g >
+<title>_int_free (54,323,396 samples, 0.05%)</title><rect x="1133.1" y="181" width="0.6" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="1136.11" y="191.5" ></text>
+</g>
+<g >
+<title>murmur32 (54,357,409 samples, 0.05%)</title><rect x="1170.7" y="197" width="0.6" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="1173.66" y="207.5" ></text>
+</g>
+<g >
+<title>RecSplit::split (62,676,377,544 samples, 59.25%)</title><rect x="50.3" y="133" width="699.1" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="53.26" y="143.5" >RecSplit::split</text>
+</g>
+<g >
+<title>mcount@plt (270,757,245 samples, 0.26%)</title><rect x="566.8" y="85" width="3.0" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="569.79" y="95.5" ></text>
+</g>
+<g >
+<title>RecSplit::append_to_splitting_tree (53,344,959 samples, 0.05%)</title><rect x="78.6" y="85" width="0.6" height="15.0" fill="rgb(231,121,29)" rx="2" ry="2" />
+<text  x="81.61" y="95.5" ></text>
+</g>
+<g >
+<title>__memmove_avx_unaligned_erms (53,659,968 samples, 0.05%)</title><rect x="453.0" y="101" width="0.6" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="456.00" y="111.5" ></text>
+</g>
+<g >
+<title>_mcount (163,059,170 samples, 0.15%)</title><rect x="835.7" y="149" width="1.8" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="838.68" y="159.5" ></text>
+</g>
+<g >
+<title>std::_Hashtable&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, std::allocator&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::__detail::_Identity, std::equal_to&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::hash&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits&lt;true, true, true&gt; &gt;::_M_insert_unique_node (313,491,324 samples, 0.30%)</title><rect x="39.7" y="181" width="3.5" height="15.0" fill="rgb(214,45,10)" rx="2" ry="2" />
+<text  x="42.72" y="191.5" ></text>
+</g>
+<g >
+<title>malloc_consolidate (107,898,496 samples, 0.10%)</title><rect x="1187.0" y="277" width="1.2" height="15.0" fill="rgb(239,159,38)" rx="2" ry="2" />
+<text  x="1190.00" y="287.5" ></text>
+</g>
+<g >
+<title>[libstdc++.so.6.0.25] (54,308,432 samples, 0.05%)</title><rect x="226.2" y="85" width="0.7" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="229.25" y="95.5" ></text>
+</g>
+<g >
+<title>generate_random_string[abi:cxx11] (1,512,533,120 samples, 1.43%)</title><rect x="18.8" y="197" width="16.8" height="15.0" fill="rgb(242,172,41)" rx="2" ry="2" />
+<text  x="21.76" y="207.5" ></text>
+</g>
+<g >
+<title>operator delete (53,342,928 samples, 0.05%)</title><rect x="651.1" y="101" width="0.6" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="654.10" y="111.5" ></text>
+</g>
+<g >
+<title>operator new (54,361,861 samples, 0.05%)</title><rect x="450.6" y="85" width="0.6" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="453.57" y="95.5" ></text>
+</g>
+<g >
+<title>_mcount (646,156,777 samples, 0.61%)</title><rect x="559.6" y="85" width="7.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="562.59" y="95.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (261,078,635 samples, 0.25%)</title><rect x="31.0" y="165" width="2.9" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="33.97" y="175.5" ></text>
+</g>
+<g >
+<title>_mcount (51,820,953 samples, 0.05%)</title><rect x="29.8" y="181" width="0.6" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="32.81" y="191.5" ></text>
+</g>
+<g >
+<title>murmur32 (595,811,855 samples, 0.56%)</title><rect x="644.5" y="101" width="6.6" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="647.46" y="111.5" ></text>
+</g>
+<g >
+<title>RecSplit::append_to_splitting_tree (54,347,347 samples, 0.05%)</title><rect x="110.6" y="69" width="0.6" height="15.0" fill="rgb(231,121,29)" rx="2" ry="2" />
+<text  x="113.57" y="79.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (3,352,070,821 samples, 3.17%)</title><rect x="519.8" y="85" width="37.4" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="522.77" y="95.5" >__m..</text>
+</g>
+<g >
+<title>cfree@GLIBC_2.2.5 (216,124,784 samples, 0.20%)</title><rect x="1168.3" y="197" width="2.4" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="1171.25" y="207.5" ></text>
+</g>
+<g >
+<title>find_splitting (2,112,276,355 samples, 2.00%)</title><rect x="751.2" y="133" width="23.6" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="754.21" y="143.5" >f..</text>
+</g>
+<g >
+<title>__mcount_internal (54,363,674 samples, 0.05%)</title><rect x="651.7" y="117" width="0.6" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="654.70" y="127.5" ></text>
+</g>
+<g >
+<title>std::vector&lt;bool, std::allocator&lt;bool&gt; &gt;::vector (434,595,991 samples, 0.41%)</title><rect x="1153.1" y="181" width="4.8" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="1156.10" y="191.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (1,136,260,330 samples, 1.07%)</title><rect x="821.8" y="149" width="12.7" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="824.80" y="159.5" ></text>
+</g>
+<g >
+<title>murmur32 (1,892,273,251 samples, 1.79%)</title><rect x="838.1" y="149" width="21.1" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="841.10" y="159.5" ></text>
+</g>
+<g >
+<title>find_splitting (12,432,433,015 samples, 11.75%)</title><rect x="263.7" y="85" width="138.6" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="266.66" y="95.5" >find_splitting</text>
+</g>
+<g >
+<title>RecSplit::create_buckets (209,671,655 samples, 0.20%)</title><rect x="46.1" y="181" width="2.4" height="15.0" fill="rgb(222,81,19)" rx="2" ry="2" />
+<text  x="49.12" y="191.5" ></text>
+</g>
+<g >
+<title>[unknown] (104,213,401,241 samples, 98.52%)</title><rect x="10.0" y="277" width="1162.5" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="13.00" y="287.5" >[unknown]</text>
+</g>
+<g >
+<title>malloc (53,344,959 samples, 0.05%)</title><rect x="78.6" y="53" width="0.6" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="81.61" y="63.5" ></text>
+</g>
+<g >
+<title>__memmove_avx_unaligned_erms (270,642,331 samples, 0.26%)</title><rect x="253.4" y="85" width="3.0" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="256.37" y="95.5" ></text>
+</g>
+<g >
+<title>memcpy@plt (54,327,087 samples, 0.05%)</title><rect x="403.5" y="85" width="0.7" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="406.55" y="95.5" ></text>
+</g>
+<g >
+<title>__memmove_avx_unaligned_erms (215,283,417 samples, 0.20%)</title><rect x="698.7" y="101" width="2.4" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="701.74" y="111.5" ></text>
+</g>
+<g >
+<title>RecSplit::RecSplit (54,028,551 samples, 0.05%)</title><rect x="12.8" y="213" width="0.6" height="15.0" fill="rgb(250,210,50)" rx="2" ry="2" />
+<text  x="15.76" y="223.5" ></text>
+</g>
+<g >
+<title>find_splitting (4,543,476,529 samples, 4.30%)</title><rect x="808.5" y="165" width="50.7" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="811.53" y="175.5" >find_..</text>
+</g>
+<g >
+<title>run_recsplit_random_keys (103,965,647,111 samples, 98.28%)</title><rect x="12.8" y="229" width="1159.7" height="15.0" fill="rgb(240,163,39)" rx="2" ry="2" />
+<text  x="15.76" y="239.5" >run_recsplit_random_keys</text>
+</g>
+<g >
+<title>[ld-2.28.so] (247,754,130 samples, 0.23%)</title><rect x="10.0" y="261" width="2.8" height="15.0" fill="rgb(228,108,25)" rx="2" ry="2" />
+<text  x="13.00" y="271.5" ></text>
+</g>
+<g >
+<title>operator delete (54,341,569 samples, 0.05%)</title><rect x="1171.3" y="197" width="0.6" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="1174.27" y="207.5" ></text>
+</g>
+<g >
+<title>std::_Hashtable&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, std::allocator&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::__detail::_Identity, std::equal_to&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::hash&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits&lt;true, true, true&gt; &gt;::_M_rehash_aux (313,491,324 samples, 0.30%)</title><rect x="39.7" y="165" width="3.5" height="15.0" fill="rgb(247,197,47)" rx="2" ry="2" />
+<text  x="42.72" y="175.5" ></text>
+</g>
+<g >
+<title>murmur32 (54,346,085 samples, 0.05%)</title><rect x="859.2" y="165" width="0.6" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="862.21" y="175.5" ></text>
+</g>
+<g >
+<title>find_splitting (16,843,285,504 samples, 15.92%)</title><rect x="455.4" y="101" width="187.9" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="458.38" y="111.5" >find_splitting</text>
+</g>
+<g >
+<title>std::__do_uninit_copy&lt;std::__detail::_Node_iterator&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, true, true&gt;, std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;*&gt; (260,193,508 samples, 0.25%)</title><rect x="43.2" y="197" width="2.9" height="15.0" fill="rgb(228,110,26)" rx="2" ry="2" />
+<text  x="46.22" y="207.5" ></text>
+</g>
+<g >
+<title>RecSplit::split (13,181,614,354 samples, 12.46%)</title><rect x="79.2" y="85" width="147.0" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="82.21" y="95.5" >RecSplit::split</text>
+</g>
+<g >
+<title>mcount@plt (107,677,717 samples, 0.10%)</title><rect x="706.0" y="101" width="1.2" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="708.97" y="111.5" ></text>
+</g>
+<g >
+<title>std::mersenne_twister_engine&lt;unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul&gt;::operator (51,783,763 samples, 0.05%)</title><rect x="35.1" y="165" width="0.5" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="38.05" y="175.5" ></text>
+</g>
+<g >
+<title>_mcount (1,080,007,564 samples, 1.02%)</title><rect x="148.0" y="69" width="12.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="150.97" y="79.5" ></text>
+</g>
+<g >
+<title>__mcount_internal (433,817,569 samples, 0.41%)</title><rect x="762.1" y="117" width="4.8" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="765.06" y="127.5" ></text>
+</g>
+<g >
+<title>check_match (247,754,130 samples, 0.23%)</title><rect x="10.0" y="245" width="2.8" height="15.0" fill="rgb(213,40,9)" rx="2" ry="2" />
+<text  x="13.00" y="255.5" ></text>
+</g>
+<g >
+<title>murmur32 (543,355,342 samples, 0.51%)</title><rect x="768.7" y="117" width="6.1" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="771.71" y="127.5" ></text>
+</g>
+<g >
+<title>SimpleSelect::select (54,349,609 samples, 0.05%)</title><rect x="1157.9" y="197" width="0.7" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="1160.95" y="207.5" ></text>
+</g>
+<g >
+<title>__memcmp_avx2_movbe (54,347,946 samples, 0.05%)</title><rect x="652.3" y="117" width="0.6" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="655.30" y="127.5" ></text>
+</g>
+<g >
+<title>memcpy@plt (54,346,633 samples, 0.05%)</title><rect x="707.2" y="101" width="0.6" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="710.17" y="111.5" ></text>
+</g>
+<g >
+<title>find_splitting (8,379,233,142 samples, 7.92%)</title><rect x="652.9" y="117" width="93.5" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="655.91" y="127.5" >find_splitt..</text>
+</g>
+<g >
+<title>__mcount_internal (54,347,489 samples, 0.05%)</title><rect x="749.4" y="133" width="0.6" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="752.40" y="143.5" ></text>
+</g>
+<g >
+<title>_mcount (104,700,432 samples, 0.10%)</title><rect x="33.9" y="165" width="1.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="36.88" y="175.5" ></text>
+</g>
+<g >
+<title>mcount@plt (270,621,637 samples, 0.26%)</title><rect x="160.0" y="69" width="3.0" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="163.01" y="79.5" ></text>
+</g>
+<g >
+<title>memcpy@plt (53,329,291 samples, 0.05%)</title><rect x="643.9" y="101" width="0.6" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="646.86" y="111.5" ></text>
+</g>
+</g>
+</svg>
