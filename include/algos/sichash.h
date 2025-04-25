@@ -50,7 +50,7 @@ private:
     std::map<std::string, std::vector<bool>> hash_index_map_;
     std::map<std::string, uint32_t> hash_index_map_raw_;
 
-    std::vector<BasicRibbon> ribbons;
+    std::vector<BuRR> ribbons;
 
     SimpleSelect perfect_rank_;
     EliasFanoEncodedData holes_ef_;

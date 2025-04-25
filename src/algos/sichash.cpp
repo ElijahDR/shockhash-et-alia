@@ -35,9 +35,11 @@ void SicHash::build(const std::vector<std::string> &keys) {
     }
 
     std::cout << "Cuckoo Hash Tables Created, making ribbons..." << std::endl;
-    ribbons.push_back(BasicRibbon(keys_classes_[0], hash_indexes_per_class_[0], 1, 0.15));
-    ribbons.push_back(BasicRibbon(keys_classes_[1], hash_indexes_per_class_[1], 2, 0.15));
-    ribbons.push_back(BasicRibbon(keys_classes_[2], hash_indexes_per_class_[2], 3, 0.15));
+    double epsilon = (double)-4/64;
+    int bucket_size = 128;
+    ribbons.push_back(BuRR(keys_classes_[0], hash_indexes_per_class_[0], 1, epsilon, bucket_size));
+    ribbons.push_back(BuRR(keys_classes_[1], hash_indexes_per_class_[1], 2, epsilon, bucket_size));
+    ribbons.push_back(BuRR(keys_classes_[2], hash_indexes_per_class_[2], 3, epsilon, bucket_size));
 
     std::cout << "Bucket Seeds: " << bucket_seeds_ << std::endl;
 
@@ -155,13 +157,16 @@ uint32_t SicHash::perfect_hash(const std::string &key) {
 
 HashFunctionSpace SicHash::space() {
     std::vector<std::pair<std::string, int>> space_usage;
-    int ribbon_1 = ribbons[0].space();
-    int ribbon_2 = ribbons[1].space();
-    int ribbon_3 = ribbons[2].space();
-    space_usage.push_back(std::make_pair("1 Bit Ribbon", ribbon_1));
-    space_usage.push_back(std::make_pair("2 Bit Ribbon", ribbon_2));
-    space_usage.push_back(std::make_pair("3 Bit Ribbon", ribbon_3));
-    int total_ribbon = ribbon_1 + ribbon_2 + ribbon_3;
+    BuRRSpace ribbon_1 = ribbons[0].space();
+    BuRRSpace ribbon_2 = ribbons[1].space();
+    BuRRSpace ribbon_3 = ribbons[2].space();
+    std::cout << "Ribbon 1 Space: " << ribbon_1 << std::endl;
+    std::cout << "Ribbon 2 Space: " << ribbon_2 << std::endl;
+    std::cout << "Ribbon 3 Space: " << ribbon_3 << std::endl;
+    space_usage.push_back(std::make_pair("1 Bit Ribbon", ribbon_1.total_bits));
+    space_usage.push_back(std::make_pair("2 Bit Ribbon", ribbon_2.total_bits));
+    space_usage.push_back(std::make_pair("3 Bit Ribbon", ribbon_3.total_bits));
+    int total_ribbon = ribbon_1.total_bits + ribbon_2.total_bits + ribbon_3.total_bits;
     space_usage.push_back(std::make_pair("Total Ribbon", total_ribbon));
 
     int holes = elias_fano_space(holes_ef_);

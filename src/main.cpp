@@ -29,11 +29,11 @@ void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=500, uint32_t 
     }
 
 void run_sichash_random_keys() {
-    std::vector<std::string> keys = generate_random_keys(1000000);
+    std::vector<std::string> keys = generate_random_keys(10000000);
 
-    SicHash sichash(10000, 0.66, 0.34, 0.82);
-    test_perfect_hashing(keys, sichash);
-    // HashFunctionTime time = time_hashing(keys, sichash);
+    SicHash sichash(5000, 0.49, 0.22, 0.9768);
+    // test_perfect_hashing(keys, sichash);
+    HashFunctionTime time = time_hashing(keys, sichash);
     std::cout << time << std::endl;
     std::cout << sichash.space() << std::endl;
 }
