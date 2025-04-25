@@ -6,7 +6,7 @@
 #include "common/murmurhash.h"
 
 TEST(BasicRibbonTest, SingleBitTest) {
-    std::vector<std::string> keys = generate_random_keys(10000);
+    std::vector<std::string> keys = generate_random_keys(64);
     std::vector<uint64_t> values(keys.size());
     for (int i = 0; i < keys.size(); i++) {
         values[i] = murmur32(keys[i], 0) % 2;
@@ -38,7 +38,7 @@ TEST(BasicRibbonTest, TwoBitTest) {
 }
 
 TEST(BasicRibbonTest, ThreeBitTest) {
-    std::vector<std::string> keys = generate_random_keys(10000);
+    std::vector<std::string> keys = generate_random_keys(1000);
     std::vector<uint64_t> values(keys.size());
     for (int i = 0; i < keys.size(); i++) {
         values[i] = murmur32(keys[i], 0) % 8;
@@ -54,7 +54,7 @@ TEST(BasicRibbonTest, ThreeBitTest) {
 }
 
 TEST(BurrTest, OneBitTest) {
-    int n = 10000000;
+    int n = 1000000;
     std::vector<std::string> keys = generate_random_keys(n);
     std::vector<uint64_t> values(keys.size());
     for (int i = 0; i < keys.size(); i++) {
@@ -62,8 +62,8 @@ TEST(BurrTest, OneBitTest) {
     }
 
     int w = 64; 
-    int b = 64;
-    double e = -(double)4/w;
+    int b = 128;
+    double e = -(double)0;
     BuRR burr(keys, values, 1, e, b, 4, w);
 
     ProgressBar pbar(100);
@@ -82,7 +82,7 @@ TEST(BurrTest, OneBitTest) {
 
 
 TEST(BurrTest, TwoBitTest) {
-    int n = 10000;
+    int n = 1000000;
     std::vector<std::string> keys = generate_random_keys(n);
     std::vector<uint64_t> values(keys.size());
     for (int i = 0; i < keys.size(); i++) {

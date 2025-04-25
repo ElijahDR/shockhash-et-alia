@@ -38,6 +38,17 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
             continue;;
         }
 
+
+
+        for (auto entry : table) {
+            DEBUG_LOG(std::bitset<64>(entry));
+        }
+    
+        for (auto entry : b) {
+            DEBUG_LOG(std::bitset<8>(entry));
+        }
+
+
         break;
     }
 
@@ -92,7 +103,7 @@ uint64_t BasicRibbon::query(const std::string &key) {
         for (int j = 0; j < w; j++) {
             // DEBUG_LOG("Trying: " << j);
             // DEBUG_LOG("Row Vector: " << std::bitset<64>(row_vector));
-            if (row_vector & 1) {
+            if (row_vector & ((uint128_t)1 << 63)) {
                 int index = start_pos + j;
                 // DEBUG_LOG("Index: " << index);
                 
@@ -111,7 +122,7 @@ uint64_t BasicRibbon::query(const std::string &key) {
             if (row_vector == 0) {
                 break;
             }
-            row_vector >>= 1;
+            row_vector <<= 1;
         }
     }
 
@@ -155,16 +166,15 @@ bool BasicRibbon::insert(std::string &key, std::uint8_t value, uint32_t seed) {
 
     uint64_t index = 0;
     while (row_vector > 0) {
-        while (!(row_vector & (1))) {
-            if (row_vector == 0) {
-                return false;
-            }
-            row_vector >>= 1;
-            index++;
+        // Find the position of the most significant bit (MSB)
+        int msb_position = 63 - __builtin_clzll(row_vector);
 
-        }
+        // Shift row_vector to align the MSB to the leftmost position
+        row_vector <<= (63 - msb_position);
+        index += (63 - msb_position);
 
-        if (table[start_pos + index] & 1) {
+        // Check if the corresponding entry in the table has the MSB set
+        if (table[start_pos + index] & ((uint64_t)1 << 63)) {
             row_vector ^= table[start_pos + index];
             value ^= b[start_pos + index];
         } else {
@@ -235,8 +245,8 @@ bool BasicRibbon::solve() {
         uint64_t value = table[i];
         uint8_t z_value = b[i];
         for (int j = 1; j < w; j++) {
-            value >>= 1;
-            if (value & 1) {
+            value <<= 1;
+            if (value & ((uint64_t)1 << 63)) {
                 z_value ^= Z[i + j];
             }
 
@@ -289,7 +299,7 @@ uint64_t BuRR::query(const std::string &key) {
         for (int j = 0; j < w; j++) {
             // DEBUG_LOG("Trying: " << j);
             // DEBUG_LOG("Row Vector: " << std::bitset<64>(row_vector));
-            if (row_vector & 1) {
+            if (row_vector & ((uint64_t)1<<63)) {
                 int index = start_pos + j;
                 // DEBUG_LOG("Index: " << index);
                 
@@ -308,7 +318,7 @@ uint64_t BuRR::query(const std::string &key) {
             if (row_vector == 0) {
                 break;
             }
-            row_vector >>= 1;
+            row_vector <<= 1;
         }
     }
 
@@ -353,7 +363,7 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
     w = ribbon_width;
     r = value_bits;
     e = epsilon;
-    num_layers_ = n_layers;
+    num_layers_ = n_layers-1;
     if (n_layers == 0) {
         e = -epsilon;
     }
@@ -381,7 +391,7 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
 
     // DEBUG_LOG("Building BuRR with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r << " num layers: " << num_layers << " bucket_size: " << bucket_size);
     std::cout << "Building BuRR with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r << " num layers: " << num_layers_ << " bucket_size: " << bucket_size << std::endl;
-    seed_ = -num_layers_ + 4;
+    seed_ = -num_layers_ + 10;
     while (true) {
         std::vector<uint64_t> bumped_values;
         std::vector<std::string> bumped_keys;
@@ -483,11 +493,11 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
         if (bumped && num_layers_ > 0) {
             DEBUG_LOG("Bumping " << bumped_keys.size() << " keys");
             if (num_layers_ == 1) {
-                fallback_ribbon_ptr = std::make_unique<BasicRibbon>(bumped_keys, bumped_values, r, -e);
+                fallback_ribbon_ptr = std::make_unique<BasicRibbon>(bumped_keys, bumped_values, r, 0.1);
                 used_fallback = true;
                 break;
             }
-            fallback_burr_ptr = std::make_unique<BuRR>(bumped_keys, bumped_values, r, e, bucket_size, num_layers_-1);
+            fallback_burr_ptr = std::make_unique<BuRR>(bumped_keys, bumped_values, r, e, bucket_size, num_layers_);
             used_fallback = true;
             break;
         } else if (bumped) {
@@ -537,8 +547,8 @@ bool BuRR::solve() {
         uint64_t value = table[i];
         uint8_t z_value = b[i];
         for (int j = 1; j < w; j++) {
-            value >>= 1;
-            if (value & 1) {
+            value <<= 1;
+            if (value & ((uint64_t)1 << 63)) {
                 z_value ^= Z[i + j];
             }
 
@@ -595,17 +605,17 @@ bool BuRR::insert(std::string &key, std::uint8_t value, uint32_t seed) {
     uint64_t index = 0;
     while (row_vector > 0) {
         // DEBUG_LOG("Current Row Vector (random bits): " << std::bitset<64>(row_vector));
-        while (!(row_vector & (1))) {
+        while (!(row_vector & ((uint64_t)1 << 63))) {
             if (row_vector == 0) {
                 DEBUG_LOG("Failed to Insert");
                 return false;
             }
-            row_vector >>= 1;
+            row_vector <<= 1;
             index++;
 
         }
 
-        if (table[start_pos + index] & 1) {
+        if (table[start_pos + index] & ((uint64_t)1 << 63)) {
             row_vector ^= table[start_pos + index];
             value ^= b[start_pos + index];
         } else {

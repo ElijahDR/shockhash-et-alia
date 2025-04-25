@@ -35,8 +35,8 @@ void SicHash::build(const std::vector<std::string> &keys) {
     }
 
     std::cout << "Cuckoo Hash Tables Created, making ribbons..." << std::endl;
-    double epsilon = (double)-4/64;
-    int bucket_size = 128;
+    double epsilon = (double)0;
+    int bucket_size = 64;
     ribbons.push_back(BuRR(keys_classes_[0], hash_indexes_per_class_[0], 1, epsilon, bucket_size));
     ribbons.push_back(BuRR(keys_classes_[1], hash_indexes_per_class_[1], 2, epsilon, bucket_size));
     ribbons.push_back(BuRR(keys_classes_[2], hash_indexes_per_class_[2], 3, epsilon, bucket_size));
