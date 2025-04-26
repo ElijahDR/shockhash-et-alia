@@ -62,6 +62,7 @@ private:
     bool insert(std::string &key, std::uint8_t value, uint32_t seed);
     bool solve();
     void make_compact_z();
+    void reset(double epsilon);
 
     std::vector<uint64_t> threshold_values;
     std::vector<uint16_t> metadata;

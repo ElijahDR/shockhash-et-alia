@@ -37,11 +37,17 @@ std::string generate_random_string(int length) {
 std::vector<std::string> generate_random_keys(int n) {
     std::unordered_set<std::string> unique_keys;
     int length = std::ceil(std::log(n) / std::log(charset.size()));
-    length = std::max(10, length);
-    std::cout << "Generating " << n << " keys with length " << length << std::endl;
+    length = std::max(16, length);
+    // std::cout << "Generating " << n << " keys with length " << length << std::endl;
+    std::string name = "Generating " + std::to_string(n) + " keys with length " + std::to_string(length);
+    ProgressBar pbar(100, name);
+
     while (unique_keys.size() < n) {
         std::string key = generate_random_string(length);
         unique_keys.insert(key);
+        if (unique_keys.size() % (n /100) == 0) {
+            pbar.update();
+        }
     }
     std::cout << "Generation complete!" << std::endl;
 

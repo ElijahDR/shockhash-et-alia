@@ -24,7 +24,7 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
     // DEBUG_LOG("Building Basic Ribbon with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r);
     std::cout << "Building Basic Ribbon with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r << std::endl;
     seed_ = 0;
-    while (true) {
+    while (seed_ < 100) {
         bool complete = true;
         for (int i = 0; i < keys.size(); i++) {
             if (!insert(keys[i], values[i], seed_)) {
@@ -35,6 +35,8 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
 
         if (!complete) {
             seed_++;
+            std::fill(table.begin(), table.end(), 0);
+            std::fill(b.begin(), b.end(), 0);
             continue;;
         }
 
@@ -164,12 +166,16 @@ bool BasicRibbon::insert(std::string &key, std::uint8_t value, uint32_t seed) {
     DEBUG_LOG("Current Row Vector (random bits): " << std::bitset<64>(row_vector));
     DEBUG_LOG("Current Start Pos: " << start_pos);
 
-    for (int i = 0; i < w; i++) {
+    int i = 0;
+    while (row_vector > 0) {
+        DEBUG_LOG("Current Row Vector (random bits): " << std::bitset<64>(row_vector));
+        DEBUG_LOG("Current Start Pos: " << start_pos + i);
         if (row_vector & ((uint64_t)1 << 63)) {
             if (table[start_pos + i] & ((uint64_t)1 << 63)) {
                 row_vector ^= table[start_pos + i];
                 value ^= b[start_pos + i];
             } else {
+                DEBUG_LOG("Went in!");
                 table[start_pos + i] = row_vector;
                 b[start_pos + i] = value;
                 return true;
@@ -177,7 +183,9 @@ bool BasicRibbon::insert(std::string &key, std::uint8_t value, uint32_t seed) {
 
         }
         row_vector <<= 1;
+        i++;
     }
+    DEBUG_LOG("Failed!");
     return false;
 }
 
@@ -274,10 +282,6 @@ uint64_t BuRR::query(const std::string &key) {
     DEBUG_LOG("start_pos_threshold: " << start_pos_threshold);
     DEBUG_LOG("num layers: " << num_layers_);
     if (start_pos <= start_pos_threshold && metadata[bucket_idx] > 0 && num_layers_ > 0) {
-        if (num_layers_ == 1){
-            DEBUG_LOG("Bumped Key, going to fallback ribbon");
-            return fallback_ribbon_ptr->query(key);
-        }
         DEBUG_LOG("Bumped Key, going to fallback burr");
         return fallback_burr_ptr->query(key);
     }
@@ -357,9 +361,15 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
     r = value_bits;
     e = epsilon;
     num_layers_ = n_layers-1;
-    if (n_layers == 0) {
-        e = -epsilon;
+    m = (uint64_t)((1 + e) * n) + 1;
+    if (m <= 64) {
+        m = 65;
     }
+    if (num_layers_ == 0) {
+        bucket_size = m;
+    }
+    table.resize(m, 0);
+    b.resize(m, 0);
     bucket_size_ = bucket_size;
 
     threshold_values.resize(4, 0);
@@ -368,23 +378,17 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
     threshold_values[3] = bucket_size_ - 1;
     DEBUG_LOG("threshold_values: " << threshold_values);
 
-    m = (uint64_t)((1 + e) * n) + 1;
-    if (m <= 64) {
-        m = 65;
-    }
 
     if (w != 64) {
         throw std::invalid_argument("Ribbon Width 64 currently only one supported!");
     }
 
-    table.resize(m, 0);
-    b.resize(m, 0);
 
 
 
     // DEBUG_LOG("Building BuRR with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r << " num layers: " << num_layers << " bucket_size: " << bucket_size);
     std::cout << "Building BuRR with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r << " num layers: " << num_layers_ << " bucket_size: " << bucket_size << std::endl;
-    seed_ = -num_layers_ + 10;
+    seed_ = num_layers_;
     while (true) {
         std::vector<uint64_t> bumped_values;
         std::vector<std::string> bumped_keys;
@@ -396,16 +400,16 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
         std::sort(start_positions.begin(), start_positions.end());
 
         metadata.clear();
-        metadata.resize(std::ceil((double)m / bucket_size), 0);
+        metadata.resize(std::ceil((double)m / bucket_size_), 0);
         bool bumped = false;
         for (size_t i = 0; i < start_positions.size();) {
             uint64_t bucket_start = i;
             DEBUG_LOG("Bucket Start: " << bucket_start);
-            uint64_t bucket_index = std::floor(start_positions[i].first / bucket_size);
-            uint64_t first_start_pos_of_bucket = bucket_index * bucket_size;
+            uint64_t bucket_index = std::floor(start_positions[i].first / bucket_size_);
+            uint64_t first_start_pos_of_bucket = bucket_index * bucket_size_;
 
             // Find the end of the current bucket
-            while (i < start_positions.size() && (start_positions[i].first / bucket_size) == bucket_index) {
+            while (i < start_positions.size() && (start_positions[i].first / bucket_size_) == bucket_index) {
                 i++;
             }
 
@@ -417,7 +421,7 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
                 if (!insert(keys[key_idx], values[key_idx], seed_)) {
                     bumped = true;
                     uint64_t start_pos = start_positions[j].first;
-                    uint64_t bucket_idx = std::floor((double)start_pos / bucket_size);
+                    uint64_t bucket_idx = std::floor((double)start_pos / bucket_size_);
 
                     DEBUG_LOG("first_start_pos_of_bucket: " << first_start_pos_of_bucket);
                     DEBUG_LOG("start_pos: " << start_pos);
@@ -486,34 +490,60 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
         if (bumped && num_layers_ > 0) {
             DEBUG_LOG("Bumping " << bumped_keys.size() << " keys");
             if (num_layers_ == 1) {
-                fallback_ribbon_ptr = std::make_unique<BasicRibbon>(bumped_keys, bumped_values, r, 0.1);
+                // fallback_ribbon_ptr = std::make_unique<BasicRibbon>(bumped_keys, bumped_values, r, 0.1);
+                fallback_burr_ptr = std::make_unique<BuRR>(bumped_keys, bumped_values, r, 0.05, bucket_size_, num_layers_);
                 used_fallback = true;
                 break;
             }
-            fallback_burr_ptr = std::make_unique<BuRR>(bumped_keys, bumped_values, r, e, bucket_size, num_layers_);
+            fallback_burr_ptr = std::make_unique<BuRR>(bumped_keys, bumped_values, r, e, bucket_size_, num_layers_);
             used_fallback = true;
             break;
         } else if (bumped) {
+            reset(e+0.05);
             seed_++;
         } else {
+            if (num_layers_ == 0) {
+                std::cout << "Final Ribbon Epsilon: " << e << std::endl;
+            }
             break;
         }
     }
-
     solve();
     make_compact_z();
+}
+
+void BuRR::reset(double epsilon) {
+    e = epsilon;
+    m = (uint64_t)((1 + e) * n) + 1;
+    if (m <= 64) {
+        m = 65;
+    }
+    table.resize(m, 0);
+    b.resize(m, 0);
+    if (num_layers_ == 0) {
+        bucket_size_ = m;
+        threshold_values[1] = std::ceil((0.09 - 3 * e / 4) * bucket_size_);
+        threshold_values[2] = std::ceil((0.22 - 1.3 * e) * bucket_size_);
+    }
+    std::fill(table.begin(), table.end(), 0);
+    std::fill(b.begin(), b.end(), 0);
 }
 
 
 BuRRSpace BuRR::space() {
     std::vector<std::pair<std::string, int>> space_usage;
-    std::string n = std::to_string(-num_layers_+5);
+    std::string n = std::to_string(-num_layers_);
     space_usage.push_back(std::make_pair(("BuRR " + n + " Z size"), compact_Z.size() * 64));
-    space_usage.push_back(std::make_pair(("BuRR " + n + " metadata size"), metadata.size() * 2));
+    if (num_layers_ > 0) {
+        space_usage.push_back(std::make_pair(("BuRR " + n + " metadata size"), metadata.size() * 2));
+    }
     int total_Z = compact_Z.size() * 64;
     int total_metadata = metadata.size() * 2;
+    if (num_layers_ == 0) {
+        total_metadata = 0;
+    }
     int ribbon = 0;
-    if (used_fallback && num_layers_ > 1) {
+    if (used_fallback) {
         BuRRSpace fallback_space = fallback_burr_ptr->space();
         append_vector_to_vector(space_usage, fallback_space.space_usage);
         for (auto p : fallback_space.space_usage) {
@@ -521,9 +551,6 @@ BuRRSpace BuRR::space() {
         }
         total_Z += fallback_space.total_Z;
         total_metadata += fallback_space.total_metadata;
-    } else if (used_fallback && num_layers_ == 1){
-        ribbon = fallback_ribbon_ptr->space();
-        space_usage.push_back(std::make_pair("Final Ribbon", ribbon));
     }
     return BuRRSpace{total_Z + total_metadata + ribbon, space_usage, total_Z, total_metadata};
 }

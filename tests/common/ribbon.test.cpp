@@ -30,7 +30,7 @@ TEST(BasicRibbonTest, TwoBitTest) {
         values[i] = murmur32(keys[i], 0) % 4;
     }
 
-    BasicRibbon basic_ribbon(keys, values, 2, 0.25);
+    BasicRibbon basic_ribbon(keys, values, 2, 0.01);
 
     for (int i = 0; i < keys.size(); i++) {
         uint64_t query_val = basic_ribbon.query(keys[i]);
@@ -55,32 +55,33 @@ TEST(BasicRibbonTest, TwoBitTest) {
 //     }
 // }
 
-// TEST(BurrTest, OneBitTest) {
-//     int n = 1000000;
-//     std::vector<std::string> keys = generate_random_keys(n);
-//     std::vector<uint64_t> values(keys.size());
-//     for (int i = 0; i < keys.size(); i++) {
-//         values[i] = murmur32(keys[i], 0) % 2;
-//     }
+TEST(BurrTest, OneBitTest) {
+    int n = 1000000;
+    std::vector<std::string> keys = generate_random_keys(n);
+    std::vector<uint64_t> values(keys.size());
+    for (int i = 0; i < keys.size(); i++) {
+        values[i] = murmur32(keys[i], 0) % 2;
+    }
 
-//     int w = 64; 
-//     int b = 128;
-//     double e = -(double)0;
-//     BuRR burr(keys, values, 1, e, b, 4, w);
+    int w = 64; 
+    int b = 128;
+    double e = -(double)4/64;
+    // e = 0;
+    BuRR burr(keys, values, 1, e, b, 4, w);
 
-//     ProgressBar pbar(100);
-//     for (int i = 0; i < keys.size(); i++) {
-//         uint64_t query_val = burr.query(keys[i]);
-//         DEBUG_LOG("Query Value: " << std::bitset<3>(query_val) << " original value: " << std::bitset<3>(values[i]));
-//         EXPECT_EQ(query_val, values[i]);
-//         if (i % (n / 100) == 0) {
-//             pbar.update();
-//         }
-//     }
+    ProgressBar pbar(100);
+    for (int i = 0; i < keys.size(); i++) {
+        uint64_t query_val = burr.query(keys[i]);
+        DEBUG_LOG("Query Value: " << std::bitset<3>(query_val) << " original value: " << std::bitset<3>(values[i]));
+        EXPECT_EQ(query_val, values[i]);
+        if (i % (n / 100) == 0) {
+            pbar.update();
+        }
+    }
 
-//     DEBUG_LOG("Finished Querying");
-//     std::cout << burr.space() << std::endl;;
-// }
+    DEBUG_LOG("Finished Querying");
+    std::cout << burr.space() << std::endl;;
+}
 
 
 // TEST(BurrTest, TwoBitTest) {
