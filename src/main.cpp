@@ -5,6 +5,7 @@
 #include "common/murmurhash.h"
 #include "common/broadword.h"
 #include "common/ribbon.h"
+// #include "common/test.h"
 #include <iostream>
 #include <unordered_map>
 #include <vector>
@@ -226,6 +227,32 @@ void test_broadword() {
     }
 }
 
+// void test_bucketed_ribbon() {
+//     int n = 1024;
+//     std::vector<std::string> keys = generate_random_keys(n);
+//     std::vector<uint64_t> values(keys.size());
+//     for (int i = 0; i < keys.size(); i++) {
+//         values[i] = murmur32(keys[i], 0) % 2;
+//     }
+
+//     BucketedRibbon br(keys, values, 1, 64, 0.01);
+
+//     ProgressBar pbar(100);
+//     for (int i = 0; i < keys.size(); i++) {
+//         uint64_t query_val = br.query(keys[i]);
+//         if (query_val != values[i]) {
+//             std::cout << "Not Working" << std::endl;
+//         }
+//         if (i % (n / 100) == 0) {
+//             pbar.update();
+//         }
+//     }
+
+//     DEBUG_LOG("Finished Querying");
+//     std::cout << br.space() << std::endl;;
+// }
+
+
 int main(int argc, char *argv[]) {
 
 #if defined(__POPCNT__) || defined(_MSC_VER)
@@ -245,6 +272,7 @@ int main(int argc, char *argv[]) {
     // run_recsplit_random_keys();
     // test_elias_fano();
     // test_broadword();
+    // test_bucketed_ribbon();
 
     return 0;
 }

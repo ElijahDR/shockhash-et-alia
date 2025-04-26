@@ -48,6 +48,7 @@ set(SOURCES
     src/common/elias_fano.cpp
     src/common/broadword.cpp
     src/common/ribbon.cpp
+    # src/common/test.cpp
     src/algos/recsplit.cpp
     src/algos/sichash.cpp
     src/algos/shockhash.cpp

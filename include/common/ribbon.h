@@ -52,6 +52,9 @@ public:
     BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values, 
         uint64_t r, double epsilon, uint64_t bucket_size, int num_layers=4, uint64_t w = 64);
 
+        
+    ~BuRR() = default;  
+
     void build(std::vector<std::string> &keys, std::vector<std::uint8_t> values);
     // uint8_t query(std::string &key);
     uint64_t query(const std::string &key);
@@ -67,7 +70,7 @@ private:
     std::vector<uint64_t> threshold_values;
     std::vector<uint16_t> metadata;
     std::unique_ptr<BuRR> fallback_burr_ptr;
-    std::unique_ptr<BasicRibbon> fallback_ribbon_ptr;
+    // std::unique_ptr<BasicRibbon> fallback_ribbon_ptr;
     bool used_fallback = false;
     std::vector<std::pair<uint64_t, uint64_t>> previous_insertions;
     

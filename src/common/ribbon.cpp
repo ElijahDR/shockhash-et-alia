@@ -11,7 +11,7 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
     e = epsilon;
     m = (uint64_t)((1 + e) * n) + 1;
     if (m < 64) {
-        m = 65;
+        m = 64;
     }
 
     if (w != 64) {
@@ -24,7 +24,7 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
     // DEBUG_LOG("Building Basic Ribbon with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r);
     std::cout << "Building Basic Ribbon with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r << std::endl;
     seed_ = 0;
-    while (seed_ < 100) {
+    while (true) {
         bool complete = true;
         for (int i = 0; i < keys.size(); i++) {
             if (!insert(keys[i], values[i], seed_)) {
@@ -54,6 +54,7 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
         break;
     }
 
+    std::cout << "Seed: " << seed_ << std::endl;
     solve();
     make_compact_z();
 }
