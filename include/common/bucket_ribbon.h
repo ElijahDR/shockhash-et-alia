@@ -1,15 +1,7 @@
-#ifndef TEST_H
-#define TEST_H
+#ifndef BUCKETRIBBON_H
+#define BUCKETRIBBON_H
 
-#include <cmath>
-#include <string>
-#include <vector>
-#include <bitset>
-#include <cstdint>
-#include <memory>
-#include <algorithm>
 #include "common/ribbon.h"
-#include "common/murmurhash.h"
 
 class BucketedRibbon {
 public:

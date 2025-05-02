@@ -51,10 +51,6 @@ public:
     BuRR(uint64_t n, uint64_t w, uint64_t r, double epsilon);
     BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values, 
         uint64_t r, double epsilon, uint64_t bucket_size, int num_layers=4, uint64_t w = 64);
-
-        
-    ~BuRR() = default;  
-
     void build(std::vector<std::string> &keys, std::vector<std::uint8_t> values);
     // uint8_t query(std::string &key);
     uint64_t query(const std::string &key);

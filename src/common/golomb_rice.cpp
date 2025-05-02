@@ -36,8 +36,8 @@ uint32_t golomb_rice_decode(GolombEncodedData data, uint32_t r) {
 }
 
 uint32_t compute_golomb_rice_parameter(float p) {
-    double log_phi = std::log(GOLDEN_RATIO);
-    double log_1_minus_p = std::log(1.0 - p);
+    double log_phi = std::log2(GOLDEN_RATIO);
+    double log_1_minus_p = std::log2(1.0 - p);
 
     double r_p = std::ceil(std::log2(-log_phi / log_1_minus_p));
 
@@ -47,8 +47,8 @@ uint32_t compute_golomb_rice_parameter(float p) {
 }
 
 uint32_t compute_grp_bijection(uint32_t m) {
-    double trials = pow(exp(1), m) / sqrt(2 * PI * m);
-    double p = 1 / trials;
+    double trials = pow(exp(1.0), m) / sqrt(2.0 * PI * m);
+    double p = 1.0 / trials;
     DEBUG_LOG("GRP BIJECTION --- Size: " << m << " Est. Trials: " << trials << " Prob: " << p);
 
     return compute_golomb_rice_parameter(p);

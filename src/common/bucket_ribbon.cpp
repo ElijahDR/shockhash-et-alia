@@ -1,4 +1,5 @@
-#include "common/test.h"
+#include "common/bucket_ribbon.h"
+#include "common/murmurhash.h"
 
 BucketedRibbon::BucketedRibbon(std::vector<std::string> &keys, std::vector<uint64_t> &values, int r, int bucket_size, double e) {
     bucket_count_ = std::ceil((double)keys.size() / bucket_size);
@@ -20,8 +21,8 @@ BucketedRibbon::BucketedRibbon(std::vector<std::string> &keys, std::vector<uint6
             bucket_values.push_back(values[index]);
         }
         
-        BuRR burr = BuRR(bucket_keys, bucket_values, r, e, 64, 0);
-        ribbons.push_back(burr);
+        // BuRR burr = ;
+        ribbons.push_back(BuRR(bucket_keys, bucket_values, r, e, 64, 1));
     }
 }
 

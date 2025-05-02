@@ -60,7 +60,7 @@ BasicRibbon::BasicRibbon(std::vector<std::string> &keys, std::vector<std::uint64
 }
 
 uint32_t BasicRibbon::space() {
-
+    // return m;
     return compact_Z.size() * 64;
 }
 
@@ -538,7 +538,8 @@ BuRRSpace BuRR::space() {
     if (num_layers_ > 0) {
         space_usage.push_back(std::make_pair(("BuRR " + n + " metadata size"), metadata.size() * 2));
     }
-    int total_Z = compact_Z.size() * 64;
+    // int total_Z = compact_Z.size() * 64;
+    int total_Z = m * r;
     int total_metadata = metadata.size() * 2;
     if (num_layers_ == 0) {
         total_metadata = 0;

@@ -15,14 +15,14 @@ std::unordered_map<std::string, uint32_t> memo_murmur;
 RecSplit::RecSplit(uint32_t bucket_size, uint32_t leaf_size, uint32_t bucket_seed)
 : bucket_size_(bucket_size), leaf_size_(leaf_size), splitting_tree_(), bucket_seed_(bucket_seed) {
     
+
+    grp_table_ = generate_all_grp();
+    DEBUG_LOG("Generating GRP Done");
     golomb_rice_parameters_leaf_.resize(leaf_size+1);
     for (uint32_t i = 2; i <= leaf_size; i++) {
         golomb_rice_parameters_leaf_[i] = compute_grp_bijection(i);
     }
     DEBUG_LOG("Golomb Rice Parameter Table: " << golomb_rice_parameters_leaf_);
-
-    grp_table_ = generate_all_grp();
-    DEBUG_LOG("Generating GRP Done");
 }
 
 void RecSplit::build(const std::vector<std::string> &keys) {
@@ -40,8 +40,10 @@ void RecSplit::build(const std::vector<std::string> &keys) {
         pbar.update();
     }
 
+    DEBUG_LOG("Raw Splitting Tree: " << splitting_tree_raw_);
     splitting_tree_select_.unary.build(splitting_tree_.unary, 128, 8);
     splitting_tree_select_.fixed = splitting_tree_.fixed;
+
 }
 
 HashFunctionSpace RecSplit::space() {
@@ -225,8 +227,10 @@ uint32_t RecSplit::hash(const std::string &key) {
     DEBUG_LOG("Bijection Seed: " << seed);
     // uint32_t bijection_hash = murmur32(key, seed) % size;
     uint128_t bijection_hash = murmur128(key, seed) >> 64;
+    DEBUG_LOG("Fine");
     bijection_hash = std::floor((double)((bijection_hash * size) >> 64));
-    DEBUG_LOG("Bijection Hash: " << bijection_hash);
+    DEBUG_LOG("Fine");
+    DEBUG_LOG("Bijection Hash: " << (uint64_t)bijection_hash);
     uint32_t hash = node_count + 1 + bijection_hash;
     DEBUG_LOG(" ================ Found Hash: " << hash);
     DEBUG_LOG("Raw Splitting Tree: " << splitting_tree_raw_);
@@ -238,6 +242,7 @@ void RecSplit::split(const std::vector<std::string> &keys) {
         if (keys.size() == 1) {
             return;
         }
+        DEBUG_LOG("Finding Bijection For: " << keys);
         uint32_t bijection_seed = find_bijection(keys);
         // uint32_t bijection_seed = find_bijection_random(keys);
         append_to_splitting_tree(bijection_seed, golomb_rice_parameters_leaf_[keys.size()]);
@@ -411,21 +416,26 @@ inline uint32_t map_key_to_split(const std::string &key, const uint32_t &seed, c
 }
 
 FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size) { 
-    uint32_t lower_aggr = leaf_size * (int32_t)std::max(2, (int)std::ceil(0.35 * leaf_size + 0.5));
-    uint32_t upper_aggr = lower_aggr * (leaf_size >= 7 ? (uint32_t)std::ceil(0.21 * leaf_size + 0.9) : 2);
+    DEBUG_LOG("Size: " << size << " Leaf Size: " << leaf_size);
+    uint32_t s = std::max(2, (int)std::ceil(0.35 * leaf_size + 0.5));
+    uint32_t t = (leaf_size >= 7 ? (uint32_t)std::ceil(0.21 * leaf_size + 0.9) : 2);
+    DEBUG_LOG("S: " << s << " T: " << t);
+    uint32_t lower_aggr = leaf_size * s;
+    uint32_t upper_aggr = lower_aggr * t;
     uint32_t fanout, part_size;
-    // DEBUG_LOG("Upper Aggr: " << upper_aggr);
-    // DEBUG_LOG("Lower Aggr: " << lower_aggr);
+    DEBUG_LOG("Upper Aggr: " << upper_aggr);
+    DEBUG_LOG("Lower Aggr: " << lower_aggr);
     if (size > upper_aggr) {
         fanout = 2;
         part_size = upper_aggr * ((size / 2 + upper_aggr - 1) / upper_aggr);
     } else if (size > lower_aggr) {
-        fanout = (size + lower_aggr - 1) / lower_aggr;
+        fanout = std::ceil((double)size / lower_aggr);
         part_size = lower_aggr;
     } else {
+        fanout = std::ceil((double)size / leaf_size);
         part_size = leaf_size;
-        fanout = (size + leaf_size - 1) / leaf_size;
     }
+    DEBUG_LOG("Fanout: " << fanout << " Part Size: " << part_size);
 
     std::vector<uint16_t> part_sizes(fanout);
     int total = 0;
@@ -434,6 +444,7 @@ FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size) {
         total+=part_size;
     }
     part_sizes[fanout - 1] = size - total;
+    DEBUG_LOG("Part Sizes: " << part_sizes);
 
     return FanoutData{size, fanout, part_sizes};
 }

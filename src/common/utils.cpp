@@ -166,7 +166,7 @@ void ProgressBar::display() {
         else std::cout << " ";
     }
     std::cout << "] " << int(progress * 100.0) << " % ";
-    // Calculate elapsed and remaining time
+    
     auto current_time = std::chrono::steady_clock::now();
     auto elapsed_total = current_time - start_time;
     auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed_total).count();
@@ -177,7 +177,6 @@ void ProgressBar::display() {
     int remaining_minutes = remaining_seconds / 60;
     remaining_seconds %= 60;
 
-    // Print elapsed and remaining time
     std::cout << "[" 
                 << std::setw(2) << std::setfill('0') << elapsed_minutes << ":" 
                 << std::setw(2) << std::setfill('0') << elapsed_remaining_seconds 
