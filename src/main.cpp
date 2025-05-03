@@ -15,7 +15,7 @@
 #include <random>
 #include <chrono>
 
-void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=2000, uint32_t leaf_size=10) {
+void run_recsplit_random_keys(int n=10000, uint32_t bucket_size=2000, uint32_t leaf_size=8) {
     std::vector<std::string> keys = generate_random_keys(n);
 
     for (int i = 0; i < 1; i++) {
@@ -54,8 +54,8 @@ void run_shockhash_random_keys() {
 }
 
 void run_bipartite_shockhash_random_keys() {
-    std::vector<std::string> keys = generate_random_keys(50);
-    BipartiteShockHash bipartite_shockhash(50);
+    std::vector<std::string> keys = generate_random_keys(20);
+    BipartiteShockHash bipartite_shockhash(keys.size());
     bipartite_shockhash.build(keys);
 }
 
@@ -156,6 +156,38 @@ void test_hashing_molecules() {
         HashTestResult result = run_hash_function(molecules_keys, p, 2);
         std::cout << result << std::endl;
     }
+}
+
+void record_recsplit_bits_3d() {
+    std::vector<std::string> keys = generate_random_keys(10000);
+    std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
+        {"n_keys", std::vector<double>{10000}},
+        {"bucket_size", std::vector<double>{500, 1000, 2000}},
+        {"leaf_size", std::vector<double>{4, 8, 10}},
+    };
+    std::vector<HashTestParameters> parameters_recsplit = generate_test_params("RecSplit", param_ranges_recsplit);
+    std::vector<HashTestResult> results;
+    std::ofstream file("data/results/recsplit-3d-bpk-b-l.csv");
+    file << "num_keys,bucket_size,leaf_size,bits_per_key,build_time,hashing_time,splitting_tree,bucket_prefixes\n";
+    for (auto p : parameters_recsplit) {
+        std::cout << p << std::endl;
+        HashTestResult result = run_hash_function(keys, p, 1);
+        std::cout << result << std::endl;
+        results.push_back(result);
+        file << p.params["n_keys"] << "," << p.params["bucket_size"] << "," << p.params["leaf_size"] << ",";
+        file << result.space.bits_per_key << "," << result.time.build_time << "," << result.time.hashing_time << ",";
+        for (auto x : result.space.space_usage) {
+            if (x.first == "Total Splitting Tree") {
+                file << x.second << ",";
+            }
+        }
+        for (auto x : result.space.space_usage) {
+            if (x.first == "Bucket Prefixes") {
+                file << x.second << "\n";
+            }
+        }
+    }
+    file.close();
 }
 
 void test_elias_fano() {
@@ -288,6 +320,45 @@ void run_recsplit_simple(){
     }
 }
 
+void generate_random_bit_array() {
+    const int num_rows = 40; // Number of rows in the matrix
+    const int width = 40;    // Width of each row (number of bits)
+    const int ribbon_width = 8; // Width of the "ribbon" (set bits)
+
+    std::vector<std::bitset<width>> bits(num_rows); // Initialize vector with 100 rows
+    std::vector<int> starts;
+
+    // Generate random starting positions for each row
+    for (int i = 0; i < num_rows; i++) {
+        int start = murmur128("elijah", i) % (width - ribbon_width);
+        starts.push_back(start);
+    }
+
+    // Sort starting positions
+    // std::sort(starts.begin(), starts.end(), std::greater<>());
+    std::sort(starts.begin(), starts.end());
+
+    // Populate the bit array
+    for (int i = 0; i < num_rows; i++) {
+        uint128_t set_bits = murmur128("elijah", i) >> (128 - ribbon_width); // Extract ribbon_width bits
+        bits[i] = std::bitset<width>{static_cast<unsigned long long>(set_bits)} << starts[i];    
+    }
+
+    // Print the generated bit array
+    for (int j = 0; j < width; j++) {
+        std::bitset<width> b = bits[j];
+        for (int i = 0; i < width; i++){
+            if (i >= starts[j] && i <= starts[j] + ribbon_width) {
+                std::cout << b[i];
+            } else {
+                std::cout << " ";
+            }
+
+        }
+        std::cout <<std::endl;
+    }
+}
+
 
 int main(int argc, char *argv[]) {
 
@@ -309,6 +380,9 @@ int main(int argc, char *argv[]) {
     // test_elias_fano();
     // test_broadword();
     // test_bucketed_ribbon();
-    run_recsplit_simple();
+    // run_recsplit_simple();
+    // run_bipartite_shockhash_random_keys();
+    // generate_random_bit_array();
+    record_recsplit_bits_3d();
     return 0;
 }
