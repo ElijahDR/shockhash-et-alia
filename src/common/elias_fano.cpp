@@ -1,54 +1,56 @@
 #include "common/elias_fano.h"
 
-EliasFanoEncodedData elias_fano_encode(std::vector<uint32_t> &data) {
-    const int n = data.size();
-    const uint32_t m = data.back();
+EliasFanoEncodedData elias_fano_encode(std::vector<uint32_t>& data) {
+    int n = data.size();
+    uint32_t u = data.back();
 
-    int q = std::ceil((double)m / n);
-    int l = std::ceil(std::log2(q));
+    uint32_t q = (u + n - 1) / n; 
+    int l = (q == 0) ? 0 : (int)(std::log2(q)) + 1;
 
-    std::vector<bool> lower;
-    std::vector<bool> upper;
+    EliasFanoEncodedData result;
+    result.m = u;
+    result.l = l;
 
-    int prev = -1;
-    for (auto x : data) {
-        // Encode lower bits
-        for (int i = 0; i < l; i++) {
-            lower.push_back((x >> i) & 1);
+    int current_upper = 0;
+    for (int i = 0; i < data.size(); i++) {
+        uint32_t x = data[i];
+        int quotient = x >> l;
+        int delta = quotient - current_upper;
+        result.upper.insert(result.upper.end(), delta, 0);
+        result.upper.push_back(1);
+        current_upper = quotient;
+
+        int lower_value = x & ((1 << l) - 1);
+        for (int j = l - 1; j >= 0; --j) {
+            result.lower.push_back((lower_value >> j) & 1);
         }
-
-        // Encode upper bits
-        int a = x >> l;
-        while (prev < a - 1) {
-            upper.push_back(0);
-            prev++;
-        }
-        upper.push_back(1);
-        prev = a;
     }
 
-    return EliasFanoEncodedData{upper, lower, m};
+    return result;
 }
 
-std::vector<uint32_t> elias_fano_decode(EliasFanoEncodedData &data, uint32_t n) {
-    int l = std::ceil(std::log2(std::ceil((double)data.m / n)));
-    std::vector<uint32_t> data_decoded;
+std::vector<uint32_t> elias_fano_decode(const EliasFanoEncodedData &encoded, uint32_t expected_n) {
+    std::vector<uint32_t> result;
 
-    uint32_t upper = 0, count = 0;
-    for (auto upper_bit : data.upper) {
-        if (upper_bit) {
-            uint32_t lower = 0;
+    int l = encoded.l;
+    size_t lower_index = 0;
+
+    int current_upper = 0;
+    for (bool bit : encoded.upper) {
+        if (bit) {
+            if (lower_index + l > encoded.lower.size()) break;
+            uint32_t lower_val = 0;
             for (int j = 0; j < l; j++) {
-                lower |= (uint32_t)(data.lower[count * l + j]) << (l - j - 1);
+                lower_val = (lower_val << 1) | encoded.lower[lower_index++];
             }
-            data_decoded.push_back((upper << l) | lower);
-            count++;
+
+            result.push_back((current_upper << l) | lower_val);
         } else {
-            upper++;
+            current_upper++;
         }
     }
 
-    return data_decoded;
+    return result;
 }
 
 uint32_t elias_fano_space(EliasFanoEncodedData &data) {

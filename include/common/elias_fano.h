@@ -7,11 +7,12 @@ struct EliasFanoEncodedData {
     std::vector<bool> upper;
     std::vector<bool> lower;
     uint32_t m;
+    int l;
 };
 
 // https://www.antoniomallia.it/sorted-integers-compression-with-elias-fano-encoding.html
 EliasFanoEncodedData elias_fano_encode(std::vector<uint32_t> &data);
-std::vector<uint32_t> elias_fano_decode(EliasFanoEncodedData &data, uint32_t n);
+std::vector<uint32_t> elias_fano_decode(const EliasFanoEncodedData &data, uint32_t n);
 uint32_t elias_fano_space(EliasFanoEncodedData &data);
 
 #endif

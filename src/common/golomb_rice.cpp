@@ -25,6 +25,7 @@ GolombEncodedData golomb_rice_encode(uint32_t value, uint32_t r) {
 }
 
 uint32_t golomb_rice_decode(GolombEncodedData data, uint32_t r) {
+    DEBUG_LOG("Golomb Rice Decode Data: " << data.unary << " " << data.fixed << " param: " << r);
     uint32_t quotient = data.unary.size() - 1;
 
     int pos = 0;
@@ -49,7 +50,7 @@ uint32_t compute_golomb_rice_parameter(float p) {
 uint32_t compute_grp_bijection(uint32_t m) {
     double trials = pow(exp(1.0), m) / sqrt(2.0 * PI * m);
     double p = 1.0 / trials;
-    DEBUG_LOG("GRP BIJECTION --- Size: " << m << " Est. Trials: " << trials << " Prob: " << p);
+    // DEBUG_LOG("GRP BIJECTION --- Size: " << m << " Est. Trials: " << trials << " Prob: " << p);
 
     return compute_golomb_rice_parameter(p);
 }
@@ -66,7 +67,7 @@ uint32_t compute_grp_buckets(std::vector<uint16_t> sizes) {
     double trials = std::sqrt((pow((2*PI), s-1) * k) / m);
     double p = 1 / trials;
 
-    DEBUG_LOG("GRP BUCKETS --- Size: " << m << " Est. Trials: " << trials << " Prob: " << p);
-    DEBUG_LOG("GRP BUCKETS --- Sizes: " << sizes);
+    // DEBUG_LOG("GRP BUCKETS --- Size: " << m << " Est. Trials: " << trials << " Prob: " << p);
+    // DEBUG_LOG("GRP BUCKETS --- Sizes: " << sizes);
     return compute_golomb_rice_parameter(p);
 }

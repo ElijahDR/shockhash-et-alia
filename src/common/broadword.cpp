@@ -245,10 +245,11 @@ inline uint64_t popcount(uint64_t x) {
     #if defined(__POPCNT__) || defined(_MSC_VER)
         return __builtin_popcountll(x);
     #else
-        x = x - ((x >> 1) & 0x5555555555555555);
+        DEBUG_LOG("Manual Popcount Used");
+        x = x - ((x &  0xAAAAAAAAAAAAAAAA) >> 1);
         x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
-        x = (x + (x >> 4)) & 0x0F0F0F0F0F0F0F0F;
-        return (x * 0x0101010101010101) >> 56;
+        x = (x + (x >> 4)) &  0x0F0F0F0F0F0F0F0F;
+        return x * L8 >> 56;
     #endif
 }
 

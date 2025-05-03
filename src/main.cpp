@@ -15,7 +15,7 @@
 #include <random>
 #include <chrono>
 
-void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=500, uint32_t leaf_size=12) {
+void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=2000, uint32_t leaf_size=10) {
     std::vector<std::string> keys = generate_random_keys(n);
 
     for (int i = 0; i < 1; i++) {
@@ -30,11 +30,11 @@ void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=500, uint32_t 
     }
 
 void run_sichash_random_keys() {
-    std::vector<std::string> keys = generate_random_keys(10000000);
+    std::vector<std::string> keys = generate_random_keys(1000000);
 
     SicHash sichash(5000, 0.49, 0.22, 0.9768);
-    // test_perfect_hashing(keys, sichash);
-    HashFunctionTime time = time_hashing(keys, sichash);
+    test_perfect_hashing(keys, sichash);
+    // HashFunctionTime time = time_hashing(keys, sichash);
     std::cout << time << std::endl;
     std::cout << sichash.space() << std::endl;
 }
@@ -262,20 +262,29 @@ void run_recsplit_simple(){
         "Lionheart",
         "Lovelace",
         "Nelson",
-        "Nightingale",
         "Newton",
+        "Nightingale",
         "Shakespeare",
         "Tolkien",
         "Turing",
         "Thatcher",
         "Wellington",
         // "Wilberforce",
+        // "A",
+        // "B",
+        // "C",
+        // "D",
+        // "E",
+        // "F",
+        // "G"
     };
-    RecSplit recsplit(15, 8);
+    DEBUG_LOG("Keys Size: " << keys.size());
+    RecSplit recsplit(keys.size(), 4);
     recsplit.build(keys);
     // test_perfect_hashing(keys, recsplit);
     for (auto key : keys) {
-        DEBUG_LOG(key << " index: " << recsplit.hash(key));
+        auto hash = recsplit.hash(key);
+        DEBUG_LOG("Key: " << key << " index: " << hash);
     }
 }
 
