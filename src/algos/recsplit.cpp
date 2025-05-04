@@ -360,7 +360,10 @@ uint32_t RecSplit::assign_bucket(const std::string &key, uint32_t bucket_count) 
     return bucket;
 }
 
-uint32_t find_bijection(const std::vector<std::string> &keys) {
+uint32_t RecSplit::find_bijection(const std::vector<std::string> &keys) {
+#ifdef STATS
+    auto start_time = std::chrono::steady_clock::now();
+#endif
     uint32_t seed = 0;
     while (true) {
         bool bijection = true;
@@ -379,13 +382,23 @@ uint32_t find_bijection(const std::vector<std::string> &keys) {
             used[hash] = 1;
         }
         if (bijection) {
+#ifdef STATS
+                auto end_time = std::chrono::steady_clock::now();
+                auto duration = end_time - start_time;
+                auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+                time_bijection += build_duration.count();
+#endif
             return seed;
         }
         seed++;
     }
+
 }
 
-uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &fanout_data) {
+uint32_t RecSplit::find_splitting(const std::vector<std::string> &keys, const FanoutData &fanout_data) {
+#ifdef STATS
+    auto start_time = std::chrono::steady_clock::now();
+#endif
     uint32_t seed = 0;
     std::vector<uint16_t> counts(fanout_data.fanout);
     while (true) {
@@ -397,6 +410,12 @@ uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &
 
         DEBUG_LOG("Actual Counts: " << counts);
         if (counts == fanout_data.part_sizes) {
+#ifdef STATS
+                auto end_time = std::chrono::steady_clock::now();
+                auto duration = end_time - start_time;
+                auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+                time_splitting += build_duration.count();
+#endif
             return seed;
         }
 

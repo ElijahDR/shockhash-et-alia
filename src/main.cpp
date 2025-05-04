@@ -15,15 +15,19 @@
 #include <random>
 #include <chrono>
 
-void run_recsplit_random_keys(int n=10000, uint32_t bucket_size=2000, uint32_t leaf_size=8) {
+void run_recsplit_random_keys(int n=10000, uint32_t bucket_size=2000, uint32_t leaf_size=14) {
     std::vector<std::string> keys = generate_random_keys(n);
 
     for (int i = 0; i < 1; i++) {
         RecSplit recsplit(bucket_size, leaf_size, i);
-        // test_perfect_hashing(keys, recsplit);
-        HashFunctionTime time = time_hashing(keys, recsplit);
-        std::cout << time << std::endl;
+        test_perfect_hashing(keys, recsplit);
+        // HashFunctionTime time = time_hashing(keys, recsplit);
+        // std::cout << time << std::endl;
     
+#ifdef STATS
+        std::cout << "Time Spent Bijection: " << recsplit.time_bijection << std::endl;
+        std::cout << "Time Spent Splitting: " << recsplit.time_splitting << std::endl;
+#endif
         HashFunctionSpace space = recsplit.space();
         std::cout << space << std::endl;
     }
@@ -159,19 +163,22 @@ void test_hashing_molecules() {
 }
 
 void record_recsplit_bits_3d() {
-    std::vector<std::string> keys = generate_random_keys(10000);
+    std::vector<std::string> keys = generate_random_keys(100000);
     std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
-        {"n_keys", std::vector<double>{10000}},
-        {"bucket_size", std::vector<double>{500, 1000, 2000}},
-        {"leaf_size", std::vector<double>{4, 8, 10}},
+        {"n_keys", std::vector<double>{100000}},
+        {"bucket_size", std::vector<double>{100, 500, 1000, 1500, 2000}},
+        {"leaf_size", std::vector<double>{2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}},
     };
     std::vector<HashTestParameters> parameters_recsplit = generate_test_params("RecSplit", param_ranges_recsplit);
     std::vector<HashTestResult> results;
-    std::ofstream file("data/results/recsplit-3d-bpk-b-l.csv");
-    file << "num_keys,bucket_size,leaf_size,bits_per_key,build_time,hashing_time,splitting_tree,bucket_prefixes\n";
+    std::ofstream file;
+    file.open("data/results/recsplit-3d-bpk-b-l-100000.csv");
+    file << "num_keys,bucket_size,leaf_size,bits_per_key,build_time,hashing_time,splitting_tree,bucket_prefixes,\n";
+    file.close();
     for (auto p : parameters_recsplit) {
+        file.open("data/results/recsplit-3d-bpk-b-l-100000.csv", std::ios::app);
         std::cout << p << std::endl;
-        HashTestResult result = run_hash_function(keys, p, 1);
+        HashTestResult result = run_hash_function(keys, p, 5);
         std::cout << result << std::endl;
         results.push_back(result);
         file << p.params["n_keys"] << "," << p.params["bucket_size"] << "," << p.params["leaf_size"] << ",";
@@ -186,8 +193,8 @@ void record_recsplit_bits_3d() {
                 file << x.second << "\n";
             }
         }
+        file.close();
     }
-    file.close();
 }
 
 void test_elias_fano() {

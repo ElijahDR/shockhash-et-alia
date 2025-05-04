@@ -74,6 +74,8 @@ public:
     std::string name() override { return "RecSplit"; };
 
     HashFunctionSpace space() override;
+    uint64_t time_bijection = 0;
+    uint64_t time_splitting = 0;
 
 private:
 
@@ -116,12 +118,13 @@ private:
     EliasFanoEncodedData bucket_fixed_prefixes_ef_;
 
     std::vector<std::vector<SubtreeData>> grp_table_;
+
+    uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &fanout_data);
+    uint32_t find_bijection(const std::vector<std::string> &keys);
 };
 
-uint32_t find_bijection(const std::vector<std::string> &keys);
 FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size);
 std::vector<std::vector<SubtreeData>> generate_all_grp();
 uint32_t map_key_to_split(const std::string &key, const uint32_t &seed, const FanoutData &fanout_data);
-uint32_t find_splitting(const std::vector<std::string> &keys, const FanoutData &fanout_data);
 
 #endif

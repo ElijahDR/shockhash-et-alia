@@ -14,6 +14,15 @@ else()
     message(STATUS "Debugging is disabled.")
 endif()
 
+option(STATS "Enable Extra Stats" OFF)
+
+if(STATS)
+    add_compile_definitions(STATS)
+    message(STATUS "Extra Stats is enabled.")
+else()
+    message(STATUS "Extra Stats is disabled.")
+endif()
+
 option(TESTS "Enable Test Compiling" ON)
 
 if(TESTS)
@@ -28,7 +37,7 @@ option(PROFILE "Enable Profiling" OFF)
 
 if(PROFILE)
     set(CMAKE_BUILD_TYPE Debug)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pg -Ofast -march=native")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pg")
     message(STATUS "Profling is enabled.")
 else()
     message(STATUS "Profiling is disabled.")

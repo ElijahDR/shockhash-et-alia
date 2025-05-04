@@ -137,6 +137,7 @@ HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash
     std::cout << "Hashing Throughput: " << throughput << " (keys/s)" << std::endl;
     result.hash_throughput = throughput;
 
+
     return result;
 }
 
