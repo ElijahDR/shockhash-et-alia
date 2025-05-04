@@ -2,6 +2,19 @@
 #include <gtest/gtest.h>
 #include "common/elias_fano.h"
 
+TEST(EliasFanoTest, EliasFanoTest_EncodingExample_Test) {
+    std::vector<uint32_t> data = {2,3,5,7,11,13,24};
+    int n = data.size();
+    EliasFanoEncodedData encoded = elias_fano_encode(data);
+    DEBUG_LOG(encoded.upper);
+    DEBUG_LOG(encoded.upper.size());
+    DEBUG_LOG(encoded.lower);
+    DEBUG_LOG(encoded.lower.size());
+    DEBUG_LOG(encoded.m);
+    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded);
+    EXPECT_EQ(data, decoded_data);
+}
+
 TEST(EliasFanoTest, Encoding) {
     std::vector<uint32_t> data = {2,3,5,7,11,13,24};
     int n = data.size();
@@ -9,7 +22,7 @@ TEST(EliasFanoTest, Encoding) {
     DEBUG_LOG(encoded.upper);
     DEBUG_LOG(encoded.lower);
     DEBUG_LOG(encoded.m);
-    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded, n);
+    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded);
     EXPECT_EQ(data, decoded_data);
 }
 
@@ -25,7 +38,7 @@ TEST(EliasFanoTest, EncodingBig) {
     DEBUG_LOG(encoded.lower);
     DEBUG_LOG(encoded.lower.size());
     DEBUG_LOG(encoded.m);
-    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded, n);
+    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded);
     EXPECT_EQ(data, decoded_data);
 }
 
@@ -39,7 +52,7 @@ TEST(EliasFanoTest, EncodingTwo) {
     DEBUG_LOG(encoded.lower);
     DEBUG_LOG(encoded.lower.size());
     DEBUG_LOG(encoded.m);
-    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded, n);
+    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded);
     EXPECT_EQ(data, decoded_data);
 }
 

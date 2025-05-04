@@ -534,7 +534,7 @@ void BuRR::reset(double epsilon) {
 BuRRSpace BuRR::space() {
     std::vector<std::pair<std::string, int>> space_usage;
     std::string n = std::to_string(-num_layers_);
-    space_usage.push_back(std::make_pair(("BuRR " + n + " Z size"), compact_Z.size() * 64));
+    space_usage.push_back(std::make_pair(("BuRR " + n + " Z size"), m * r));
     if (num_layers_ > 0) {
         space_usage.push_back(std::make_pair(("BuRR " + n + " metadata size"), metadata.size() * 2));
     }

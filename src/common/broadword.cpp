@@ -238,7 +238,7 @@ uint64_t SimpleSelect::rank(uint32_t i) {
 }
 
 SimpleSpace SimpleSelect::space() {
-    
+    return SimpleSpace{};
 }
 
 inline uint64_t popcount(uint64_t x) {
@@ -285,7 +285,7 @@ void generate_rank_counts(std::vector<uint64_t> &data, std::vector<uint64_t> &co
 }
 
 Rank9::Rank9() {
-    return;
+    return ;
 }
 
 void Rank9::build(std::vector<bool> &bool_data) {

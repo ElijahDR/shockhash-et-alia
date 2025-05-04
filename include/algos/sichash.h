@@ -11,10 +11,15 @@
 #include "common/elias_fano.h"
 #include "common/broadword.h"
 
+struct BucketSeedGr {
+    std::vector<bool> unary;
+    std::vector<bool> fixed;
+};
+
 
 class SicHash : public HashFunction {
 public:
-    SicHash(uint32_t bucket_size, double p1, double p2, double alpha=0.6, uint32_t bucket_seed=42, uint32_t class_seed=1);
+    SicHash(uint32_t bucket_size, double p1, double p2, double alpha, double burr_epsilon=0, int layers=4, uint32_t bucket_seed=42, uint32_t class_seed=1);
 
     void build(const std::vector<std::string> &keys) override;
 
@@ -24,9 +29,11 @@ public:
 
     std::string name() override { return "SicHash"; };
     HashFunctionSpace space() override;
+    uint32_t base_seed = 0;
 
 private:
     void create_buckets();
+    void estimated_golomb_rice();
     void make_minimal();
     uint32_t assign_bucket(const std::string &key);
     void assign_classes();
@@ -43,6 +50,8 @@ private:
     double p1_;
     double p2_;
     double alpha_;
+    double burr_epsilon_;
+    int burr_layers_;
     uint32_t class_seed_;
 
     std::vector<int> rattle_counters_;
@@ -53,7 +62,7 @@ private:
     std::vector<BuRR> ribbons;
 
     SimpleSelect perfect_rank_;
-    EliasFanoEncodedData holes_ef_;
+    EliasFanoDoubleEncodedData holes_ef_;
     std::vector<uint32_t> holes_;
     uint32_t n_holes_;
     std::vector<uint64_t> counts_;
@@ -73,8 +82,9 @@ private:
     std::vector<std::vector<uint64_t>> hash_indexes_per_class_;
 
     std::vector<uint32_t> bucket_seeds_;
+    BucketSeedGr bucket_seeds_encoded;
     std::vector<uint32_t> bucket_prefixes_;
-    EliasFanoEncodedData bucket_prefixes_ef_;
+    EliasFanoDoubleEncodedData bucket_prefixes_ef_;
 };
 
 

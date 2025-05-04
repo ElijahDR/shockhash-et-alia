@@ -15,7 +15,7 @@
 #include <random>
 #include <chrono>
 
-void run_recsplit_random_keys(int n=10000, uint32_t bucket_size=2000, uint32_t leaf_size=14) {
+void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=5, uint32_t leaf_size=5) {
     std::vector<std::string> keys = generate_random_keys(n);
 
     for (int i = 0; i < 1; i++) {
@@ -34,12 +34,12 @@ void run_recsplit_random_keys(int n=10000, uint32_t bucket_size=2000, uint32_t l
     }
 
 void run_sichash_random_keys() {
-    std::vector<std::string> keys = generate_random_keys(1000000);
+    std::vector<std::string> keys = generate_random_keys(100000);
 
-    SicHash sichash(5000, 0.49, 0.22, 0.9768);
+    SicHash sichash(20, 1.0, 0, 0.99, 0);
     test_perfect_hashing(keys, sichash);
-    // HashFunctionTime time = time_hashing(keys, sichash);
-    std::cout << time << std::endl;
+    // HashFunctionTime hash_time = time_hashing(keys, sichash);
+    // std::cout << hash_time << std::endl;
     std::cout << sichash.space() << std::endl;
 }
 
@@ -206,13 +206,13 @@ void test_elias_fano() {
     int n = data.size();
     std::cout << data << std::endl;
     EliasFanoEncodedData encoded = elias_fano_encode(data);
-    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded, n);
+    std::vector<uint32_t> decoded_data = elias_fano_decode(encoded);
     std::cout << encoded.lower << encoded.lower.size() << std::endl;
     std::cout << encoded.upper << encoded.upper.size() << std::endl;
 }
 
 void test_broadword() {
-    std::bitset<64> first = 10488084004835287442;
+    std::bitset<64> first = 10488084004835287442ULL;
     std::bitset<36> second = 45739767294;
     std::vector<bool> data;
     for (int i = 0; i < first.size(); i++) {
@@ -327,6 +327,42 @@ void run_recsplit_simple(){
     }
 }
 
+void run_sichash_simple(){
+    std::vector<std::string> keys = {
+        "Babbage",
+        "Churchill",
+        "Cromwell",
+        "Darwin",
+        "Hawking",
+        "Lionheart",
+        "Lovelace",
+        "Nelson",
+        "Newton",
+        "Nightingale",
+        "Shakespeare",
+        "Tolkien",
+        "Turing",
+        "Thatcher",
+        "Wellington",
+        // "Wilberforce",
+        // "A",
+        // "B",
+        // "C",
+        // "D",
+        // "E",
+        // "F",
+        // "G"
+    };
+    DEBUG_LOG("Keys Size: " << keys.size());
+    SicHash sichash(keys.size(), 0.33, 0.33, 0.9, 0, 4, 42, 3);
+    // sichash.build(keys);
+    test_perfect_hashing(keys, sichash);
+    // for (auto key : keys) {
+    //     auto hash = sichash.hash(key);
+    //     DEBUG_LOG("Key: " << key << " index: " << hash);
+    // }
+}
+
 void generate_random_bit_array() {
     const int num_rows = 40; // Number of rows in the matrix
     const int width = 40;    // Width of each row (number of bits)
@@ -383,13 +419,14 @@ int main(int argc, char *argv[]) {
 #endif
     // test_hashing_molecules();
     // run_sichash_random_keys();
-    // run_recsplit_random_keys();
+    run_recsplit_random_keys();
     // test_elias_fano();
     // test_broadword();
     // test_bucketed_ribbon();
     // run_recsplit_simple();
+    // run_sichash_simple();
     // run_bipartite_shockhash_random_keys();
     // generate_random_bit_array();
-    record_recsplit_bits_3d();
+    // record_recsplit_bits_3d();
     return 0;
 }

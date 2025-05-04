@@ -8,8 +8,8 @@
 #include <random>
 #include <stdexcept>
 
-SicHash::SicHash(uint32_t bucket_size, double p1, double p2, double alpha, uint32_t bucket_seed, uint32_t class_seed) : 
-bucket_size_(bucket_size), p1_(p1), p2_(p2), alpha_(alpha), 
+SicHash::SicHash(uint32_t bucket_size, double p1, double p2, double alpha, double burr_epsilon, int burr_layers, uint32_t bucket_seed, uint32_t class_seed) : 
+bucket_size_(bucket_size), p1_(p1), p2_(p2), alpha_(alpha), burr_epsilon_(burr_epsilon), burr_layers_(burr_layers), 
 bucket_seed_(bucket_seed), class_seed_(class_seed) {
     
     return;
@@ -35,20 +35,59 @@ void SicHash::build(const std::vector<std::string> &keys) {
     }
 
     std::cout << "Cuckoo Hash Tables Created, making ribbons..." << std::endl;
-    double epsilon = (double)0;
     int bucket_size = 64;
-    ribbons.push_back(BuRR(keys_classes_[0], hash_indexes_per_class_[0], 1, epsilon, bucket_size));
-    ribbons.push_back(BuRR(keys_classes_[1], hash_indexes_per_class_[1], 2, epsilon, bucket_size));
-    ribbons.push_back(BuRR(keys_classes_[2], hash_indexes_per_class_[2], 3, epsilon, bucket_size));
+    ribbons.push_back(BuRR(keys_classes_[0], hash_indexes_per_class_[0], 1, burr_epsilon_, bucket_size, burr_layers_));
+    ribbons.push_back(BuRR(keys_classes_[1], hash_indexes_per_class_[1], 2, burr_epsilon_, bucket_size, burr_layers_));
+    ribbons.push_back(BuRR(keys_classes_[2], hash_indexes_per_class_[2], 3, burr_epsilon_, bucket_size, burr_layers_));
 
     std::cout << "Bucket Seeds: " << bucket_seeds_ << std::endl;
 
     make_minimal();
-    bucket_prefixes_ef_ = elias_fano_encode(bucket_prefixes_);
+    bucket_prefixes_ef_ = elias_fano_double_encode(bucket_prefixes_);
+    estimated_golomb_rice();
+
+    DEBUG_LOG("Hash Indexes: " << hash_index_map_raw_);
+}
+
+void SicHash::estimated_golomb_rice() {
+    double sum = 0;
+    for (auto seed : bucket_seeds_) {
+        sum += seed;
+    }
+
+    double average = (sum / bucket_seeds_.size());
+    std::cout << "Average: " << average << std::endl;
+    double p = 1 / average;
+    std::cout << "Estimated Probability: " << p << std::endl;
+    int param = compute_golomb_rice_parameter(p);
+    
+    std::cout << "Expected Param: " << param << std::endl;
+    std::vector<bool> data_unary;
+    std::vector<bool> data_fixed;
+    double squared_error = 0;
+    for (auto seed : bucket_seeds_) {
+        squared_error += (seed - average) * (seed - average);
+        GolombEncodedData data = golomb_rice_encode(seed, param);
+        append_vector_to_vector(data_unary, data.unary);
+        append_vector_to_vector(data_fixed, data.fixed);
+    }
+    double standard_dev = std::sqrt(squared_error / (bucket_seeds_.size() - 1));
+    double standard_error = standard_dev / std::sqrt(bucket_seeds_.size());
+    std::cout << "Standard Error: " << standard_error << std::endl;
+    std::cout << "95\% confidenc interval: " << (1/(average - (1.96 * standard_error))) << ", " << (1/(average + (1.96 * standard_error))) << std::endl;
+    std::cout << "Unary: " << data_unary << std::endl;
+    std::cout << "Fixed: " << data_fixed << std::endl;
+    std::cout << "Unary: " << data_unary.size() << std::endl;
+    std::cout << "Fixed: " << data_fixed.size() << std::endl;
+    std::cout << "Normal: " << bucket_seeds_.size() * 16 << std::endl;
+    bucket_seeds_encoded = BucketSeedGr{data_unary, data_fixed};
 }
 
 void SicHash::make_minimal() {
     std::vector<bool> taken(bucket_prefixes_.back(), 0);
+    if (taken.size() == keys_.size()){
+        return;
+    }
     for (auto key : keys_) {
         taken[perfect_hash(key)] = 1;
     }
@@ -84,7 +123,7 @@ void SicHash::make_minimal() {
     // }
 
     minimal_rank_.build(taken_rank);
-    holes_ef_ = elias_fano_encode(holes);
+    holes_ef_ = elias_fano_double_encode(holes);
     // std::cout << holes << " " << holes.size() << std::endl;
     // std::cout << holes_ef_.upper << " " << holes_ef_.upper.size() << std::endl;
     // std::cout << holes_ef_.lower << " " << holes_ef_.lower.size() << std::endl;
@@ -106,6 +145,7 @@ uint32_t SicHash::hash(const std::string &key) {
     uint32_t bucket_seed = bucket_seeds_[bucket];
 
     uint64_t class_for_key = key_class(key);
+    DEBUG_LOG("Class: " << class_for_key);
     uint64_t hash_index = ribbons[class_for_key].query(key);
     // int hash_index = bits_to_int(hash_index_map_[key]);
     // int hash_index = hash_index_map_raw_[key];
@@ -116,7 +156,7 @@ uint32_t SicHash::hash(const std::string &key) {
     DEBUG_LOG("Overall Hash for key" << key << ": " << global_index + hash_table_index);
 
     uint32_t curr_hash = global_index + hash_table_index;
-    if (curr_hash > keys_.size()) {
+    if (curr_hash >= keys_.size()) {
         // std::vector<uint32_t> decoded_holes = elias_fano_decode(holes_ef_, n_holes_);
         // DEBUG_LOG(decoded_holes);
         // return decoded_holes[curr_hash - keys_.size()];
@@ -169,6 +209,9 @@ HashFunctionSpace SicHash::space() {
     int total_ribbon = ribbon_1.total_bits + ribbon_2.total_bits + ribbon_3.total_bits;
     space_usage.push_back(std::make_pair("Total Ribbon", total_ribbon));
 
+    int bucket_seeds = bucket_seeds_encoded.fixed.size() + bucket_seeds_encoded.unary.size();
+    space_usage.push_back(std::make_pair("Bucket Seeds", bucket_seeds));
+
     int holes = elias_fano_space(holes_ef_);
     space_usage.push_back(std::make_pair("Holes EF", holes));
 
@@ -178,8 +221,9 @@ HashFunctionSpace SicHash::space() {
 
     int bucket_prefix_space = elias_fano_space(bucket_prefixes_ef_);
     space_usage.push_back(std::make_pair("Bucket Prefixes", bucket_prefix_space));
+    
 
-    int total_bits = total_ribbon + holes + rank + bucket_prefix_space;
+    int total_bits = total_ribbon + holes + rank + bucket_prefix_space + bucket_seeds;
     double bits_per_key = total_bits / (double)keys_.size();
     return HashFunctionSpace{space_usage, total_bits, bits_per_key};
 }
@@ -293,7 +337,7 @@ uint32_t SicHash::extract_class_assignment(size_t index) {
 
 
 void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
-    uint32_t seed = 0;
+    uint32_t seed = base_seed;
     int table_size = bucket.size() / alpha_;
     std::vector<int> table(table_size, -1);
     while (true) {
@@ -334,7 +378,7 @@ void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
         // hash_indexes_[index] = int_to_bits(hash_index);
 
         // hash_index_map_[keys_[index]] = int_to_bits(hash_index);
-        // hash_index_map_raw_[keys_[index]] = hash_index;
+        hash_index_map_raw_[keys_[index]] = hash_index;
     }
     DEBUG_LOG("Hash Index Map: " << hash_index_map_);
 }

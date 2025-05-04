@@ -36,6 +36,9 @@ void RecSplit::build(const std::vector<std::string> &keys) {
     ProgressBar pbar(buckets_.size(), "Creating RecSplit Buckets");
     for (std::vector<std::string> bucket : buckets_) {
         DEBUG_LOG("Bucket being sent to Split(): " << bucket);
+        if (bucket.size() == 0) {
+            continue;
+        }
         split(bucket);
         pbar.update();
     }
@@ -56,12 +59,12 @@ HashFunctionSpace RecSplit::space() {
     int total_splitting_tree = splitting_tree_.fixed.size() + splitting_tree_.unary.size();
     space_usage.push_back(std::make_pair("Total Splitting Tree", total_splitting_tree));
 
-    space_usage.push_back(std::make_pair("Bucket Prefixes", elias_fano_space(bucket_node_prefixes_ef_)));
+    space_usage.push_back(std::make_pair("Bucket Prefixes", elias_fano_space(bucket_node_prefixes_ef_double)));
     // space_usage.push_back(std::make_pair("Bucket Unary Prefixes", elias_fano_space(bucket_unary_prefixes_ef_)));
     // space_usage.push_back(std::make_pair("Bucket Fixed Prefixes", elias_fano_space(bucket_fixed_prefixes_ef_)));
     // int total_bucket_prefixes = elias_fano_space(bucket_node_prefixes_ef_) + elias_fano_space(bucket_unary_prefixes_ef_) + elias_fano_space(bucket_fixed_prefixes_ef_);
     // int total_bucket_prefixes = elias_fano_space(bucket_node_prefixes_ef_) + elias_fano_space(bucket_unary_prefixes_ef_);
-    int total_bucket_prefixes = elias_fano_space(bucket_node_prefixes_ef_);
+    int total_bucket_prefixes = elias_fano_space(bucket_node_prefixes_ef_double);
     // space_usage.push_back(std::make_pair("Total Bucket Prefixes", total_bucket_prefixes));
 
     int total_bits = total_bucket_prefixes + total_splitting_tree;
@@ -345,6 +348,7 @@ void RecSplit::create_buckets() {
     bucket_node_prefixes_ef_ = elias_fano_encode(bucket_node_prefixes_);
     bucket_unary_prefixes_ef_ = elias_fano_encode(bucket_unary_prefixes_);
     bucket_fixed_prefixes_ef_ = elias_fano_encode(bucket_fixed_prefixes_);
+    bucket_node_prefixes_ef_double = elias_fano_double_encode(bucket_node_prefixes_);
 
     DEBUG_LOG("Bucket Node Prefixes: " << bucket_node_prefixes_);
     DEBUG_LOG("Bucket Unary Prefixes: " << bucket_unary_prefixes_);
