@@ -135,10 +135,10 @@ uint32_t RecSplit::hash(const std::string &key) {
 
     size_t node_count = bucket_node_prefixes[bucket];
     size_t ones_count = 0;
-    // ones_count = bucket_unary_prefixes[bucket];
-    for (int i = 0; i < bucket; i++) {
-        ones_count += grp_table_[bucket_node_prefixes[i+1] - bucket_node_prefixes[i]][leaf_size_-2].unary_code_length;
-    }
+    ones_count = bucket_unary_prefixes[bucket];
+    // for (int i = 0; i < bucket; i++) {
+    //     ones_count += grp_table_[bucket_node_prefixes[i+1] - bucket_node_prefixes[i]][leaf_size_-2].unary_code_length;
+    // }
     size_t unary_pointer_select = splitting_tree_select_.unary.select(ones_count);
 
     // unless the first item, need to start on a 0
