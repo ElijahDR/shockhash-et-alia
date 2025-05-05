@@ -23,8 +23,8 @@ std::string generate_random_string(int length) {
     std::string result;
     result.reserve(length);
 
-    // static std::mt19937 generator(std::time(nullptr));
-    static std::mt19937 generator(1);
+    static std::mt19937 generator(std::time(nullptr));
+    // static std::mt19937 generator(1);
     std::uniform_int_distribution<int> distribution(0, charset.size() - 1);
 
     for (int i = 0; i < length; ++i) {
@@ -48,6 +48,28 @@ std::vector<std::string> generate_random_keys(int n) {
         if (unique_keys.size() % (n /100) == 0) {
             pbar.update();
         }
+    }
+    std::cout << "Generation complete!" << std::endl;
+
+    return std::vector<std::string>(unique_keys.begin(), unique_keys.end());
+}
+
+std::vector<std::string> generate_random_keys_random_length(int n) {
+    std::unordered_set<std::string> unique_keys;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> length_dist(1, 50); // Random length between 1 and 15
+
+    // std::string name = "Generating " + std::to_string(n) + " keys with random lengths (1-50)";
+    // ProgressBar pbar(100, name);
+
+    while (unique_keys.size() < n) {
+        int length = length_dist(gen); // Randomly choose a length for each key
+        std::string key = generate_random_string(length);
+        unique_keys.insert(key);
+        // if (unique_keys.size() % (n / 100) == 0) {
+            // pbar.update();
+        // }
     }
     std::cout << "Generation complete!" << std::endl;
 
@@ -115,27 +137,27 @@ HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash
     hash_function.build(keys);
     auto end_time = std::chrono::steady_clock::now();
     auto duration = end_time - start_time;
-    auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    auto build_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
     result.build_time = build_duration.count();
-    double throughput = (double)keys.size() / ((double)build_duration.count() / 1000);
+    double throughput = (double)keys.size() / ((double)build_duration.count() / 1000000000);
     std::cout << "Build took: " << build_duration.count() << " ms" << std::endl;
     std::cout << "Build Throughput: " << throughput << " (keys/s)" << std::endl;
     result.build_throughput = throughput;
     start_time = std::chrono::steady_clock::now();
-    ProgressBar pbar(100, "Hashing Keys");
+    // ProgressBar pbar(100, "Hashing Keys");
     for (int i = 0; i < keys.size(); i++) {
         uint32_t hash = hash_function.hash(keys[i]);
-        if (i % (keys.size()/100) == 0){
-            pbar.update();
-        }
+        // if (i % (keys.size()/100) == 0){
+            // pbar.update();
+        // }
     }
     DEBUG_LOG("Hashing Finished");
     end_time = std::chrono::steady_clock::now();
     duration = end_time - start_time;
-    auto hashing_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    auto hashing_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
     result.hashing_time = hashing_duration.count();
     std::cout << "Hashing took: " << hashing_duration.count() << " ms" << std::endl;
-    throughput = (double)keys.size() / ((double)hashing_duration.count() / 1000);
+    throughput = (double)keys.size() / ((double)hashing_duration.count() / 1000000000);
     std::cout << "Hashing Throughput: " << throughput << " (keys/s)" << std::endl;
     result.hash_throughput = throughput;
 

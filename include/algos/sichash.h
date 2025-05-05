@@ -40,7 +40,8 @@ private:
     std::vector<uint32_t> generate_hash(size_t index, uint32_t base_seed);
     uint32_t extract_class_assignment(size_t index);
     void build_cuckoo_hash_table(const std::vector<size_t> &bucket);
-    bool insert_into_hash_table(size_t index, uint32_t base_seed, std::vector<int> &hash_table);
+    // bool insert_into_hash_table(size_t index, uint32_t base_seed, std::vector<int> &hash_table);
+    bool insert_into_hash_table(size_t index, const std::vector<size_t> &bucket, uint32_t base_seed, std::vector<int> &hash_table);
     uint64_t key_class(const std::string &key);
     uint64_t key_n_hash(const std::string &key);
     uint64_t get_hash_index(std::string &key);

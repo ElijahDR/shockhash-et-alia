@@ -38,10 +38,10 @@ void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=5, uint32_t le
 void run_sichash_random_keys() {
     std::vector<std::string> keys = generate_random_keys(1000000);
 
-    SicHash sichash(20, 1.0, 0, 0.99, 0);
-    test_perfect_hashing(keys, sichash);
-    // HashFunctionTime hash_time = time_hashing(keys, sichash);
-    // std::cout << hash_time << std::endl;
+    SicHash sichash(5000, 0.39, 0.22, 0.9768, 0);
+    // test_perfect_hashing(keys, sichash);
+    HashFunctionTime hash_time = time_hashing(keys, sichash);
+    std::cout << hash_time << std::endl;
     std::cout << sichash.space() << std::endl;
 }
 
@@ -200,9 +200,73 @@ void record_recsplit_bits_3d() {
 }
 
 void record_recsplit_data() {
-    std::vector<std::string> keys = generate_random_keys(1000000);
     std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
         {"n_keys", std::vector<double>{1000000}},
+        {"bucket_size", std::vector<double>{10, 50, 100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000}},
+        {"leaf_size", std::vector<double>{2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}},
+    };
+    std::vector<HashTestParameters> parameters_recsplit = generate_test_params("RecSplit", param_ranges_recsplit);
+    std::vector<HashTestResult> results;
+    std::ofstream file;
+    file.open("data/results/recsplit-1000000.csv");
+    file << "num_keys,bucket_size,leaf_size,bits_per_key,build_time,hashing_time,bijection_time,splitting_time,bucket_time,splitting_tree,unary,fixed,bucket_prefixes\n";
+    file.close();
+    for (auto p : parameters_recsplit) {
+        std::cout << p << std::endl;
+        std::vector<HashFunctionTime> times;
+        std::vector<HashFunctionSpace> spaces;
+        std::vector<uint64_t> bijection_times;
+        std::vector<uint64_t> splitting_times;
+        for (int i = 0; i < 5; i++) {
+            std::vector<std::string> keys = generate_random_keys_random_length(1000000);
+            file.open("data/results/recsplit-1000000.csv", std::ios::app);
+            RecSplit recsplit0 = RecSplit(p.params["bucket_size"], p.params["leaf_size"], i);
+
+            test_perfect_hashing(keys, recsplit0);
+            RecSplit recsplit = RecSplit(p.params["bucket_size"], p.params["leaf_size"], i);
+            HashFunctionTime time = time_hashing(keys, recsplit);
+            HashFunctionSpace space = recsplit.space();
+
+            std::cout << "Space: " << space << std::endl;
+            std::cout << "Time: " << time << std::endl;
+            std::cout << "Time Splitting: " << recsplit.time_splitting << std::endl;
+            std::cout << "Time Bijecting: " << recsplit.time_bijection << std::endl;
+            std::cout << "Time Creating Buckets: " << recsplit.time_buckets << std::endl;
+
+            file << p.params["n_keys"] << "," << p.params["bucket_size"] << "," << p.params["leaf_size"] << ",";
+            file << space.bits_per_key << "," << time.build_time << "," << time.hashing_time << ",";
+            file << recsplit.time_bijection << ",";
+            file << recsplit.time_splitting << ",";
+            file << recsplit.time_buckets << ",";
+            for (auto x : space.space_usage) {
+                if (x.first == "Total Splitting Tree") {
+                    file << x.second << ",";
+                }
+            }
+            for (auto x : space.space_usage) {
+                if (x.first == "Splitting Tree Unary") {
+                    file << x.second << ",";
+                }
+            }
+            for (auto x : space.space_usage) {
+                if (x.first == "Splitting Tree Fixed") {
+                    file << x.second << ",";
+                }
+            }
+            for (auto x : space.space_usage) {
+                if (x.first == "Bucket Prefixes") {
+                    file << x.second << "\n";
+                }
+            }
+            file.close();
+        }
+    }
+}
+
+void record_shockhash_data() {
+    std::vector<std::string> keys = generate_random_keys(100);
+    std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
+        {"n_keys", std::vector<double>{100}},
         {"bucket_size", std::vector<double>{100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000}},
         {"leaf_size", std::vector<double>{2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}},
     };
@@ -229,13 +293,11 @@ void record_recsplit_data() {
             std::cout << "Time: " << time << std::endl;
             std::cout << "Time Splitting: " << recsplit.time_splitting << std::endl;
             std::cout << "Time Bijecting: " << recsplit.time_bijection << std::endl;
-            bijection_times.push_back(recsplit.time_bijection);
-            splitting_times.push_back(recsplit.time_splitting);
 
             file << p.params["n_keys"] << "," << p.params["bucket_size"] << "," << p.params["leaf_size"] << ",";
             file << space.bits_per_key << "," << time.build_time << "," << time.hashing_time << ",";
-            file << (std::accumulate(bijection_times.begin(), bijection_times.end(), 0.0) / bijection_times.size()) << ",";
-            file << (std::accumulate(splitting_times.begin(), splitting_times.end(), 0.0) / splitting_times.size()) << ",";
+            file << recsplit.time_bijection << ",";
+            file << recsplit.time_splitting << ",";
             for (auto x : space.space_usage) {
                 if (x.first == "Total Splitting Tree") {
                     file << x.second << ",";
@@ -489,6 +551,62 @@ void test_triangular() {
     DEBUG_LOG("Decoded: " << decode_pair);
 }
 
+void run_burr() {
+    std::vector<int> rs = {1,2,3,4,5};
+    std::vector<int> layers = {2,3,4};
+    std::vector<double> epsilons = {-0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1, 0.15, 0.2};
+    std::vector<int> buckets = {32, 64, 128, 256};
+    std::vector<std::string> keys = generate_random_keys(10000000);
+    std::vector<uint64_t> values(keys.size());
+
+    std::ofstream file;
+    std::string filename = "data/results/burr-10000000.csv";
+    file.open(filename);
+    file << "num_keys,r,layers,epsilon,bucket,build_time,query_time,space,metadata,Z\n";
+    file.close();
+    for (auto r : rs) {
+        std::cout << "Generating Values" << std::endl;
+        for (int i = 0; i < keys.size(); i++) {
+            values[i] = murmur32(keys[i], 0) % (int)std::pow(2, r);
+        }      
+        std::cout << "Generating Values Done" << std::endl;
+        for (auto layer : layers) {
+            for (auto epsilon : epsilons) {
+                for (auto bucket : buckets) {
+                    file.open(filename, std::ios::app);
+                    file << keys.size() << ",";
+                    file << r << "," << layer << "," << epsilon << "," << bucket << ",";
+                    std::cout << "R: " << r << " layers: " << layer << " e: " << epsilon << " bucket: " << bucket << std::endl;
+                    auto start_time = std::chrono::steady_clock::now();
+                    BuRR burr(keys, values, r, epsilon, bucket, layer);
+                    auto end_time = std::chrono::steady_clock::now();
+                    auto duration = end_time - start_time;
+                    auto build_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+                    uint64_t building_time = build_duration.count();
+                    file << building_time << ",";
+                    std::cout << "Building Time: " << building_time << std::endl;
+                    start_time = std::chrono::steady_clock::now();
+                    for (int i = 0; i < keys.size(); i++) {
+                        uint64_t query_val = burr.query(keys[i]);
+                    }
+                    end_time = std::chrono::steady_clock::now();
+                    duration = end_time - start_time;
+                    build_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+                    uint64_t query_time = build_duration.count();
+                    std::cout << "Query Time: " << query_time << std::endl;
+                    file << query_time << ",";
+                    BuRRSpace space = burr.space();
+                    std::cout << "Space: " << space.total_bits << std::endl;
+                    file << space.total_bits << "," << space.total_metadata << "," << space.total_Z << "\n";
+                    file.close();
+                }
+            }
+        }
+    }
+
+
+}
+
 
 int main(int argc, char *argv[]) {
 
@@ -505,7 +623,7 @@ int main(int argc, char *argv[]) {
     #error Unknown pointer size or missing size macros!
 #endif
     // test_hashing_molecules();
-    run_sichash_random_keys();
+    // run_sichash_random_keys();
     // run_recsplit_random_keys();
     // test_elias_fano();
     // test_broadword();
@@ -517,6 +635,7 @@ int main(int argc, char *argv[]) {
     // record_recsplit_bits_3d();
     // test_shockhash_rs();
     // record_recsplit_data();
+    run_burr();
     // test_triangular();
     return 0;
 }

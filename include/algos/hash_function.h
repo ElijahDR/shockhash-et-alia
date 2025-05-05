@@ -13,8 +13,8 @@ struct HashFunctionSpace {
 };
 
 struct HashFunctionTime {
-    int build_time;
-    int hashing_time;
+    uint64_t build_time;
+    uint64_t hashing_time;
     double build_throughput;
     double hash_throughput;
 };
@@ -53,8 +53,8 @@ inline HashFunctionTime average_time(std::vector<HashFunctionTime> &times) {
     }
 
     return HashFunctionTime{
-        (int)(total_build_time / times.size()), 
-        (int)(total_hash_time / times.size()), 
+        (total_build_time / times.size()), 
+        (total_hash_time / times.size()), 
         (double)(total_build_throughput / times.size()), 
         (double)(total_hash_throughput / times.size()), 
     };

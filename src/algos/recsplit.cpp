@@ -509,8 +509,8 @@ FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size) {
 
 std::vector<std::vector<SubtreeData>> generate_all_grp() {
     // Generate up to bucket_size 3000 and leaf size up to 24?
-    const uint32_t max_bucket_size = 25;
-    const uint32_t max_leaf_size = 5;
+    const uint32_t max_bucket_size = 3000;
+    const uint32_t max_leaf_size = 24;
     std::vector<std::vector<SubtreeData>> grp_table(max_leaf_size-1, std::vector<SubtreeData>(max_bucket_size));
     for (size_t bucket_size = 1; bucket_size < max_bucket_size; bucket_size++) {
         for (size_t leaf_size = 2; leaf_size < max_leaf_size + 1; leaf_size++) {

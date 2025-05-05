@@ -30,6 +30,7 @@ public:
     std::vector<uint64_t> compact_Z;
     bool solve();
     void make_compact_z();
+
 private:
     bool insert(std::string &key, std::uint8_t value, uint32_t seed);
 
@@ -57,6 +58,9 @@ public:
     BuRRSpace space();
     std::vector<uint64_t> Z;
     std::vector<uint64_t> compact_Z;
+
+    uint64_t time_solving = 0;
+    uint64_t time_inserting = 0;
 private:
     bool insert(std::string &key, std::uint8_t value, uint32_t seed);
     bool solve();

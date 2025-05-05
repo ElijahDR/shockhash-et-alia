@@ -28,6 +28,7 @@ std::vector<std::string> read_file(std::string file_name);
 bool test_perfect_hashing(std::vector<std::string> &keys, HashFunction &hash_function);
 HashTestResult test_hashing(std::vector<std::string> &keys, HashFunction &hash_function);
 HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash_function);
+std::vector<std::string> generate_random_keys_random_length(int n);
 
 
 const double PI = 3.14159265358979323846;

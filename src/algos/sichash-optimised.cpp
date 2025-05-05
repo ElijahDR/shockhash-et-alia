@@ -46,7 +46,7 @@ void SicHash::build(const std::vector<std::string> &keys) {
     bucket_prefixes_ef_ = elias_fano_double_encode(bucket_prefixes_);
     estimated_golomb_rice();
 
-    // DEBUG_LOG("Hash Indexes: " << hash_index_map_raw_);
+    DEBUG_LOG("Hash Indexes: " << hash_index_map_raw_);
 }
 
 void SicHash::estimated_golomb_rice() {
@@ -73,13 +73,13 @@ void SicHash::estimated_golomb_rice() {
     }
     double standard_dev = std::sqrt(squared_error / (bucket_seeds_.size() - 1));
     double standard_error = standard_dev / std::sqrt(bucket_seeds_.size());
-    // std::cout << "Standard Error: " << standard_error << std::endl;
-    // std::cout << "95\% confidenc interval: " << (1/(average - (1.96 * standard_error))) << ", " << (1/(average + (1.96 * standard_error))) << std::endl;
-    // std::cout << "Unary: " << data_unary << std::endl;
-    // std::cout << "Fixed: " << data_fixed << std::endl;
-    // std::cout << "Unary: " << data_unary.size() << std::endl;
-    // std::cout << "Fixed: " << data_fixed.size() << std::endl;
-    // std::cout << "Normal: " << bucket_seeds_.size() * 16 << std::endl;
+    std::cout << "Standard Error: " << standard_error << std::endl;
+    std::cout << "95\% confidenc interval: " << (1/(average - (1.96 * standard_error))) << ", " << (1/(average + (1.96 * standard_error))) << std::endl;
+    std::cout << "Unary: " << data_unary << std::endl;
+    std::cout << "Fixed: " << data_fixed << std::endl;
+    std::cout << "Unary: " << data_unary.size() << std::endl;
+    std::cout << "Fixed: " << data_fixed.size() << std::endl;
+    std::cout << "Normal: " << bucket_seeds_.size() * 16 << std::endl;
     bucket_seeds_encoded = BucketSeedGr{data_unary, data_fixed};
 }
 
@@ -350,9 +350,7 @@ void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
             //     std::cout << "Inserted " << i << " elements" << std::endl;
             // }
             // DEBUG_LOG("Seed: " << seed << " index: " << i);
-            // insert = insert_into_hash_table(bucket[i], seed * 8, table);
             insert = insert_into_hash_table(i, bucket, seed * 8, table);
-
             // DEBUG_LOG("Current Hash Table: " << table);
             // DEBUG_LOG("Current Rattle Counters: " << rattle_counters_);
             if (!insert) break;
@@ -366,6 +364,7 @@ void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
     }
 
     bucket_seeds_.push_back(seed);
+
     for (int i = 0; i < bucket.size(); i++) {
         size_t index = bucket[i];
         uint32_t n_hash = key_n_hash(keys_[index]);
@@ -379,73 +378,16 @@ void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
         // hash_indexes_[index] = int_to_bits(hash_index);
 
         // hash_index_map_[keys_[index]] = int_to_bits(hash_index);
-        // hash_index_map_raw_[keys_[index]] = hash_index;
+        hash_index_map_raw_[keys_[index]] = hash_index;
     }
-    // for (auto index : bucket) {
-    //     uint32_t n_hash = key_n_hash(keys_[index]);
-    //     size_t hash_index = rattle_counters_[index] % n_hash;
-
-    //     uint64_t class_n = key_class(keys_[index]);
-    //     DEBUG_LOG("Class N: " << class_n);
-    //     keys_classes_[key_class(keys_[index])].push_back(keys_[index]);
-    //     hash_indexes_per_class_[key_class(keys_[index])].push_back(hash_index);
-
-    //     // hash_indexes_[index] = int_to_bits(hash_index);
-
-    //     // hash_index_map_[keys_[index]] = int_to_bits(hash_index);
-    //     hash_index_map_raw_[keys_[index]] = hash_index;
-    // }
-    // DEBUG_LOG("Hash Index Map: " << hash_index_map_);
+    DEBUG_LOG("Hash Index Map: " << hash_index_map_);
 }
-
-// bool SicHash::insert_into_hash_table(size_t key_index, uint32_t base_seed, std::vector<int> &hash_table) {
-//     int retries = 0;
-//     int table_size = hash_table.size();
-//     while (retries < table_size * 2) {
-//         DEBUG_LOG("Current Hash Table: " << hash_table);
-//         DEBUG_LOG("Try: " << retries << " inserting: " << key_index);
-//         DEBUG_LOG("Element being inserted: " << keys_[key_index]);
-//         DEBUG_LOG("Key Index being inserted: " << key_index);
-//         // int n_hash = key_n_hash(key);
-//         int n_hash = keys_n_hashes_[key_index];
-//         DEBUG_LOG("N Hashes: " << n_hash);
-//         // std::vector<uint32_t> hashes = generate_hash(key_index, base_seed);
-//         int hash_index = rattle_counters_[key_index] & ((1 << (n_hash+1)) - 1);
-
-//         size_t table_index = murmur32(keys_[key_index], base_seed + hash_index) % table_size;
-//         DEBUG_LOG("Hash Index: " << hash_index);
-//         // size_t table_index = hashes[hash_index] % hash_table.size();
-//         DEBUG_LOG("Table Index: " << table_index);
-//         if (hash_table[table_index] == -1) {
-//             DEBUG_LOG("Straight In");
-//             hash_table[table_index] = key_index;
-//             DEBUG_LOG("Inserting element took " << retries << " tries");
-//             return true;
-//         }
-
-//         size_t current_index = hash_table[table_index];
-//         if (rattle_counters_[key_index] > rattle_counters_[current_index]) {
-//             DEBUG_LOG("Swap: New goes in");
-//             hash_table[table_index] = key_index;
-//             key_index = current_index;
-//             rattle_counters_[key_index]++;
-//         } else {
-//             DEBUG_LOG("Swap: Original stays");
-//             rattle_counters_[key_index]++;
-//         }
-
-//         retries++;
-//     }
-
-//     DEBUG_LOG("FAILED INSERTING ELEMENT");
-//     return false;
-// }
 
 bool SicHash::insert_into_hash_table(size_t bucket_index, const std::vector<size_t> &bucket, uint32_t base_seed, std::vector<int> &hash_table) {
     int retries = 0;
     int table_size = hash_table.size();
+    size_t key_index = bucket[bucket_index];
     while (retries < table_size * 2) {
-        size_t key_index = bucket[bucket_index];
         int n_hash = keys_n_hashes_[key_index];
         DEBUG_LOG("Current Hash Table: " << hash_table);
         DEBUG_LOG("Try: " << retries << " inserting: " << key_index);

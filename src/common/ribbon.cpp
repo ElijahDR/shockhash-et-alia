@@ -386,6 +386,9 @@ BuRR::BuRR(std::vector<std::string> &keys, std::vector<std::uint64_t> &values,
 
 
 
+#ifdef STATS
+    auto start_time = std::chrono::steady_clock::now();
+#endif
 
     // DEBUG_LOG("Building BuRR with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r << " num layers: " << num_layers << " bucket_size: " << bucket_size);
     std::cout << "Building BuRR with values w: " << w << " m: " << m << " n:" << n << " epsilon: " << e << " r: " << r << " num layers: " << num_layers_ << " bucket_size: " << bucket_size << std::endl;
