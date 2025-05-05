@@ -446,7 +446,7 @@ inline uint32_t map_key_to_split_new(const std::string &key, const uint32_t &see
     // uint32_t index = hash % fanout_data.size;
 
     uint128_t hash = murmur128(key, seed) >> 64;
-    uint32_t index = (hash * (cumulative_sums.size() - 1)) >> 64;
+    uint32_t index = (hash * (cumulative_sums.back())) >> 64;
     // std::cout << index << " new: " << new_index << std::endl;
 
     auto it = std::upper_bound(cumulative_sums.begin(), cumulative_sums.end(), index);
