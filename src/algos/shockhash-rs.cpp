@@ -419,6 +419,28 @@ uint32_t ShockHashRS::find_splitting(const std::vector<std::string> &keys, const
     }
 }
 
+
+inline uint32_t map_key_to_split(const std::string &key, const uint32_t &seed, const FanoutData &fanout_data) {
+    // uint32_t hash = murmur32(key, seed);
+    // uint32_t index = hash % fanout_data.size;
+
+    uint128_t hash = murmur128(key, seed) >> 64;
+    uint32_t index = std::floor((double)((hash * fanout_data.size) >> 64));
+
+    // std::cout << index << " new: " << new_index << std::endl;
+
+    int current = 0;
+    for (int i = 0; i < fanout_data.fanout; i++) {
+        current += fanout_data.part_sizes[i];
+        if (index < current) {
+            return i;
+        }
+    }
+
+    // throw "Map Key to Split function didn't work...";
+}
+
+
 inline uint32_t map_key_to_split_new(const std::string &key, const uint32_t &seed, const std::vector<int> &cumulative_sums) {
     // uint32_t hash = murmur32(key, seed);
     // uint32_t index = hash % fanout_data.size;
