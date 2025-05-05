@@ -400,7 +400,7 @@ uint32_t ShockHashRS::find_splitting(const std::vector<std::string> &keys, const
         DEBUG_LOG("Seed: " << seed);
         for (const std::string &key : keys) {
             uint32_t index = map_key_to_split_new(key, seed, cumulative_sums);
-            counts[index] +=1;
+            counts[index] ++;
         }
 
         DEBUG_LOG("Actual Counts: " << counts);
