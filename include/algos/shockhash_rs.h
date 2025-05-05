@@ -71,6 +71,10 @@ private:
     EliasFanoEncodedData bucket_fixed_prefixes_ef_;
     EliasFanoDoubleEncodedData bucket_node_prefixes_ef_double;
 
+    EliasFano fixed_prefixes;
+    EliasFano unary_prefixes;
+    EliasFano node_prefixes;
+
     std::vector<std::vector<SubtreeData>> grp_table_;
 
     std::vector<uint64_t> hash_indexes;

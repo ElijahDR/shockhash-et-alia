@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include <unordered_map>
+#include <memory>
 #include "common/utils.h"
 #include "common/broadword.h"
 #include "common/elias_fano.h"
@@ -27,7 +28,7 @@ struct FanoutData {
     std::vector<uint16_t> part_sizes;
 };
 
-struct SubtreeData { 
+struct alignas(8) SubtreeData { 
     uint8_t parameter;
     uint16_t nodes;
     uint16_t fixed_code_length;
@@ -76,6 +77,7 @@ public:
     HashFunctionSpace space() override;
     uint64_t time_bijection = 0;
     uint64_t time_splitting = 0;
+    uint64_t time_buckets = 0;
 
 private:
     uint32_t base_seed_;
@@ -103,6 +105,8 @@ private:
     EncodedSplittingTreeSelect splitting_tree_select_;
 
     std::vector<std::string> keys_;
+    const std::vector<std::string>* keys_ptr;
+    
 
     std::vector<std::vector<std::string>> buckets_;
     std::vector<uint32_t> bucket_sizes_;

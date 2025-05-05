@@ -1,6 +1,7 @@
 #include "common/elias_fano.h"
 
 EliasFano::EliasFano(std::vector<uint32_t> &data) {
+    DEBUG_LOG("Elias Fano Encoding: " << data);
     EliasFanoDoubleEncodedData ef = elias_fano_double_encode(data);
     upper.build(ef.result.upper, 128, 8);
     lower = ef.result.lower;
@@ -23,13 +24,14 @@ uint32_t EliasFano::get(int index) {
 }
 
 EliasFanoEncodedData elias_fano_encode(std::vector<uint32_t> &data) {
+    DEBUG_LOG("Elias Fano Encoding: " << data);
     int n = data.size();
     uint32_t m = data.back();
 
     uint32_t q = std::ceil((double)m / n);
     int upper = std::ceil(std::log2((double)n));
     DEBUG_LOG("Upper: " << upper);
-    int lower = std::ceil(std::log2((double)m/n));
+    int lower = std::ceil(std::log2(m == 0 ? 1 : m)) - upper;
     DEBUG_LOG("Lower: " << lower);
 
     EliasFanoEncodedData result;

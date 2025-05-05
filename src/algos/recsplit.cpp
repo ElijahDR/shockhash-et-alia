@@ -27,20 +27,34 @@ RecSplit::RecSplit(uint32_t bucket_size, uint32_t leaf_size, uint32_t bucket_see
 
 void RecSplit::build(const std::vector<std::string> &keys) {
     DEBUG_LOG("Building RecSplit");
-    keys_ = keys;
+    std::cout << "Building RecSplit Instance" << std::endl;
+    keys_ptr = &keys;
+    keys_ = (*keys_ptr);
     DEBUG_LOG("Creating Buckets...");
 
+#ifdef STATS
+    auto start_time = std::chrono::steady_clock::now();
+#endif
     bucket_count_ = ceil((float)keys_.size() / (float)bucket_size_);
     create_buckets();
 
-    ProgressBar pbar(buckets_.size(), "Creating RecSplit Buckets");
-    for (std::vector<std::string> bucket : buckets_) {
-        DEBUG_LOG("Bucket being sent to Split(): " << bucket);
-        if (bucket.size() == 0) {
+#ifdef STATS
+    auto end_time = std::chrono::steady_clock::now();
+    auto duration = end_time - start_time;
+    auto build_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+    time_buckets += build_duration.count();
+#endif
+
+    // ProgressBar pbar(100, "Creating RecSplit Buckets");
+    for (int i = 0; i < bucket_count_; i++) {
+        DEBUG_LOG("Bucket being sent to Split(): " << buckets_[i]);
+        if (buckets_[i].size() == 0) {
             continue;
         }
-        split(bucket);
-        pbar.update();
+        split(buckets_[i]);
+        // if (i % (bucket_count_ / 100) == 0){
+        //     pbar.update();
+        // }
     }
 
     DEBUG_LOG("Raw Splitting Tree: " << splitting_tree_raw_);
@@ -118,16 +132,16 @@ uint32_t RecSplit::hash(const std::string &key) {
     // std::vector<uint32_t> bucket_node_prefixes = elias_fano_decode(bucket_node_prefixes_ef_, n_buckets+1);
     // std::vector<uint32_t> bucket_unary_prefixes = elias_fano_decode(bucket_unary_prefixes_ef_, n_buckets+1);
     // std::vector<uint32_t> bucket_fixed_prefixes = elias_fano_decode(bucket_fixed_prefixes_ef_, n_buckets+1);
-    std::vector<uint32_t> bucket_node_prefixes = bucket_node_prefixes_;
-    std::vector<uint32_t> bucket_unary_prefixes = bucket_unary_prefixes_;
-    std::vector<uint32_t> bucket_fixed_prefixes = bucket_fixed_prefixes_;
+    // std::vector<uint32_t> bucket_node_prefixes = bucket_node_prefixes_;
+    // std::vector<uint32_t> bucket_unary_prefixes = bucket_unary_prefixes_;
+    // std::vector<uint32_t> bucket_fixed_prefixes = bucket_fixed_prefixes_;
     
-    DEBUG_LOG("Decoded Bucket Node Prefixes: " << bucket_node_prefixes);
-    DEBUG_LOG("Decoded Bucket Unary Prefixes: " << bucket_unary_prefixes);
-    DEBUG_LOG("Decoded Bucket Fixed Prefixes: " << bucket_fixed_prefixes);
-    DEBUG_LOG("Bucket Node Prefixes: " << bucket_node_prefixes_);
-    DEBUG_LOG("Bucket Unary Prefixes: " << bucket_unary_prefixes_);
-    DEBUG_LOG("Bucket Fixed Prefixes: " << bucket_fixed_prefixes_);
+    // DEBUG_LOG("Decoded Bucket Node Prefixes: " << bucket_node_prefixes);
+    // DEBUG_LOG("Decoded Bucket Unary Prefixes: " << bucket_unary_prefixes);
+    // DEBUG_LOG("Decoded Bucket Fixed Prefixes: " << bucket_fixed_prefixes);
+    // DEBUG_LOG("Bucket Node Prefixes: " << bucket_node_prefixes_);
+    // DEBUG_LOG("Bucket Unary Prefixes: " << bucket_unary_prefixes_);
+    // DEBUG_LOG("Bucket Fixed Prefixes: " << bucket_fixed_prefixes_);
 
     // Bucket finding and starting the unary pointer
     uint32_t bucket = assign_bucket(key, buckets_.size());
@@ -135,16 +149,17 @@ uint32_t RecSplit::hash(const std::string &key) {
 
     // size_t node_count = bucket_node_prefixes[bucket];
     size_t node_count = node_prefixes.get(bucket);
+    size_t size = node_prefixes.get(bucket+1) - node_count;
     size_t ones_count = unary_prefixes.get(bucket);
     // size_t ones_count = bucket_unary_prefixes[bucket];
     // size_t ones_count = 0;
     // for (int i = 0; i < bucket; i++) {
-    //     ones_count += grp_table_[bucket_node_prefixes[i+1] - bucket_node_prefixes[i]][leaf_size_-2].unary_code_length;
+    //     ones_count += grp_table_[leaf_size_-1][size].unary_code_length;
     // }
     size_t unary_pointer_select = splitting_tree_select_.unary.select(ones_count);
 
     // unless the first item, need to start on a 0
-    if (bucket_unary_prefixes_[bucket] > 0) {
+    if (bucket > 0) {
         unary_pointer_select++;
     }
     DEBUG_LOG("Unary Pointer Select: " << unary_pointer_select);
@@ -153,22 +168,24 @@ uint32_t RecSplit::hash(const std::string &key) {
     size_t fixed_pointer = fixed_prefixes.get(bucket);
     // size_t fixed_pointer = 0;
     // for (int i = 0; i < bucket; i++) {
-        // fixed_pointer += grp_table_[bucket_node_prefixes[i+1] - bucket_node_prefixes[i]][leaf_size_-2].fixed_code_length;
+    //     fixed_pointer += grp_table_[bucket_node_prefixes[i+1] - bucket_node_prefixes[i]][leaf_size_-2].fixed_code_length;
     // }
-    DEBUG_LOG("Fixed Pointer: " << bucket_fixed_prefixes[bucket] << " Calculated One: " << fixed_pointer);
-    size_t size = bucket_sizes_[bucket];
+    // DEBUG_LOG("Fixed Pointer: " << bucket_fixed_prefixes[bucket] << " Calculated One: " << fixed_pointer);
     DEBUG_LOG("Bucket Index: " << bucket);
     DEBUG_LOG("Bucket Size: " << size);
     DEBUG_LOG("Node Count: " << node_count);
 
+    std::vector<bool> fixed, unary;
+    std::vector<bool> unary_select;     
     while (size > leaf_size_) {
-        SubtreeData subtree_data = grp_table_[size][leaf_size_-2];
+        unary_select.clear();
+        fixed.clear();
+        unary.clear();
+        SubtreeData subtree_data = grp_table_[leaf_size_-2][size];
         DEBUG_LOG("Current Size: " << size);
         DEBUG_LOG("Subtree Data: " << subtree_data);
         DEBUG_LOG("Fixed Pointer Before: " << fixed_pointer);
         DEBUG_LOG("Unary Pointer Before: " << unary_pointer_select);
-        std::vector<bool> fixed, unary;
-        std::vector<bool> unary_select;     
         while (splitting_tree_.unary[unary_pointer_select] != 1) {
             unary_select.push_back(splitting_tree_.unary[unary_pointer_select]);
             unary_pointer_select++;
@@ -198,7 +215,7 @@ uint32_t RecSplit::hash(const std::string &key) {
 
         uint32_t nodes_to_skip = 0;
         for (int i = 0; i < split_index; i++) {
-            SubtreeData subtree_data_skip = grp_table_[fanout_data.part_sizes[i]][leaf_size_-2];
+            SubtreeData subtree_data_skip = grp_table_[leaf_size_-2][fanout_data.part_sizes[i]];
             DEBUG_LOG("Subtree Data to Skip: " << subtree_data_skip);
             fixed_pointer += subtree_data_skip.fixed_code_length;
             nodes_to_skip += subtree_data_skip.unary_code_length;
@@ -218,9 +235,10 @@ uint32_t RecSplit::hash(const std::string &key) {
         size = fanout_data.part_sizes[split_index];
     }
 
-    SubtreeData subtree_data = grp_table_[size][leaf_size_-2];
+    SubtreeData subtree_data = grp_table_[leaf_size_-2][size];
     DEBUG_LOG("Subtree Data at Bijection: " << subtree_data);
-    std::vector<bool> fixed, unary;
+    fixed.clear();
+    unary.clear();
     DEBUG_LOG("Fixed Pointer Before: " << fixed_pointer);
     DEBUG_LOG("Unary Pointer Before: " << unary_pointer_select);
     while (splitting_tree_.unary[unary_pointer_select] != 1) {
@@ -338,7 +356,7 @@ void RecSplit::create_buckets() {
         DEBUG_LOG("Bucket Unary Prefix: " << bucket_unary_prefix);
         DEBUG_LOG("Bucket Fixed Prefix: " << bucket_fixed_prefix);
 
-        SubtreeData subtree_data = grp_table_[bucket_size][leaf_size_-2];
+        SubtreeData subtree_data = grp_table_[leaf_size_-2][bucket_size];
 
         bucket_node_prefix += subtree_data.nodes;
         bucket_unary_prefix += subtree_data.unary_code_length;
@@ -416,7 +434,7 @@ uint32_t RecSplit::find_splitting(const std::vector<std::string> &keys, const Fa
         DEBUG_LOG("Seed: " << seed);
         for (const std::string &key : keys) {
             uint32_t index = map_key_to_split(key, seed, fanout_data);
-            counts[index] +=1;
+            counts[index] ++;
         }
 
         DEBUG_LOG("Actual Counts: " << counts);
@@ -492,15 +510,15 @@ FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size) {
 std::vector<std::vector<SubtreeData>> generate_all_grp() {
     // Generate up to bucket_size 3000 and leaf size up to 24?
     const uint32_t max_bucket_size = 25;
-    const uint32_t max_leaf_size = 10;
-    std::vector<std::vector<SubtreeData>> grp_table(max_bucket_size, std::vector<SubtreeData>(max_leaf_size-1));
+    const uint32_t max_leaf_size = 5;
+    std::vector<std::vector<SubtreeData>> grp_table(max_leaf_size-1, std::vector<SubtreeData>(max_bucket_size));
     for (size_t bucket_size = 1; bucket_size < max_bucket_size; bucket_size++) {
         for (size_t leaf_size = 2; leaf_size < max_leaf_size + 1; leaf_size++) {
             size_t leaf_index = leaf_size - 2;
             
             if (bucket_size <= leaf_size) { 
                 uint8_t param = compute_grp_bijection(bucket_size);
-                grp_table[bucket_size][leaf_index] = SubtreeData{
+                grp_table[leaf_index][bucket_size] = SubtreeData{
                     param, 
                     (uint16_t)bucket_size, 
                     param,
@@ -513,12 +531,12 @@ std::vector<std::vector<SubtreeData>> generate_all_grp() {
                 uint16_t fixed_code_length = param;
                 uint16_t unary_code_length = 1;
                 for (auto part_size : fanout.part_sizes) {
-                    nodes += grp_table[part_size][leaf_index].nodes;
-                    fixed_code_length += grp_table[part_size][leaf_index].fixed_code_length;
-                    unary_code_length += grp_table[part_size][leaf_index].unary_code_length;
+                    nodes += grp_table[leaf_index][part_size].nodes;
+                    fixed_code_length += grp_table[leaf_index][part_size].fixed_code_length;
+                    unary_code_length += grp_table[leaf_index][part_size].unary_code_length;
                 }
     
-                grp_table[bucket_size][leaf_index] = SubtreeData{
+                grp_table[leaf_index][bucket_size] = SubtreeData{
                     param, nodes, fixed_code_length, unary_code_length
                 };
             }

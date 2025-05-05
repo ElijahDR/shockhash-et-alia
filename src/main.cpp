@@ -28,6 +28,7 @@ void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=5, uint32_t le
 #ifdef STATS
         std::cout << "Time Spent Bijection: " << recsplit.time_bijection << std::endl;
         std::cout << "Time Spent Splitting: " << recsplit.time_splitting << std::endl;
+        std::cout << "Time Spent Buckets: " << recsplit.time_buckets << std::endl;
 #endif
         HashFunctionSpace space = recsplit.space();
         std::cout << space << std::endl;
@@ -35,7 +36,7 @@ void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=5, uint32_t le
     }
 
 void run_sichash_random_keys() {
-    std::vector<std::string> keys = generate_random_keys(100000);
+    std::vector<std::string> keys = generate_random_keys(1000000);
 
     SicHash sichash(20, 1.0, 0, 0.99, 0);
     test_perfect_hashing(keys, sichash);
@@ -468,10 +469,10 @@ void generate_random_bit_array() {
 void test_shockhash_rs() {
     std::vector<std::string> keys = generate_random_keys(1000000);
 
-    ShockHashRS shockhashrs(2000, 24);
-    test_perfect_hashing(keys, shockhashrs);
-    // HashFunctionTime hash_time = time_hashing(keys, shockhashrs);
-    // std::cout << hash_time << std::endl;
+    ShockHashRS shockhashrs(5, 5);
+    // test_perfect_hashing(keys, shockhashrs);
+    HashFunctionTime hash_time = time_hashing(keys, shockhashrs);
+    std::cout << hash_time << std::endl;
 #ifdef STATS    
     std::cout << "Time Spent Bijection: " << shockhashrs.time_bijection << std::endl;
     std::cout << "Time Spent Splitting: " << shockhashrs.time_splitting << std::endl;
@@ -504,8 +505,8 @@ int main(int argc, char *argv[]) {
     #error Unknown pointer size or missing size macros!
 #endif
     // test_hashing_molecules();
-    // run_sichash_random_keys();
-    run_recsplit_random_keys();
+    run_sichash_random_keys();
+    // run_recsplit_random_keys();
     // test_elias_fano();
     // test_broadword();
     // test_bucketed_ribbon();

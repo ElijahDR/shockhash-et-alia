@@ -12,6 +12,8 @@
 *.dll
 *.exe
 *.dylib
+*.data
+*.data.old
 
 # Ignore CMake-generated files
 CMakeCache.txt
