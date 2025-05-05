@@ -1,6 +1,7 @@
 #include "algos/recsplit.h"
 #include "algos/sichash.h"
 #include "algos/shockhash.h"
+#include "algos/shockhash_rs.h"
 #include "common/utils.h"
 #include "common/murmurhash.h"
 #include "common/broadword.h"
@@ -15,14 +16,14 @@
 #include <random>
 #include <chrono>
 
-void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=5, uint32_t leaf_size=5) {
+void run_recsplit_random_keys(int n=1000000, uint32_t bucket_size=2000, uint32_t leaf_size=10) {
     std::vector<std::string> keys = generate_random_keys(n);
 
     for (int i = 0; i < 1; i++) {
         RecSplit recsplit(bucket_size, leaf_size, i);
-        test_perfect_hashing(keys, recsplit);
-        // HashFunctionTime time = time_hashing(keys, recsplit);
-        // std::cout << time << std::endl;
+        // test_perfect_hashing(keys, recsplit);
+        HashFunctionTime time = time_hashing(keys, recsplit);
+        std::cout << time << std::endl;
     
 #ifdef STATS
         std::cout << "Time Spent Bijection: " << recsplit.time_bijection << std::endl;
@@ -52,14 +53,14 @@ void run_sichash_build() {
 }
 
 void run_shockhash_random_keys() {
-    std::vector<std::string> keys = generate_random_keys(100);
-    ShockHash shockhash(100);
+    std::vector<std::string> keys = generate_random_keys(7);
+    ShockHash shockhash(7);
     shockhash.build(keys);
 }
 
 void run_bipartite_shockhash_random_keys() {
-    std::vector<std::string> keys = generate_random_keys(20);
-    BipartiteShockHash bipartite_shockhash(keys.size());
+    std::vector<std::string> keys = generate_random_keys(9);
+    BipartiteShockHash bipartite_shockhash;
     bipartite_shockhash.build(keys);
 }
 
@@ -402,6 +403,24 @@ void generate_random_bit_array() {
     }
 }
 
+void test_shockhash_rs() {
+    std::vector<std::string> keys = generate_random_keys(1000000);
+
+    ShockHashRS shockhashrs(1000, 40);
+    test_perfect_hashing(keys, shockhashrs);
+    // HashFunctionTime hash_time = time_hashing(keys, shockhashrs);
+    // std::cout << hash_time << std::endl;
+    std::cout << shockhashrs.space() << std::endl;
+}
+
+void test_triangular() {
+    std::pair<uint32_t, uint32_t> pair = std::make_pair(4, 1);
+    uint32_t x = triangular_pairing_function(pair);
+    DEBUG_LOG("X: " << x);
+    std::pair<uint32_t, uint32_t> decode_pair = triangular_pairing_function_undo(x);
+    DEBUG_LOG("Decoded: " << decode_pair);
+}
+
 
 int main(int argc, char *argv[]) {
 
@@ -419,7 +438,7 @@ int main(int argc, char *argv[]) {
 #endif
     // test_hashing_molecules();
     // run_sichash_random_keys();
-    run_recsplit_random_keys();
+    // run_recsplit_random_keys();
     // test_elias_fano();
     // test_broadword();
     // test_bucketed_ribbon();
@@ -428,5 +447,7 @@ int main(int argc, char *argv[]) {
     // run_bipartite_shockhash_random_keys();
     // generate_random_bit_array();
     // record_recsplit_bits_3d();
+    test_shockhash_rs();
+    // test_triangular();
     return 0;
 }

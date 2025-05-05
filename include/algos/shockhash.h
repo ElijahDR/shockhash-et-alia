@@ -55,7 +55,7 @@ private:
 
 class BipartiteShockHash : public HashFunction {
 public:
-    BipartiteShockHash(uint32_t bucket_size, uint32_t bucket_seed=42);
+    BipartiteShockHash();
 
     void build(const std::vector<std::string> &keys) override;
 
@@ -64,60 +64,26 @@ public:
     std::string name() override { return "ShockHash"; };
 
     HashFunctionSpace space() override;
+    std::vector<uint64_t> hash_choices_;
+
+    std::pair<uint32_t, uint32_t> seeds_;
+    uint32_t seed_triangled;
 
 private:
-    bool filter_bit_mask_half(const std::vector<uint32_t> &keys, const uint32_t &seed);
+    bool filter_bit_mask_half(const uint32_t &seed);
 
-    CuckooHashData create_cuckoo_table(const int bucket_id);
+    void create_cuckoo_table();
 
     std::vector<uint32_t> key_hashes(const std::string &key, uint32_t seed);
     bool insert_into_hash_table(const int key, std::vector<int> &hash_table, std::pair<uint32_t, uint32_t> seeds);
 
-    BasicRibbon hash_index;
-    std::vector<bool> hash_choices_;
 
     uint32_t n_keys_;
-    uint32_t bucket_size_;
-    uint32_t bucket_seed_;
-    std::vector<std::vector<uint32_t>> buckets_;
-
-    std::vector<CuckooHashData> hashing_data_;
 
     std::vector<std::string> keys_;
 };
 
-class ShockHashRS : public HashFunction {
-public:
-    ShockHashRS(uint32_t bucket_size, uint32_t bucket_seed=42);
-
-    void build(const std::vector<std::string> &keys) override;
-
-    uint32_t hash(const std::string &key) override;
-
-    std::string name() override { return "ShockHash"; };
-
-    HashFunctionSpace space() override;
-
-private:
-    bool filter_bit_mask(const std::vector<uint32_t> &keys, const uint32_t &seed);
-
-    CuckooHashData create_cuckoo_table(const int bucket_id);
-
-    std::vector<uint32_t> key_hashes(const std::string &key, uint32_t seed);
-    bool insert_into_hash_table(const int key, std::vector<int> &hash_table, uint32_t seed);
-
-    BasicRibbon hash_index;
-    std::vector<bool> hash_choices_;
-
-    uint32_t n_keys_;
-    uint32_t bucket_size_;
-    uint32_t bucket_seed_;
-    std::vector<std::vector<uint32_t>> buckets_;
-
-    std::vector<CuckooHashData> hashing_data_;
-
-    std::vector<std::string> keys_;
-};
-
+uint32_t triangular_pairing_function(std::pair<uint32_t, uint32_t> &values);
+std::pair<uint32_t, uint32_t> triangular_pairing_function_undo(uint32_t value);
 
 #endif

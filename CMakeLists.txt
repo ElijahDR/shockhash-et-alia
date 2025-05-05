@@ -61,6 +61,7 @@ set(SOURCES
     src/algos/recsplit.cpp
     src/algos/sichash.cpp
     src/algos/shockhash.cpp
+    src/algos/shockhash-rs.cpp
 )
 
 add_executable(hashing_algos ${SOURCES})

@@ -55,6 +55,25 @@ uint32_t compute_grp_bijection(uint32_t m) {
     return compute_golomb_rice_parameter(p);
 }
 
+
+static constexpr uint8_t bij_memo[61] = {
+    0,  0,  0,  0,  0,  0,  1,  1,  2,  2, // 0..9
+    2,  3,  3,  4,  4,  4,  5,  5,  6,  6, // 10..19
+    7,  7,  8,  8,  9,  9,  9, 10, 10, 10, // 20..29
+   11, 11, 12, 12, 13, 13, 13, 14, 15, 15, // 30..39
+   15, 16, 16, 16, 17, 17, 18, 18, 19, 19, // 40..49
+   19, 20, 20, 20, 21, 21, 22, 22, 23, 23, // 50..59
+   23 // 60
+};
+
+uint32_t compute_grp_bipartite(uint32_t m) {
+    double p = (pow(double(exp(1)/2.0), -m) * (sqrt(m) / exp(1)));
+    // DEBUG_LOG("GRP BIJECTION --- Size: " << m << " Est. Trials: " << trials << " Prob: " << p);
+
+    return bij_memo[m];
+    return compute_golomb_rice_parameter(p);
+}
+
 uint32_t compute_grp_buckets(std::vector<uint16_t> sizes) {
     uint32_t k = 1;
     uint32_t m = 0;

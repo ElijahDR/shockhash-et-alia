@@ -100,6 +100,10 @@ uint64_t SimpleSelect::select(uint64_t r) {
     if (r == 0) { 
         return 0;
     }
+    DEBUG_LOG("Primary Inventory: " << primary_inventory);
+    DEBUG_LOG("Secondary Inventory: " << secondary_inventory);
+    DEBUG_LOG("L Spacing: " << L_spacing_);
+    DEBUG_LOG("M Spacing: " << M_spacing_);
     // uint64_t primary_index = std::floor((float)r / L_spacing_);
     // uint64_t previous_primary_index = primary_index;
     // DEBUG_LOG("Primary Index: " << primary_index);
@@ -161,7 +165,7 @@ uint64_t SimpleSelect::select(uint64_t r) {
         }
         DEBUG_LOG("Gap: " << gap);
     }
-    secondary_index = secondary_index < gap ? 0 : secondary_index - gap;
+    secondary_index = secondary_index < 1 ? 0 : secondary_index - 1;
     secondary_rank = secondary_inventory[secondary_index];
     DEBUG_LOG("Secondary Index: " << secondary_index);
     DEBUG_LOG("Secondary Rank: " << secondary_rank);

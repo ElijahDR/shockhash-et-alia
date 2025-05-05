@@ -14,5 +14,6 @@ uint32_t golomb_rice_decode(GolombEncodedData data, uint32_t r);
 uint32_t compute_golomb_rice_parameter(float p);
 uint32_t compute_grp_bijection(uint32_t m);
 uint32_t compute_grp_buckets(std::vector<uint16_t> sizes);
+uint32_t compute_grp_bipartite(uint32_t m);
 
 #endif
