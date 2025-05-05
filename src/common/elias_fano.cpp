@@ -1,5 +1,27 @@
 #include "common/elias_fano.h"
 
+EliasFano::EliasFano(std::vector<uint32_t> &data) {
+    EliasFanoDoubleEncodedData ef = elias_fano_double_encode(data);
+    upper.build(ef.result.upper, 128, 8);
+    lower = ef.result.lower;
+    delta = ef.delta;
+    m = ef.result.m;
+    l = ef.result.l;
+}
+
+uint32_t EliasFano::get(int index) {
+    std::vector<bool> lower_part(lower.begin() + index * l, lower.begin() + ((index + 1) * l));
+    uint32_t quotient = upper.select(index+1) - index;
+    DEBUG_LOG("Quotient: " << quotient);
+
+    uint32_t lower_val = 0;
+    for (int j = 0; j < l; j++) {
+        lower_val = (lower_val << 1) | lower_part[j];
+    }
+
+    return ((quotient << l) | lower_val) + delta * index;
+}
+
 EliasFanoEncodedData elias_fano_encode(std::vector<uint32_t> &data) {
     int n = data.size();
     uint32_t m = data.back();
@@ -49,6 +71,7 @@ std::vector<uint32_t> elias_fano_decode(const EliasFanoEncodedData &encoded) {
                 lower_val = (lower_val << 1) | encoded.lower[lower_index++];
             }
 
+            DEBUG_LOG("Quotient: " << current_quotient);
             result.push_back((current_quotient << lower) | lower_val);
         } else {
             current_quotient++;
@@ -78,7 +101,7 @@ EliasFanoDoubleEncodedData elias_fano_double_encode(std::vector<uint32_t> data) 
     return result;
 }
 
-std::vector<uint32_t> elias_fano_double_decode(const EliasFanoDoubleEncodedData &encoded, uint32_t expected_n) {
+std::vector<uint32_t> elias_fano_double_decode(const EliasFanoDoubleEncodedData &encoded) {
     std::vector<uint32_t> result = elias_fano_decode(encoded.result);
 
     for (int i = 0; i < result.size(); i++) {

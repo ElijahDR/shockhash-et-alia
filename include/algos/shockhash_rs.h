@@ -28,6 +28,7 @@ public:
     HashFunctionSpace space() override;
     uint64_t time_bijection = 0;
     uint64_t time_splitting = 0;
+    uint64_t time_ribbon = 0;
 
 private:
 

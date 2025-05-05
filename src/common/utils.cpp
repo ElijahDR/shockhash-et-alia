@@ -122,10 +122,12 @@ HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash
     std::cout << "Build Throughput: " << throughput << " (keys/s)" << std::endl;
     result.build_throughput = throughput;
     start_time = std::chrono::steady_clock::now();
-    // ProgressBar pbar(keys.size(), "Hashing Keys");
-    for (auto key : keys) {
-        uint32_t hash = hash_function.hash(key);
-        // pbar.update();
+    ProgressBar pbar(100, "Hashing Keys");
+    for (int i = 0; i < keys.size(); i++) {
+        uint32_t hash = hash_function.hash(keys[i]);
+        if (i % (keys.size()/100) == 0){
+            pbar.update();
+        }
     }
     DEBUG_LOG("Hashing Finished");
     end_time = std::chrono::steady_clock::now();

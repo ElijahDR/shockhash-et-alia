@@ -12,8 +12,8 @@
 std::unordered_map<std::string, uint32_t> memo_murmur;
 
 
-RecSplit::RecSplit(uint32_t bucket_size, uint32_t leaf_size, uint32_t bucket_seed)
-: bucket_size_(bucket_size), leaf_size_(leaf_size), splitting_tree_(), bucket_seed_(bucket_seed) {
+RecSplit::RecSplit(uint32_t bucket_size, uint32_t leaf_size, uint32_t bucket_seed, uint32_t base_seed)
+: bucket_size_(bucket_size), leaf_size_(leaf_size), splitting_tree_(), bucket_seed_(bucket_seed), base_seed_(base_seed) {
     
 
     grp_table_ = generate_all_grp();
@@ -53,8 +53,8 @@ HashFunctionSpace RecSplit::space() {
     std::vector<std::pair<std::string, int>> space_usage;
     // int splitting_tree_overhead = (sizeof(splitting_tree_) + sizeof(splitting_tree_.fixed) + sizeof(splitting_tree_.unary)) * 8;
     // space_usage.push_back(std::make_pair("Splitting Tree Overhead", splitting_tree_overhead));
-    // space_usage.push_back(std::make_pair("Splitting Tree Fixed", splitting_tree_.fixed.size()));
-    // space_usage.push_back(std::make_pair("Splitting Tree Unary", splitting_tree_.unary.size()));
+    space_usage.push_back(std::make_pair("Splitting Tree Fixed", splitting_tree_.fixed.size()));
+    space_usage.push_back(std::make_pair("Splitting Tree Unary", splitting_tree_.unary.size()));
     // int total_splitting_tree = splitting_tree_overhead + splitting_tree_.fixed.size() + splitting_tree_.unary.size();
     int total_splitting_tree = splitting_tree_.fixed.size() + splitting_tree_.unary.size();
     space_usage.push_back(std::make_pair("Total Splitting Tree", total_splitting_tree));
@@ -133,12 +133,14 @@ uint32_t RecSplit::hash(const std::string &key) {
     uint32_t bucket = assign_bucket(key, buckets_.size());
 
 
-    size_t node_count = bucket_node_prefixes[bucket];
-    size_t ones_count = 0;
-    // ones_count = bucket_unary_prefixes[bucket];
-    for (int i = 0; i < bucket; i++) {
-        ones_count += grp_table_[bucket_node_prefixes[i+1] - bucket_node_prefixes[i]][leaf_size_-2].unary_code_length;
-    }
+    // size_t node_count = bucket_node_prefixes[bucket];
+    size_t node_count = node_prefixes.get(bucket);
+    size_t ones_count = unary_prefixes.get(bucket);
+    // size_t ones_count = bucket_unary_prefixes[bucket];
+    // size_t ones_count = 0;
+    // for (int i = 0; i < bucket; i++) {
+    //     ones_count += grp_table_[bucket_node_prefixes[i+1] - bucket_node_prefixes[i]][leaf_size_-2].unary_code_length;
+    // }
     size_t unary_pointer_select = splitting_tree_select_.unary.select(ones_count);
 
     // unless the first item, need to start on a 0
@@ -147,7 +149,8 @@ uint32_t RecSplit::hash(const std::string &key) {
     }
     DEBUG_LOG("Unary Pointer Select: " << unary_pointer_select);
 
-    size_t fixed_pointer = bucket_fixed_prefixes[bucket];
+    // size_t fixed_pointer = bucket_fixed_prefixes[bucket];
+    size_t fixed_pointer = fixed_prefixes.get(bucket);
     // size_t fixed_pointer = 0;
     // for (int i = 0; i < bucket; i++) {
         // fixed_pointer += grp_table_[bucket_node_prefixes[i+1] - bucket_node_prefixes[i]][leaf_size_-2].fixed_code_length;
@@ -350,6 +353,10 @@ void RecSplit::create_buckets() {
     bucket_fixed_prefixes_ef_ = elias_fano_encode(bucket_fixed_prefixes_);
     bucket_node_prefixes_ef_double = elias_fano_double_encode(bucket_node_prefixes_);
 
+    fixed_prefixes = EliasFano(bucket_fixed_prefixes_);
+    unary_prefixes = EliasFano(bucket_unary_prefixes_);
+    node_prefixes = EliasFano(bucket_node_prefixes_);
+
     DEBUG_LOG("Bucket Node Prefixes: " << bucket_node_prefixes_);
     DEBUG_LOG("Bucket Unary Prefixes: " << bucket_unary_prefixes_);
     DEBUG_LOG("Bucket Fixed Prefixes: " << bucket_fixed_prefixes_);
@@ -387,10 +394,10 @@ uint32_t RecSplit::find_bijection(const std::vector<std::string> &keys) {
         }
         if (bijection) {
 #ifdef STATS
-                auto end_time = std::chrono::steady_clock::now();
-                auto duration = end_time - start_time;
-                auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-                time_bijection += build_duration.count();
+            auto end_time = std::chrono::steady_clock::now();
+            auto duration = end_time - start_time;
+            auto build_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+            time_bijection += build_duration.count();
 #endif
             return seed;
         }
@@ -417,7 +424,7 @@ uint32_t RecSplit::find_splitting(const std::vector<std::string> &keys, const Fa
 #ifdef STATS
                 auto end_time = std::chrono::steady_clock::now();
                 auto duration = end_time - start_time;
-                auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+                auto build_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
                 time_splitting += build_duration.count();
 #endif
             return seed;
@@ -484,8 +491,8 @@ FanoutData calculate_fanout(uint32_t size, uint32_t leaf_size) {
 
 std::vector<std::vector<SubtreeData>> generate_all_grp() {
     // Generate up to bucket_size 3000 and leaf size up to 24?
-    const uint32_t max_bucket_size = 3000;
-    const uint32_t max_leaf_size = 24;
+    const uint32_t max_bucket_size = 25;
+    const uint32_t max_leaf_size = 10;
     std::vector<std::vector<SubtreeData>> grp_table(max_bucket_size, std::vector<SubtreeData>(max_leaf_size-1));
     for (size_t bucket_size = 1; bucket_size < max_bucket_size; bucket_size++) {
         for (size_t leaf_size = 2; leaf_size < max_leaf_size + 1; leaf_size++) {

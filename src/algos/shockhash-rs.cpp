@@ -46,7 +46,16 @@ void ShockHashRS::build(const std::vector<std::string> &keys) {
     splitting_tree_select_.unary.build(splitting_tree_.unary, 128, 8);
     splitting_tree_select_.fixed = splitting_tree_.fixed;
 
-    hash_choices = BuRR(key_as_computed, hash_indexes, 1, 0, 128, 4);
+#ifdef STATS
+    auto start_time = std::chrono::steady_clock::now();
+#endif
+    hash_choices = BuRR(key_as_computed, hash_indexes, 1, 0, 128, 3);
+#ifdef STATS
+    auto end_time = std::chrono::steady_clock::now();
+    auto duration = end_time - start_time;
+    auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    time_ribbon += build_duration.count();
+#endif
 
 }
 
@@ -270,10 +279,19 @@ void ShockHashRS::split(const std::vector<std::string> &keys) {
             return;
         }
         DEBUG_LOG("Finding Bijection For: " << keys);
+#ifdef STATS
+        auto start_time = std::chrono::steady_clock::now();
+#endif
         BipartiteShockHash shockhash;
         shockhash.build(keys);
         uint32_t bijection_seed = shockhash.seed_triangled;
         std::vector<uint64_t> hash_choices = shockhash.hash_choices_;
+#ifdef STATS
+        auto end_time = std::chrono::steady_clock::now();
+        auto duration = end_time - start_time;
+        auto build_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+        time_bijection += build_duration.count();
+#endif
         append_vector_to_vector(key_as_computed, keys);
         append_vector_to_vector(hash_indexes, hash_choices);
         // uint32_t bijection_seed = find_bijection_random(keys);
@@ -390,16 +408,16 @@ uint32_t ShockHashRS::find_splitting(const std::vector<std::string> &keys, const
 #ifdef STATS
     auto start_time = std::chrono::steady_clock::now();
 #endif
-    std::vector<int> cumulative_sums(fanout_data.fanout + 1, 0);
-    for (int i = 0; i < fanout_data.fanout; ++i) {
-        cumulative_sums[i + 1] = cumulative_sums[i] + fanout_data.part_sizes[i];
-    }
+    // std::vector<int> cumulative_sums(fanout_data.fanout + 1, 0);
+    // for (int i = 0; i < fanout_data.fanout; ++i) {
+    //     cumulative_sums[i + 1] = cumulative_sums[i] + fanout_data.part_sizes[i];
+    // }
     uint32_t seed = 0;
     std::vector<uint16_t> counts(fanout_data.fanout);
     while (true) {
         DEBUG_LOG("Seed: " << seed);
         for (const std::string &key : keys) {
-            uint32_t index = map_key_to_split_new(key, seed, cumulative_sums);
+            uint32_t index = map_key_to_split(key, seed, fanout_data);
             counts[index] ++;
         }
 
@@ -408,7 +426,7 @@ uint32_t ShockHashRS::find_splitting(const std::vector<std::string> &keys, const
 #ifdef STATS
                 auto end_time = std::chrono::steady_clock::now();
                 auto duration = end_time - start_time;
-                auto build_duration = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+                auto build_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
                 time_splitting += build_duration.count();
 #endif
             return seed;
@@ -457,8 +475,10 @@ inline uint32_t map_key_to_split_new(const std::string &key, const uint32_t &see
 
 FanoutData calculate_fanout_shockhash(uint32_t size, uint32_t leaf_size) { 
     // DEBUG_LOG("Size: " << size << " Leaf Size: " << leaf_size);
-    uint32_t s = 4;
-    uint32_t t = 3;
+    uint32_t s = leaf_size <= 25 ? 2 : 4;
+    uint32_t t = leaf_size <= 25 ? 2 : 3;
+    // uint32_t s = std::max(2, (int)std::ceil(0.1 * (double)leaf_size + 0.5));
+    // uint32_t t = (leaf_size >= 7 ? (uint32_t)std::ceil(0.073 * (double)leaf_size + 0.9) : 2);
     // DEBUG_LOG("S: " << s << " T: " << t);
     uint32_t lower_aggr = leaf_size * s;
     uint32_t upper_aggr = lower_aggr * t;

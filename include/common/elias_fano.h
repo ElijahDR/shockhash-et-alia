@@ -2,6 +2,7 @@
 #define ELIAS_FANO_H
 
 #include "common/utils.h"
+#include "common/broadword.h"
 
 struct EliasFanoEncodedData {
     std::vector<bool> upper;
@@ -22,10 +23,18 @@ std::vector<uint32_t> elias_fano_double_decode(const EliasFanoDoubleEncodedData 
 uint32_t elias_fano_space(EliasFanoEncodedData &data);
 uint32_t elias_fano_space(EliasFanoDoubleEncodedData &data);
 
-class EliasFanoWithEmpty {
+class EliasFano {
 public:
-    EliasFanoWithEmpty();
+    EliasFano() = default;
+    EliasFano(std::vector<uint32_t> &data);
+
+    uint32_t get(int index);
 private:
+    SimpleSelect upper;
+    std::vector<bool> lower;
+    uint32_t delta;
+    uint32_t m;
+    int l;
 };
 
 #endif

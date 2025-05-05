@@ -65,7 +65,7 @@ inline std::ostream& operator<<(std::ostream& os, const EncodedSplittingTree &da
 
 class RecSplit : public HashFunction {
 public:
-    RecSplit(uint32_t bucket_size, uint32_t leaf_size, uint32_t bucket_seed=42);
+    RecSplit(uint32_t bucket_size, uint32_t leaf_size, uint32_t bucket_seed=42, uint32_t base_seed=0);
 
     void build(const std::vector<std::string> &keys) override;
 
@@ -78,7 +78,7 @@ public:
     uint64_t time_splitting = 0;
 
 private:
-
+    uint32_t base_seed_;
     void split(const std::vector<std::string> &keys);
     
     void create_buckets();
@@ -112,6 +112,10 @@ private:
     std::vector<uint32_t> bucket_node_prefixes_;
     std::vector<uint32_t> bucket_unary_prefixes_;
     std::vector<uint32_t> bucket_fixed_prefixes_;
+
+    EliasFano fixed_prefixes;
+    EliasFano unary_prefixes;
+    EliasFano node_prefixes;
 
     EliasFanoEncodedData bucket_node_prefixes_ef_;
     EliasFanoEncodedData bucket_unary_prefixes_ef_;
