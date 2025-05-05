@@ -82,5 +82,6 @@ private:
 
 FanoutData calculate_fanout_shockhash(uint32_t size, uint32_t leaf_size);
 std::vector<std::vector<SubtreeData>> generate_all_grp_shockhash();
+inline uint32_t map_key_to_split_new(const std::string &key, const uint32_t &seed, const std::vector<int> &cumulative_sums);
 
 #endif
