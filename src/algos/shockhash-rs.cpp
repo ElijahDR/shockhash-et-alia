@@ -525,7 +525,7 @@ FanoutData calculate_fanout_shockhash(uint32_t size, uint32_t leaf_size) {
 std::vector<std::vector<SubtreeData>> generate_all_grp_shockhash() {
     // Generate up to bucket_size 3000 and leaf size up to 24?
     const uint32_t max_bucket_size = 3000;
-    const uint32_t max_leaf_size = 60;
+    const uint32_t max_leaf_size = 130;
     std::vector<std::vector<SubtreeData>> grp_table(max_leaf_size-1, std::vector<SubtreeData>(max_bucket_size));
     for (size_t bucket_size = 1; bucket_size < max_bucket_size; bucket_size++) {
         for (size_t leaf_size = 2; leaf_size < max_leaf_size + 1; leaf_size++) {

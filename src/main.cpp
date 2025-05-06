@@ -208,24 +208,24 @@ void record_recsplit_bits_3d() {
 void record_recsplit_data() {
     std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
         {"n_keys", std::vector<double>{1000000}},
-        {"bucket_size", std::vector<double>{5, 9, 100}},
-        {"leaf_size", std::vector<double>{5, 8, 12}},
+        {"bucket_size", std::vector<double>{5, 9, 100, 2000}},
+        {"leaf_size", std::vector<double>{5, 8, 12, 16}},
     };
     std::vector<std::string> keys = generate_random_keys_random_length(1000000);
     std::vector<HashTestParameters> parameters_recsplit = generate_test_params("RecSplit", param_ranges_recsplit);
     std::vector<HashTestResult> results;
     std::ofstream file;
-    std::string file_name = "data/results/recsplit-1000000-main-1.csv";
-    file.open(file_name);
-    file << "num_keys,bucket_size,leaf_size,total_bits,build_time,hashing_time,bijection_time,splitting_time,bucket_time,splitting_tree,unary,fixed,bucket_prefixes\n";
-    file.close();
+    std::string file_name = "data/results/recsplit-main-main.csv";
+    // file.open(file_name);
+    // file << "num_keys,bucket_size,leaf_size,total_bits,build_time,hashing_time,bijection_time,splitting_time,bucket_time,splitting_tree,unary,fixed,bucket_prefixes\n";
+    // file.close();
     for (auto p : parameters_recsplit) {
         std::cout << p << std::endl;
         std::vector<HashFunctionTime> times;
         std::vector<HashFunctionSpace> spaces;
         std::vector<uint64_t> bijection_times;
         std::vector<uint64_t> splitting_times;
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 1; i++) {
             file.open(file_name, std::ios::app);
             // RecSplit recsplit0 = RecSplit(p.params["bucket_size"], p.params["leaf_size"], i);
 
@@ -274,13 +274,13 @@ void record_shockhash_data() {
     std::vector<std::string> keys = generate_random_keys_random_length(1000000);
     std::unordered_map<std::string, std::vector<double>> param_ranges_recsplit = {
         {"n_keys", std::vector<double>{1000000}},
-        {"bucket_size", std::vector<double>{10, 50, 100, 500, 1000, 1500, 2000}},
-        {"leaf_size", std::vector<double>{2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50}},
+        {"bucket_size", std::vector<double>{8}},
+        {"leaf_size", std::vector<double>{8}},
     };
     std::vector<HashTestParameters> parameters_recsplit = generate_test_params("ShockHash", param_ranges_recsplit);
     std::vector<HashTestResult> results;
     std::ofstream file;
-    std::string filename = "data/results/shockhash-1000000-3-1.csv";
+    std::string filename = "data/results/shockhash-6-6.csv";
     file.open(filename);
     file << "num_keys,bucket_size,leaf_size,total_bits,build_time,hashing_time,bijection_time,splitting_time,splitting_tree,unary,fixed,bucket_prefixes,burr\n";
     file.close();
@@ -290,7 +290,7 @@ void record_shockhash_data() {
         std::vector<HashFunctionSpace> spaces;
         std::vector<uint64_t> bijection_times;
         std::vector<uint64_t> splitting_times;
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 10; i++) {
             file.open(filename, std::ios::app);
             ShockHashRS recsplit = ShockHashRS(p.params["bucket_size"], p.params["leaf_size"], i);
 
@@ -542,9 +542,9 @@ void generate_random_bit_array() {
 }
 
 void test_shockhash_rs() {
-    std::vector<std::string> keys = generate_random_keys(1000000);
+    std::vector<std::string> keys = generate_random_keys_random_length(100000);
 
-    ShockHashRS shockhashrs(500, 40);
+    ShockHashRS shockhashrs(2000, 50);
     test_perfect_hashing(keys, shockhashrs);
     // HashFunctionTime hash_time = time_hashing(keys, shockhashrs);
     // std::cout << hash_time << std::endl;
@@ -622,80 +622,122 @@ void run_burr() {
 
 void run_sichash_tests() {
     std::vector<std::string> keys = generate_random_keys_random_length(1000000);
-    // std::vector<std::vector<double>> probs = {
-    //     {0, 1, 0.976},
-    //     {0.1, 0.8, 0.981},
-    //     {0.33, 0.34, 0.988},
-    //     {0.50, 0, 0.991},
-    // };
     std::vector<std::vector<double>> probs = {
+        {0, 1, 0.976},
+        {0.1, 0.8, 0.981},
+        {0.33, 0.34, 0.988},
+        {0.50, 0, 0.991},
         {0.21, 0.78, 0.9},
         {0.45, 0.031, 0.97},
+        {0.49, 0.22, 0.9768},
     };
 
 
-    std::vector<uint32_t> buckets = {5000};
+    std::vector<uint32_t> buckets = {50, 500, 5000};
 
     std::ofstream file;
-    std::string filename = "data/results/sichash-1000000-2.csv";
+    std::string filename = "data/results/sichash-1000000-4.csv";
     file.open(filename);
     file << "SicHash varying bucket sizes and probabilities. BuRR: e=0, l=4, b=128" << "\n";
-    file << "num_keys,b,p1,p2,alpha,total_bits,build_time,query_time,minimal_overhead\n";
+    file << "num_keys,b,p1,p2,alpha,total_bits,build_time,query_time,minimal_overhead,bucket_seeds,total_ribbon,bucket_prefixes\n";
     file.close();
     int i = 0;
     for (auto prob : probs) {
         for (auto b : buckets) {
-            file.open(filename, std::ios::app);
-            file << keys.size() << "," << b << "," << prob[0] << "," << prob[1] << "," << prob[2] << ",";
-            std::cout << "PRobs: " << prob << std::endl;
-            std::cout << "B: " << b << std::endl;
-            SicHash sichash(b, prob[0], prob[1], prob[2], 0, 4, 128);
-            HashFunctionTime time = time_hashing(keys, sichash);
-            HashFunctionSpace space = sichash.space();
-            file << space.total_bits << "," << time.build_time << "," << time.hashing_time << ",";
-            std::cout << time << std::endl;
-            std::cout << space << std::endl;
+            for (int i = 0; i < 5; i++){
+                file.open(filename, std::ios::app);
+                file << keys.size() << "," << b << "," << prob[0] << "," << prob[1] << "," << prob[2] << ",";
+                std::cout << "PRobs: " << prob << std::endl;
+                std::cout << "B: " << b << std::endl;
+                SicHash sichash(b, prob[0], prob[1], prob[2], 0, 4, 128, i);
+                HashFunctionTime time = time_hashing(keys, sichash);
+                HashFunctionSpace space = sichash.space();
+                file << space.total_bits << "," << time.build_time << "," << time.hashing_time << ",";
+                std::cout << time << std::endl;
+                std::cout << space << std::endl;
 
-            for (auto x : space.space_usage) {
-                if (x.first == "To Make Minimal") {
-                    file << x.second << "\n";
+                for (auto x : space.space_usage) {
+                    if (x.first == "To Make Minimal") {
+                        file << x.second << ",";
+                    }
                 }
+                for (auto x : space.space_usage) {
+                    if (x.first == "Bucket Seeds") {
+                        file << x.second << ",";
+                    }
+                }
+                for (auto x : space.space_usage) {
+                    if (x.first == "Total Ribbon") {
+                        file << x.second << ",";
+                    }
+                }
+                for (auto x : space.space_usage) {
+                    if (x.first == "Bucket Prefixes") {
+                        file << x.second << "\n";
+                    }
+                }
+                i++;
+                file.close();
             }
-            i++;
-            file.close();
         }
     }
 }
 
 void run_sichash_space_budget() {
     std::vector<std::string> keys = generate_random_keys_random_length(1000000);
-    std::vector<double> space_budgets = {1.7};
+    std::vector<double> space_budgets = {1.8};
+    std::vector<double> alphas = {0.984};
     std::vector<uint32_t> buckets = {5000};
 
-    // std::ofstream file;
-    // std::string filename = "data/results/sichash-1000000.csv";
+    std::ofstream file;
+    std::string filename = "data/results/sichash-1000000-budget-2.csv";
     // file.open(filename);
-    // file << "SicHash varying bucket sizes and probabilities. BuRR: e=0, l=4, b=128" << "\n";
-    // file << "num_keys,p1,p2,alpha,total_bits,build_time,query_time\n";
+    // file << "num_keys,b,p1,p2,alpha,total_bits,build_time,query_time,minimal_overhead,bucket_seeds,total_ribbon,bucket_prefixes\n";
     // file.close();
     int i = 0;
-    for (auto sb : space_budgets) {
+    for (int j = 0; j < space_budgets.size(); j++) {
+        auto sb = space_budgets[j];
+        auto alpha = alphas[j];
         for (auto b : buckets) {
-            for (double x = 0; x < 1; x+=0.1) {
+            for (double x = 0.7; x < 0.8; x+=0.1) {
+                file.open(filename, std::ios::app);
                 std::cout << "Space Budget: " << sb << std::endl;
                 std::cout << "x: " << x << std::endl;
                 std::cout << "B: " << b << std::endl;
                 std::pair<double, double> probs = space_budget(sb, x);
                 std::cout << "probs: " << probs << std::endl;
-                SicHash sichash(b, probs.first, probs.second, 0.95, 0, 4, 128);
-                // HashFunctionTime time = time_hashing(keys, sichash);
+                file << keys.size() << "," << b << "," << probs.first << "," << probs.second << "," << alpha << ",";
+                SicHash sichash(b, probs.first, probs.second, alpha, 0, 4, 128, 0);
+                HashFunctionTime time = time_hashing(keys, sichash);
                 // std::cout << time << std::endl;
-                test_perfect_hashing(keys, sichash);
+                // test_perfect_hashing(keys, sichash);
                 HashFunctionSpace space = sichash.space();
-                // file << space.total_bits << "," << time.build_time << "," << time.hashing_time << "\n";
+                file << space.total_bits << "," << time.build_time << "," << time.hashing_time << ",";
+                std::cout << time << std::endl;
                 std::cout << space << std::endl;
+
+                for (auto x : space.space_usage) {
+                    if (x.first == "To Make Minimal") {
+                        file << x.second << ",";
+                    }
+                }
+                for (auto x : space.space_usage) {
+                    if (x.first == "Bucket Seeds") {
+                        file << x.second << ",";
+                    }
+                }
+                for (auto x : space.space_usage) {
+                    if (x.first == "Total Ribbon") {
+                        file << x.second << ",";
+                    }
+                }
+                for (auto x : space.space_usage) {
+                    if (x.first == "Bucket Prefixes") {
+                        file << x.second << "\n";
+                    }
+                }
                 i++;
-                // file.close();
+                file.close();
             }
         }
     }
@@ -728,9 +770,9 @@ int main(int argc, char *argv[]) {
     // generate_random_bit_array();
     // record_recsplit_bits_3d();
     // test_shockhash_rs();
-    // record_recsplit_data();
+    record_recsplit_data();
     // run_burr();
-    run_sichash_tests();
+    // run_sichash_tests();
     // record_shockhash_data();
     // run_sichash_space_budget();
     // test_triangular();
