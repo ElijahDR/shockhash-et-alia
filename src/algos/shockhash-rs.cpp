@@ -49,7 +49,7 @@ void ShockHashRS::build(const std::vector<std::string> &keys) {
 #ifdef STATS
     auto start_time = std::chrono::steady_clock::now();
 #endif
-    hash_choices = BuRR(key_as_computed, hash_indexes, 1, 0, 128, 3);
+    hash_choices = BuRR(key_as_computed, hash_indexes, 1, 0, 256, 4);
 #ifdef STATS
     auto end_time = std::chrono::steady_clock::now();
     auto duration = end_time - start_time;
@@ -63,8 +63,8 @@ HashFunctionSpace ShockHashRS::space() {
     std::vector<std::pair<std::string, int>> space_usage;
     // int splitting_tree_overhead = (sizeof(splitting_tree_) + sizeof(splitting_tree_.fixed) + sizeof(splitting_tree_.unary)) * 8;
     // space_usage.push_back(std::make_pair("Splitting Tree Overhead", splitting_tree_overhead));
-    // space_usage.push_back(std::make_pair("Splitting Tree Fixed", splitting_tree_.fixed.size()));
-    // space_usage.push_back(std::make_pair("Splitting Tree Unary", splitting_tree_.unary.size()));
+    space_usage.push_back(std::make_pair("Splitting Tree Fixed", splitting_tree_.fixed.size()));
+    space_usage.push_back(std::make_pair("Splitting Tree Unary", splitting_tree_.unary.size()));
     // int total_splitting_tree = splitting_tree_overhead + splitting_tree_.fixed.size() + splitting_tree_.unary.size();
     int total_splitting_tree = splitting_tree_.fixed.size() + splitting_tree_.unary.size();
     space_usage.push_back(std::make_pair("Total Splitting Tree", total_splitting_tree));

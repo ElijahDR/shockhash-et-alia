@@ -200,9 +200,9 @@ HashFunctionSpace SicHash::space() {
     BuRRSpace ribbon_1 = ribbons[0].space();
     BuRRSpace ribbon_2 = ribbons[1].space();
     BuRRSpace ribbon_3 = ribbons[2].space();
-    std::cout << "Ribbon 1 Space: " << ribbon_1 << std::endl;
-    std::cout << "Ribbon 2 Space: " << ribbon_2 << std::endl;
-    std::cout << "Ribbon 3 Space: " << ribbon_3 << std::endl;
+    // std::cout << "Ribbon 1 Space: " << ribbon_1 << std::endl;
+    // std::cout << "Ribbon 2 Space: " << ribbon_2 << std::endl;
+    // std::cout << "Ribbon 3 Space: " << ribbon_3 << std::endl;
     space_usage.push_back(std::make_pair("1 Bit Ribbon", ribbon_1.total_bits));
     space_usage.push_back(std::make_pair("2 Bit Ribbon", ribbon_2.total_bits));
     space_usage.push_back(std::make_pair("3 Bit Ribbon", ribbon_3.total_bits));

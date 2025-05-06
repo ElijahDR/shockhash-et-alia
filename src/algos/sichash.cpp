@@ -8,10 +8,10 @@
 #include <random>
 #include <stdexcept>
 
-SicHash::SicHash(uint32_t bucket_size, double p1, double p2, double alpha, double burr_epsilon, int burr_layers, uint32_t bucket_seed, uint32_t class_seed) : 
+SicHash::SicHash(uint32_t bucket_size, double p1, double p2, double alpha, double burr_epsilon, int burr_layers, int burr_bucket, uint32_t bucket_seed, uint32_t class_seed) : 
 bucket_size_(bucket_size), p1_(p1), p2_(p2), alpha_(alpha), burr_epsilon_(burr_epsilon), burr_layers_(burr_layers), 
-bucket_seed_(bucket_seed), class_seed_(class_seed) {
-    
+bucket_seed_(bucket_seed), class_seed_(class_seed), burr_bucket_(burr_bucket) {
+    std::cout << "SicHash alpha: " << alpha << std::endl;
     return;
 }
 
@@ -35,12 +35,11 @@ void SicHash::build(const std::vector<std::string> &keys) {
     }
 
     std::cout << "Cuckoo Hash Tables Created, making ribbons..." << std::endl;
-    int bucket_size = 64;
-    ribbons.push_back(BuRR(keys_classes_[0], hash_indexes_per_class_[0], 1, burr_epsilon_, bucket_size, burr_layers_));
-    ribbons.push_back(BuRR(keys_classes_[1], hash_indexes_per_class_[1], 2, burr_epsilon_, bucket_size, burr_layers_));
-    ribbons.push_back(BuRR(keys_classes_[2], hash_indexes_per_class_[2], 3, burr_epsilon_, bucket_size, burr_layers_));
+    ribbons.push_back(BuRR(keys_classes_[0], hash_indexes_per_class_[0], 1, burr_epsilon_, burr_bucket_, burr_layers_));
+    ribbons.push_back(BuRR(keys_classes_[1], hash_indexes_per_class_[1], 2, burr_epsilon_, burr_bucket_, burr_layers_));
+    ribbons.push_back(BuRR(keys_classes_[2], hash_indexes_per_class_[2], 3, burr_epsilon_, burr_bucket_, burr_layers_));
 
-    std::cout << "Bucket Seeds: " << bucket_seeds_ << std::endl;
+    // std::cout << "Bucket Seeds: " << bucket_seeds_ << std::endl;
 
     make_minimal();
     bucket_prefixes_ef_ = elias_fano_double_encode(bucket_prefixes_);
@@ -151,7 +150,9 @@ uint32_t SicHash::hash(const std::string &key) {
     // int hash_index = hash_index_map_raw_[key];
     DEBUG_LOG("Hash Index for key " << key << ": " << hash_index);
     int table_size = bucket_sizes_[bucket] / alpha_;
-    int hash_table_index = murmur32(key, (bucket_seed * 8) + hash_index) % table_size;
+    // int hash_table_index = murmur32(key, (bucket_seed * 8) + hash_index) % table_size;
+    uint128_t hash_table_index = 0;
+    murmur128_range(key, (bucket_seed * 8) + hash_index, table_size, hash_table_index);
     DEBUG_LOG("Hash Table Index for key " << key << ": " << hash_table_index);
     DEBUG_LOG("Overall Hash for key" << key << ": " << global_index + hash_table_index);
 
@@ -188,11 +189,34 @@ uint32_t SicHash::perfect_hash(const std::string &key) {
     // int hash_index = hash_index_map_raw_[key];
     DEBUG_LOG("Hash Index for key " << key << ": " << hash_index);
     int table_size = bucket_sizes_[bucket] / alpha_;
-    int hash_table_index = murmur32(key, (bucket_seed * 8) + hash_index) % table_size;
+    
+    // int hash_table_index = murmur32(key, (bucket_seed * 8) + hash_index) % table_size;
+    uint128_t hash_table_index = 0;
+    murmur128_range(key, (bucket_seed * 8) + hash_index, table_size, hash_table_index);
+
     DEBUG_LOG("Hash Table Index for key " << key << ": " << hash_table_index);
     DEBUG_LOG("Overall Hash for key" << key << ": " << global_index + hash_table_index);
 
     return global_index + hash_table_index;
+}
+
+std::pair<double, double> space_budget(double B, double x) {
+    if (B < 1 || B > 3) {
+        throw std::invalid_argument("B must be between 1 and 3");
+    }
+
+    if (x < 0 || x > 1) {
+        throw std::invalid_argument("x must be between 0 and 1");
+
+    }
+
+    double p1min = std::max(0.0, 2-B);
+    double p1max = (3.0 - B)/2.0;
+
+    double p1 = p1min + x*(p1max - p1min);
+    double p2 = 3.0 - 2.0 * p1 - B;
+
+    return std::make_pair(p1, p2);
 }
 
 HashFunctionSpace SicHash::space() {
@@ -200,9 +224,9 @@ HashFunctionSpace SicHash::space() {
     BuRRSpace ribbon_1 = ribbons[0].space();
     BuRRSpace ribbon_2 = ribbons[1].space();
     BuRRSpace ribbon_3 = ribbons[2].space();
-    std::cout << "Ribbon 1 Space: " << ribbon_1 << std::endl;
-    std::cout << "Ribbon 2 Space: " << ribbon_2 << std::endl;
-    std::cout << "Ribbon 3 Space: " << ribbon_3 << std::endl;
+    // std::cout << "Ribbon 1 Space: " << ribbon_1 << std::endl;
+    // std::cout << "Ribbon 2 Space: " << ribbon_2 << std::endl;
+    // std::cout << "Ribbon 3 Space: " << ribbon_3 << std::endl;
     space_usage.push_back(std::make_pair("1 Bit Ribbon", ribbon_1.total_bits));
     space_usage.push_back(std::make_pair("2 Bit Ribbon", ribbon_2.total_bits));
     space_usage.push_back(std::make_pair("3 Bit Ribbon", ribbon_3.total_bits));
@@ -212,11 +236,14 @@ HashFunctionSpace SicHash::space() {
     int bucket_seeds = bucket_seeds_encoded.fixed.size() + bucket_seeds_encoded.unary.size();
     space_usage.push_back(std::make_pair("Bucket Seeds", bucket_seeds));
 
+
     int holes = elias_fano_space(holes_ef_);
-    space_usage.push_back(std::make_pair("Holes EF", holes));
 
     std::cout << minimal_rank_.space().space_usage << std::endl;
     int rank = minimal_rank_.space().total_bits;
+    int make_minimal_space = rank + holes;
+    space_usage.push_back(std::make_pair("To Make Minimal", make_minimal_space));
+    space_usage.push_back(std::make_pair("Holes EF", holes));
     space_usage.push_back(std::make_pair("Rank Structure", rank));
 
     int bucket_prefix_space = elias_fano_space(bucket_prefixes_ef_);
@@ -338,7 +365,7 @@ uint32_t SicHash::extract_class_assignment(size_t index) {
 
 void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
     uint32_t seed = base_seed;
-    int table_size = bucket.size() / alpha_;
+    uint64_t table_size = bucket.size() / alpha_;
     while (true) {
         std::vector<int> table(table_size, -1);
         rattle_counters_ = std::vector<int>(bucket.size());
@@ -444,6 +471,7 @@ void SicHash::build_cuckoo_hash_table(const std::vector<size_t> &bucket) {
 bool SicHash::insert_into_hash_table(size_t bucket_index, const std::vector<size_t> &bucket, uint32_t base_seed, std::vector<int> &hash_table) {
     int retries = 0;
     int table_size = hash_table.size();
+    uint128_t table_index = 0;
     while (retries < table_size * 2) {
         size_t key_index = bucket[bucket_index];
         int n_hash = keys_n_hashes_[key_index];
@@ -456,7 +484,8 @@ bool SicHash::insert_into_hash_table(size_t bucket_index, const std::vector<size
         // std::vector<uint32_t> hashes = generate_hash(key_index, base_seed);
         int hash_index = rattle_counters_[bucket_index] & ((1 << (n_hash+1)) - 1);
 
-        size_t table_index = murmur32(keys_[key_index], base_seed + hash_index) % table_size;
+        murmur128_range(keys_[key_index], base_seed + hash_index, table_size, table_index);
+        // size_t table_index = murmur32(keys_[key_index], base_seed + hash_index) % table_size;
         DEBUG_LOG("Hash Index: " << hash_index);
         // size_t table_index = hashes[hash_index] % hash_table.size();
         DEBUG_LOG("Table Index: " << table_index);

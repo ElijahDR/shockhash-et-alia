@@ -33,9 +33,6 @@ CuckooHashData ShockHash::create_cuckoo_table(const int bucket_id) {
     DEBUG_LOG("Creating Hash Table for Bucket: " << bucket_id);
     uint32_t seed_ = 0;
     while (true) {
-        if (seed_ % 1000000 == 0) {
-            DEBUG_LOG("Seed: " << seed_);
-        }
         if (!filter_bit_mask(buckets_[bucket_id], seed_*2)) {
             seed_++;
             continue;
@@ -69,7 +66,7 @@ bool ShockHash::insert_into_hash_table(const int key_index, std::vector<int> &ha
     int tries = 0;
     int current = key_index;
     int hash_table_size = hash_table.size();
-    while (tries < hash_table_size) {
+    while (tries < hash_table_size * 2) {
         uint32_t hash = murmur32(keys_[current], seed*2 + hash_choices_[current]) % hash_table_size;
         // DEBUG_LOG("Inserting " << current << " into " << hash_table);
         // DEBUG_LOG("Current Choice: " << hash_choices_[current] << " current hash: " << hash);
@@ -164,7 +161,7 @@ bool BipartiteShockHash::insert_into_hash_table(const int key_index, std::vector
     int tries = 0;
     int current = key_index;
     int hash_table_size = hash_table.size();
-    while (tries < 10 * hash_table_size) {
+    while (tries < 2 * hash_table_size) {
         uint32_t seed = hash_choices_[current] ? seeds.second : seeds.first;
         uint32_t hash = murmur32(keys_[current], seed) % (int)std::ceil((double)hash_table_size / 2);
         if (hash_choices_[current]) {

@@ -1,5 +1,4 @@
 #include "common/murmurhash.h"
-#include "common/MurmurHash3.h"
 #include <bit>
 #include <cstdint>  
 #include <cstring>
@@ -15,6 +14,16 @@ uint32_t murmur32(const std::string_view &key, const uint32_t seed) {
     MurmurHash3_x86_32(key.data(), (int)key.size(), seed, &result);
     return result;
 }
+
+void murmur32_ref(const std::string_view &key, const uint32_t seed, uint32_t &value){
+    MurmurHash3_x86_32(key.data(), (int)key.size(), seed, &value);
+}
+
+// void murmur128_range(const std::string_view &key, const uint32_t &seed, const uint32_t &range, uint128_t &value){
+//     MurmurHash3_x64_128(key.data(), (int)key.size(), seed, &value);
+//     value >>= 64;
+//     value = (value * range) >> 64;
+// }
 
 // https://en.wikipedia.org/wiki/MurmurHash#Algorithm
 uint32_t murmur32_old(const std::string_view &key, const uint32_t seed) {

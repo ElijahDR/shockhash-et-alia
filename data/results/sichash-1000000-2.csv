@@ -1,0 +1,4 @@
+SicHash varying bucket sizes and probabilities. BuRR: e=0, l=4, b=128
+num_keys,b,p1,p2,alpha,total_bits,build_time,query_time,minimal_overhead
+1000000,5000,0.21,0.78,0.9,2476248,1126346362,359419987,623261
+1000000,5000,0.45,0.031,0.97,2367296,1177906478,381463875,240623

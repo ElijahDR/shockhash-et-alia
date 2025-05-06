@@ -16,10 +16,11 @@ struct BucketSeedGr {
     std::vector<bool> fixed;
 };
 
+std::pair<double, double> space_budget(double B, double x);
 
 class SicHash : public HashFunction {
 public:
-    SicHash(uint32_t bucket_size, double p1, double p2, double alpha, double burr_epsilon=0, int layers=4, uint32_t bucket_seed=42, uint32_t class_seed=1);
+    SicHash(uint32_t bucket_size, double p1, double p2, double alpha, double burr_epsilon=0, int layers=4, int burr_bucket=64, uint32_t bucket_seed=42, uint32_t class_seed=1);
 
     void build(const std::vector<std::string> &keys) override;
 
@@ -35,6 +36,7 @@ private:
     void create_buckets();
     void estimated_golomb_rice();
     void make_minimal();
+
     uint32_t assign_bucket(const std::string &key);
     void assign_classes();
     std::vector<uint32_t> generate_hash(size_t index, uint32_t base_seed);
@@ -52,6 +54,7 @@ private:
     double p2_;
     double alpha_;
     double burr_epsilon_;
+    int burr_bucket_;
     int burr_layers_;
     uint32_t class_seed_;
 

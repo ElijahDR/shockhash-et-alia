@@ -23,7 +23,7 @@ std::string generate_random_string(int length) {
     std::string result;
     result.reserve(length);
 
-    static std::mt19937 generator(std::time(nullptr));
+    static std::mt19937 generator(1);
     // static std::mt19937 generator(1);
     std::uniform_int_distribution<int> distribution(0, charset.size() - 1);
 
@@ -57,7 +57,7 @@ std::vector<std::string> generate_random_keys(int n) {
 std::vector<std::string> generate_random_keys_random_length(int n) {
     std::unordered_set<std::string> unique_keys;
     std::random_device rd;
-    std::mt19937 gen(rd());
+    std::mt19937 gen(1);
     std::uniform_int_distribution<> length_dist(1, 50); // Random length between 1 and 15
 
     // std::string name = "Generating " + std::to_string(n) + " keys with random lengths (1-50)";
@@ -140,8 +140,8 @@ HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash
     auto build_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
     result.build_time = build_duration.count();
     double throughput = (double)keys.size() / ((double)build_duration.count() / 1000000000);
-    std::cout << "Build took: " << build_duration.count() << " ms" << std::endl;
-    std::cout << "Build Throughput: " << throughput << " (keys/s)" << std::endl;
+    // std::cout << "Build took: " << build_duration.count() << " ms" << std::endl;
+    // std::cout << "Build Throughput: " << throughput << " (keys/s)" << std::endl;
     result.build_throughput = throughput;
     start_time = std::chrono::steady_clock::now();
     // ProgressBar pbar(100, "Hashing Keys");
@@ -156,9 +156,9 @@ HashFunctionTime time_hashing(std::vector<std::string> &keys, HashFunction &hash
     duration = end_time - start_time;
     auto hashing_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
     result.hashing_time = hashing_duration.count();
-    std::cout << "Hashing took: " << hashing_duration.count() << " ms" << std::endl;
+    // std::cout << "Hashing took: " << hashing_duration.count() << " ms" << std::endl;
     throughput = (double)keys.size() / ((double)hashing_duration.count() / 1000000000);
-    std::cout << "Hashing Throughput: " << throughput << " (keys/s)" << std::endl;
+    // std::cout << "Hashing Throughput: " << throughput << " (keys/s)" << std::endl;
     result.hash_throughput = throughput;
 
 

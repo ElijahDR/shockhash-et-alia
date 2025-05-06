@@ -388,7 +388,7 @@ SimpleSpace Rank9::space() {
         std::make_pair("Data", data.size()*64),
         std::make_pair("Overhead", counts.size()*64),
     };
-    return SimpleSpace{usage, (int)(counts.size() * 64 + data.size() * 64)};
+    return SimpleSpace{usage, (int)(data.size() * 64)};
 }
 
 uint64_t rank9(std::vector<uint64_t> &data, std::vector<uint64_t> &counts, size_t p){
